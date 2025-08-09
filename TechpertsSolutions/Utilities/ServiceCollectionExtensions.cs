@@ -34,7 +34,8 @@ namespace TechpertsSolutions.Extensions
             services.AddScoped<IPCAssemblyCompatibilityService, PCAssemblyCompatibilityService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<INotificationHub, NotificationHubService>();
-            services.AddScoped<ICommissionService, CommissionService>();
+            //services.AddScoped<IDeliveryOfferService, DeliveryOfferService>();
+            //services.AddScoped<ICommissionService, CommissionService>();
             services.AddScoped<ILocationService, LocationService>();
 
             // Scoped services that need factories due to complex dependencies

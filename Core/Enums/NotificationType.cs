@@ -2,45 +2,104 @@ using Core.Enums.Attributes;
 
 namespace Core.Enums
 {
+    //public enum NotificationType
+    //{
+    //    [StringValue("OrderCreated")]
+    //    OrderCreated = 0,
+
+    //    [StringValue("ProductAdded")]
+    //    ProductAdded = 1,
+
+    //    [StringValue("ProductApproved")]
+    //    ProductApproved = 2,
+
+    //    [StringValue("ProductRejected")]
+    //    ProductRejected = 3,
+
+    //    [StringValue("ProductPending")]
+    //    ProductPending = 4,
+
+    //    [StringValue("OrderStatusChanged")]
+    //    OrderStatusChanged = 5,
+
+    //    [StringValue("OrderAssignedToDelivery")]
+    //    OrderAssignedToDelivery = 6,
+
+    //    [StringValue("MaintenanceRequestCreated")]
+    //    MaintenanceRequestCreated = 7,
+
+    //    [StringValue("MaintenanceRequestAccepted")]
+    //    MaintenanceRequestAccepted = 8,
+
+    //    [StringValue("MaintenanceRequestCompleted")]
+    //    MaintenanceRequestCompleted = 9,
+
+    //    [StringValue("DeliveryAssigned")]
+    //    DeliveryAssigned = 10,
+
+    //    [StringValue("DeliveryCompleted")]
+    //    DeliveryCompleted = 11,
+
+    //    [StringValue("SystemAlert")]
+    //    SystemAlert = 12
+    //}
+
     public enum NotificationType
     {
+        // Order-related
         [StringValue("OrderCreated")]
         OrderCreated = 0,
-        
-        [StringValue("ProductAdded")]
-        ProductAdded = 1,
-        
-        [StringValue("ProductApproved")]
-        ProductApproved = 2,
-        
-        [StringValue("ProductRejected")]
-        ProductRejected = 3,
-        
-        [StringValue("ProductPending")]
-        ProductPending = 4,
-        
+
         [StringValue("OrderStatusChanged")]
-        OrderStatusChanged = 5,
-        
+        OrderStatusChanged = 1,
+
         [StringValue("OrderAssignedToDelivery")]
-        OrderAssignedToDelivery = 6,
-        
+        OrderAssignedToDelivery = 2,
+
+        // Product-related
+        [StringValue("ProductAdded")]
+        ProductAdded = 10,
+
+        [StringValue("ProductApproved")]
+        ProductApproved = 11,
+
+        [StringValue("ProductRejected")]
+        ProductRejected = 12,
+
+        [StringValue("ProductPending")]
+        ProductPending = 13,
+
+        // Maintenance-related
         [StringValue("MaintenanceRequestCreated")]
-        MaintenanceRequestCreated = 7,
-        
+        MaintenanceRequestCreated = 20,
+
         [StringValue("MaintenanceRequestAccepted")]
-        MaintenanceRequestAccepted = 8,
-        
+        MaintenanceRequestAccepted = 21,
+
         [StringValue("MaintenanceRequestCompleted")]
-        MaintenanceRequestCompleted = 9,
-        
+        MaintenanceRequestCompleted = 22,
+
+        // Delivery-related
+        [StringValue("DeliveryOfferCreated")]
+        DeliveryOfferCreated = 30,
+
+        [StringValue("DeliveryOfferAccepted")]
+        DeliveryOfferAccepted = 31,
+
+        [StringValue("DeliveryOfferExpired")] 
+        DeliveryOfferExpired = 32,
+
         [StringValue("DeliveryAssigned")]
-        DeliveryAssigned = 10,
-        
+        DeliveryAssigned = 33,
+
+        [StringValue("DeliveryPickedUp")]
+        DeliveryPickedUp = 34,
+
         [StringValue("DeliveryCompleted")]
-        DeliveryCompleted = 11,
-        
+        DeliveryCompleted = 35,
+
+        // System
         [StringValue("SystemAlert")]
-        SystemAlert = 12
+        SystemAlert = 40
     }
-} 
+}

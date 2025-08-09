@@ -1,10 +1,11 @@
 using Core.DTOs;
+using Core.DTOs.DeliveryDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Core.DTOs.DeliveryDTOs;
+using TechpertsSolutions.Core.Entities;
 
 namespace Core.Interfaces.Services
 {
@@ -23,5 +24,7 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<DeliveryDTO>> CompleteDeliveryAsync(string deliveryId, string deliveryPersonId);
         Task<GeneralResponse<IEnumerable<DeliveryDTO>>> GetAvailableDeliveriesAsync();
         Task<GeneralResponse<DeliveryDTO>> AcceptDeliveryAsync(string deliveryId, string deliveryPersonId);
+        Task<GeneralResponse<DeliveryDTO>> AssignDeliveryToNearestAsync(string deliveryId, List<Delivery> availableDeliveryPersons, int takeNearest , int offerExpiryMinutes);
+
     }
 }

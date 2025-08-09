@@ -9,7 +9,6 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class DeliveryPerson : BaseEntity
     {
-        // Job-specific properties
         public string? VehicleNumber { get; set; }
         public string? VehicleType { get; set; }
         public bool IsAvailable { get; set; } = true;
@@ -19,7 +18,6 @@ namespace TechpertsSolutions.Core.Entities
         public string RoleId { get; set; }
         public AppRole? Role { get; set; }
 
-        // Role-specific dashboard data
         public List<Delivery>? Deliveries { get; set; } = new List<Delivery>();
     }
-} 
+}

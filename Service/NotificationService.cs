@@ -1,10 +1,12 @@
+using Core.DTOs;
 using Core.DTOs.NotificationDTOs;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
+using Service.Utilities;
 using TechpertsSolutions.Core.Entities;
-using Core.DTOs;
 
 namespace Service
 {
@@ -13,14 +15,17 @@ namespace Service
         private readonly IRepository<Notification> _notificationRepo;
         private readonly UserManager<AppUser> _userManager;
         private readonly INotificationHub _notificationHub;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
         public NotificationService(
             IRepository<Notification> notificationRepo,
             UserManager<AppUser> userManager,
-            INotificationHub notificationHub)
+            INotificationHub notificationHub,
+            IHubContext<NotificationHub> hubContext)
         {
             _notificationRepo = notificationRepo;
             _userManager = userManager;
+            _hubContext = hubContext;
             _notificationHub = notificationHub;
         }
 
@@ -452,6 +457,51 @@ namespace Service
                 {
                     Success = false,
                     Message = $"An error occurred while sending notifications to multiple users: {ex.Message}",
+                    Data = false
+                };
+            }
+        }
+        public async Task<GeneralResponse<bool>> NotifyDeliveryPersonAsync(string deliveryPersonId, string message)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(deliveryPersonId))
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Invalid delivery person ID.",
+                        Data = false
+                    };
+                }
+
+                if (string.IsNullOrWhiteSpace(message))
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Notification message cannot be empty.",
+                        Data = false
+                    };
+                }
+
+                // Send notification via SignalR to a specific delivery person group
+                await _hubContext.Clients.Group(deliveryPersonId).SendAsync("ReceiveNotification", message);
+
+                return new GeneralResponse<bool>
+                {
+                    Success = true,
+                    Message = "Notification sent successfully.",
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                // Log error if necessary
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = $"An error occurred while sending the notification: {ex.Message}",
                     Data = false
                 };
             }

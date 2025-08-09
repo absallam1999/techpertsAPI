@@ -14,6 +14,7 @@ namespace Core.DTOs.DeliveryDTOs
         public string? CustomerName { get; set; }
         public DateTime? EstimatedDeliveryDate { get; set; }
         public DateTime? ActualDeliveryDate { get; set; }
+        public int? RetryCount { get; set; }
         public string? DeliveryStatus { get; set; }
         public string? Notes { get; set; }
         public decimal? DeliveryFee { get; set; }

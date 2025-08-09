@@ -131,6 +131,8 @@ namespace TechpertsSolutions
                 };
             });
 
+            //builder.Services.AddScoped<INotificationService, NotificationService>();
+            
             var app = builder.Build();
 
             
@@ -163,7 +165,7 @@ namespace TechpertsSolutions
             
             // Add SignalR hubs
             app.MapHub<NotificationHub>("/notificationHub");
-            app.MapHub<ChatHub>("/chatHub");
+            //app.MapHub<ChatHub>("/chatHub");
 
             app.MapControllers();
 

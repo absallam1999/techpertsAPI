@@ -61,7 +61,6 @@ namespace Service
             }
             catch (Exception ex)
             {
-                // Add logging here if needed
                 return new GeneralResponse<DeliveryPersonReadDTO>
                 {
                     Success = false,
@@ -88,7 +87,6 @@ namespace Service
             }
             catch (Exception ex)
             {
-                // Add logging here if needed
                 return new GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>
                 {
                     Success = false,
@@ -156,7 +154,6 @@ namespace Service
             }
             catch (Exception ex)
             {
-                // Add logging here if needed
                 return new GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>
                 {
                     Success = false,

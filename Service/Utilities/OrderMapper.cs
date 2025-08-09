@@ -26,6 +26,7 @@ namespace Service.Utilities
                 OrderDate = order.OrderDate,
                 Status = order.Status,
                 TotalAmount = order.TotalAmount,
+                DeliveryName = order.Delivery.DeliveryPerson.User.FullName,
                 OrderItems = order.OrderItems != null 
                     ? order.OrderItems.Select(ToItemReadDTO).ToList() 
                     : new List<OrderItemReadDTO>()
@@ -60,15 +61,15 @@ namespace Service.Utilities
                 OrderDate = DateTime.UtcNow,
                 Status = OrderStatus.Ordered,
                 ServiceUsageId = dto.ServiceUsageId,
-                OrderHistoryId = null, 
-                OrderItems = dto.OrderItems.Select(item => new OrderItem
+                OrderHistoryId = null,
+                OrderItems = dto.OrderItems?.Select(item => new OrderItem
                 {
                     Id = Guid.NewGuid().ToString(),
                     ProductId = item.ProductId,
                     Quantity = item.Quantity,
                     UnitPrice = item.UnitPrice,
                     ItemTotal = (int)(item.Quantity * item.UnitPrice)
-                }).ToList()
+                }).ToList() ?? new List<OrderItem>()
             };
         }
     }

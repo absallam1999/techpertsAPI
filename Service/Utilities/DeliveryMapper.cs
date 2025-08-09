@@ -19,7 +19,7 @@ namespace Service.Utilities
                 CustomerName = delivery.CustomerName,
                 EstimatedDeliveryDate = delivery.EstimatedDeliveryDate,
                 ActualDeliveryDate = delivery.ActualDeliveryDate,
-                DeliveryStatus = delivery.Status.ToString(),
+                DeliveryStatus = delivery.Status,
                 Notes = delivery.Notes,
                 DeliveryFee = delivery.DeliveryFee,
                 DeliveryPersonId = delivery.DeliveryPersonId,

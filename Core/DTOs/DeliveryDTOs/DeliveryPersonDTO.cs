@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Core.Entities;
 
 namespace Core.DTOs.DeliveryDTOs
 {
@@ -16,5 +17,6 @@ namespace Core.DTOs.DeliveryDTOs
         public string? City { get; set; }
         public string? Country { get; set; }
         public bool IsAvailable { get; set; }
+        public AppUser User { get; set; }
     }
 } 

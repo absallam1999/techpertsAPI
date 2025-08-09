@@ -15,5 +15,6 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<NotificationCountDTO>> GetNotificationCountAsync(string userId);
         Task<GeneralResponse<bool>> SendNotificationToRoleAsync(string roleName, string message, NotificationType type, string? relatedEntityId = null, string? relatedEntityType = null);
         Task<GeneralResponse<bool>> SendNotificationToMultipleUsersAsync(List<string> userIds, string message, NotificationType type, string? relatedEntityId = null, string? relatedEntityType = null);
+        Task<GeneralResponse<bool>> NotifyDeliveryPersonAsync(string deliveryPersonId, string message);
     }
 } 

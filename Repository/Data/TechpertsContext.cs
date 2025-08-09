@@ -14,8 +14,6 @@ namespace TechpertsSolutions.Repository.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // This loop applies default values for CreatedAt and UpdatedAt to all entities
-            // that implement IEntity (like BaseEntity).
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 var clrType = entityType.ClrType;
@@ -60,10 +58,10 @@ namespace TechpertsSolutions.Repository.Data
         public DbSet<WishList> WishLists { get; set; }
         public DbSet<WishListItem> WishListItems { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<CommissionPlan> CommissionPlans { get; set; }
-        public DbSet<CommissionTransaction> CommissionTransactions { get; set; }
-        public DbSet<ChatRoom> ChatRooms { get; set; }
-        public DbSet<ChatMessage> ChatMessages { get; set; }
-        public DbSet<ChatParticipant> ChatParticipants { get; set; }
+        //public DbSet<CommissionPlan> CommissionPlans { get; set; }
+        //public DbSet<CommissionTransaction> CommissionTransactions { get; set; }
+        //public DbSet<ChatRoom> ChatRooms { get; set; }
+        //public DbSet<ChatMessage> ChatMessages { get; set; }
+        //public DbSet<ChatParticipant> ChatParticipants { get; set; }
     }
 }

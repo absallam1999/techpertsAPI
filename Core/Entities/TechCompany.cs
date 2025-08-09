@@ -26,8 +26,8 @@ namespace TechpertsSolutions.Core.Entities
         public string RoleId { get; set; }
         public AppRole? Role { get; set; }
         
-        public string? CommissionPlanId { get; set; }
-        public CommissionPlan? CommissionPlan { get; set; }
+        //public string? CommissionPlanId { get; set; }
+        //public CommissionPlan? CommissionPlan { get; set; }
         
         // Role-specific dashboard data
         public List<Maintenance>? Maintenances { get; set; } = new List<Maintenance>();

@@ -1,6 +1,6 @@
-using Core.DTOs.OrderDTOs;
 using Core.DTOs;
-using TechpertsSolutions.Core.Entities;
+using Core.DTOs.OrderDTOs;
+using Core.Entities;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -11,80 +11,416 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Core.Entities;
 
 namespace Service
 {
     public class OrderService : IOrderService
     {
         private readonly IRepository<Order> _orderRepo;
+        private readonly IRepository<Delivery> _deliveryRepo;
+        private readonly IRepository<DeliveryPerson> _deliveryPersonRepo;
+        private readonly IRepository<DeliveryOffer> _deliveryOfferRepo;
+        private readonly IDeliveryService _deliveryService;
         private readonly IRepository<OrderHistory> _orderHistoryRepo;
         private readonly INotificationService _notificationService;
 
-        public OrderService(IRepository<Order> orderRepo, IRepository<OrderHistory> orderHistoryRepo, INotificationService notificationService)
+        public OrderService(
+            IRepository<Order> orderRepo,
+            IRepository<OrderHistory> orderHistoryRepo,
+            IRepository<Delivery> deliveryRepo,
+            IRepository<DeliveryPerson> deliveryPersonRepo,
+            IRepository<DeliveryOffer> deliveryOfferRepo,
+            INotificationService notificationService,
+            IDeliveryService deliveryService)
         {
             _orderRepo = orderRepo;
             _orderHistoryRepo = orderHistoryRepo;
+            _deliveryRepo = deliveryRepo;
+            _deliveryPersonRepo = deliveryPersonRepo;
+            _deliveryOfferRepo = deliveryOfferRepo;
+            _deliveryService = deliveryService;
             _notificationService = notificationService;
         }
 
+
+        //public async Task<GeneralResponse<OrderReadDTO>> CreateOrderAsync(OrderCreateDTO dto)
+        //{
+
+        //    if (dto == null)
+        //    {
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Order data cannot be null.",
+        //            Data = null
+        //        };
+        //    }
+
+        //    if (string.IsNullOrWhiteSpace(dto.CustomerId))
+        //    {
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Customer ID is required.",
+        //            Data = null
+        //        };
+        //    }
+
+        //    if (!Guid.TryParse(dto.CustomerId, out _))
+        //    {
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Invalid Customer ID format. Expected GUID format.",
+        //            Data = null
+        //        };
+        //    }
+
+        //    if (dto.OrderItems == null || !dto.OrderItems.Any())
+        //    {
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Order must contain at least one item.",
+        //            Data = null
+        //        };
+        //    }
+
+        //    try
+        //    {
+        //        var order = OrderMapper.ToEntity(dto);
+
+        //        // Calculate total amount
+        //        order.TotalAmount = order.OrderItems.Sum(i => i.ItemTotal);
+
+        //        // Get or create order history for this customer
+        //        var orderHistory = await GetOrCreateOrderHistoryAsync(dto.CustomerId);
+        //        order.OrderHistoryId = orderHistory.Id;
+
+        //        await _orderRepo.AddAsync(order);
+        //        await _orderRepo.SaveChangesAsync();
+
+        //        // Send notification to admin about new order
+        //        await _notificationService.SendNotificationToRoleAsync(
+        //            "Admin",
+        //            $"New order #{order.Id} has been created by customer {order.CustomerId}",
+        //            NotificationType.OrderCreated,
+        //            order.Id,
+        //            "Order"
+        //        );
+
+        //        // Get the created order with all includes to return proper data
+        //        var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
+        //            o => o.Id == order.Id,
+        //            includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
+
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = true,
+        //            Message = "Order created successfully.",
+        //            Data = OrderMapper.ToReadDTO(createdOrder)
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "An unexpected error occurred while creating the order.",
+        //            Data = null
+        //        };
+        //    }
+        //}
+
+
+        //public async Task<GeneralResponse<OrderReadDTO>> CreateOrderAsync(OrderCreateDTO dto)
+        //{
+        //    if (dto == null)
+        //    {
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Order data cannot be null.",
+        //            Data = null
+        //        };
+        //    }
+
+        //    if (string.IsNullOrWhiteSpace(dto.CustomerId))
+        //    {
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Customer ID is required.",
+        //            Data = null
+        //        };
+        //    }
+
+        //    if (!Guid.TryParse(dto.CustomerId, out _))
+        //    {
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Invalid Customer ID format. Expected GUID format.",
+        //            Data = null
+        //        };
+        //    }
+
+        //    if (dto.OrderItems == null || !dto.OrderItems.Any())
+        //    {
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Order must contain at least one item.",
+        //            Data = null
+        //        };
+        //    }
+
+        //    //try
+        //    //{
+        //    //    var order = OrderMapper.ToEntity(dto);
+        //    //    order.TotalAmount = order.OrderItems.Sum(i => i.ItemTotal);
+
+        //    //    var orderHistory = await GetOrCreateOrderHistoryAsync(dto.CustomerId);
+        //    //    order.OrderHistoryId = orderHistory.Id;
+
+        //    //    await _orderRepo.AddAsync(order);
+        //    //    await _orderRepo.SaveChangesAsync();
+
+        //    //    var delivery = new Delivery
+        //    //    {
+        //    //        TrackingNumber = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper(),
+        //    //        CustomerId = dto.CustomerId,
+        //    //        OrderId = order.Id,
+        //    //    };
+        //    //    await _deliveryRepo.AddAsync(delivery);
+        //    //    await _deliveryRepo.SaveChangesAsync();
+
+        //    //    await _notificationService.SendNotificationToRoleAsync(
+        //    //        "Admin",
+        //    //        $"New order #{order.Id} has been created by customer {order.CustomerId}",
+        //    //        NotificationType.OrderCreated,
+        //    //        order.Id,
+        //    //        "Order"
+        //    //    );
+
+        //    //    await _notificationService.SendNotificationToRoleAsync(
+        //    //        "Delivery",
+        //    //        $"New delivery #{delivery.TrackingNumber} is available for assignment.",
+        //    //        NotificationType.DeliveryAssigned,
+        //    //        delivery.Id,
+        //    //        "Delivery"
+        //    //    );
+
+        //    //    var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
+        //    //        o => o.Id == order.Id,
+        //    //        includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
+
+        //    //    return new GeneralResponse<OrderReadDTO>
+        //    //    {
+        //    //        Success = true,
+        //    //        Message = "Order has been created successfully and sent to Delivery.",
+        //    //        Data = OrderMapper.ToReadDTO(createdOrder)
+        //    //    };
+        //    //}
+        //    //catch (Exception ex)
+        //    //{
+        //    //    return new GeneralResponse<OrderReadDTO>
+        //    //    {
+        //    //        Success = false,
+        //    //        Message = $"An unexpected error occurred while creating the order. {ex}",
+        //    //        Data = null
+        //    //    };
+        //    //}
+        //    try
+        //    {
+        //        Delivery existingDelivery = null;
+        //        if (!string.IsNullOrEmpty(dto.DeliveryId))
+        //        {
+        //            existingDelivery = await _deliveryRepo.GetByIdAsync(dto.DeliveryId);
+        //            if (existingDelivery == null)
+        //                throw new Exception($"Delivery with id {dto.DeliveryId} not found.");
+        //        }
+
+        //        var order = OrderMapper.ToEntity(dto);
+        //        order.TotalAmount = order.OrderItems.Sum(i => i.ItemTotal);
+
+        //        var orderHistory = await GetOrCreateOrderHistoryAsync(dto.CustomerId);
+        //        order.OrderHistoryId = orderHistory.Id;
+
+        //        await _orderRepo.AddAsync(order);
+        //        await _orderRepo.SaveChangesAsync();
+
+        //        Delivery delivery;
+        //        if (existingDelivery != null)
+        //        {
+        //            existingDelivery.OrderId = order.Id;
+        //            delivery = existingDelivery;
+        //        }
+        //        else
+        //        {
+        //            delivery = new Delivery
+        //            {
+        //                TrackingNumber = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper(),
+        //                CustomerId = dto.CustomerId,
+        //                OrderId = order.Id,
+        //                DeliveryLatitude = existingDelivery.Latitude,
+        //                DeliveryLongitude = existingDelivery.Longitude
+        //            };
+        //            await _deliveryRepo.AddAsync(delivery);
+        //        }
+
+        //        await _deliveryRepo.SaveChangesAsync();
+
+        //        await _notificationService.SendNotificationToRoleAsync(
+        //            "Admin",
+        //            $"New order #{order.Id} has been created by customer {order.CustomerId}",
+        //            NotificationType.OrderCreated,
+        //            order.Id,
+        //            "Order"
+        //        );
+
+        //        await _notificationService.SendNotificationToRoleAsync(
+        //            "Delivery",
+        //            $"New delivery #{delivery.TrackingNumber} is available for assignment.",
+        //            NotificationType.DeliveryAssigned,
+        //            delivery.Id,
+        //            "Delivery"
+        //        );
+
+        //        await _notificationService.SendNotificationToRoleAsync(
+        //            "TechCompany",
+        //            $"New order #{order.Id} has been created by customer {order.CustomerId}",
+        //            NotificationType.OrderCreated,
+        //            order.Id,
+        //            "Order"
+        //        );
+
+        //        if (delivery.DeliveryLatitude.HasValue && delivery.DeliveryLongitude.HasValue)
+        //        {
+
+        //            var availableDriversResponse = await _deliveryService.GetAvailableDeliveriesAsync();
+
+        //            if (availableDriversResponse.Success && availableDriversResponse.Data != null)
+        //            {
+        //                var availableDrivers = availableDriversResponse.Data
+        //                    .Where(d => d.Latitude.HasValue && d.Longitude.HasValue && d.IsOnline)
+        //                    .Select(d => new Delivery
+        //                    {
+        //                        Id = d.Id,
+        //                        Latitude = d.Latitude,
+        //                        Longitude = d.Longitude,
+        //                        IsOnline = d.IsOnline,
+        //                        DeliveryPerson = new DeliveryPerson
+        //                        {
+        //                            Id = d.DeliveryPersonId,
+        //                            UserId = d.DeliveryPerson.User.Id
+        //                        }
+        //                    })
+        //                    .ToList();
+
+        //                await _deliveryService.AssignDeliveryToNearestAsync(delivery.Id, availableDrivers, 3, 3);
+        //            }
+        //        }
+
+        //        var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
+        //            o => o.Id == order.Id,
+        //            includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
+
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = true,
+        //            Message = "Order has been created successfully and sent to Delivery.",
+        //            Data = OrderMapper.ToReadDTO(createdOrder)
+        //        };
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = $"An unexpected error occurred while creating the order. {ex}",
+        //            Data = null
+        //        };
+        //    }
+        //}
+
         public async Task<GeneralResponse<OrderReadDTO>> CreateOrderAsync(OrderCreateDTO dto)
         {
-            
             if (dto == null)
-            {
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
                     Message = "Order data cannot be null.",
                     Data = null
                 };
-            }
 
             if (string.IsNullOrWhiteSpace(dto.CustomerId))
-            {
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
                     Message = "Customer ID is required.",
                     Data = null
                 };
-            }
 
             if (!Guid.TryParse(dto.CustomerId, out _))
-            {
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
                     Message = "Invalid Customer ID format. Expected GUID format.",
                     Data = null
                 };
-            }
 
             if (dto.OrderItems == null || !dto.OrderItems.Any())
-            {
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
                     Message = "Order must contain at least one item.",
                     Data = null
                 };
-            }
 
             try
             {
+                Delivery delivery = null;
+                if (!string.IsNullOrEmpty(dto.DeliveryId))
+                {
+                    delivery = await _deliveryRepo.GetByIdAsync(dto.DeliveryId);
+                    if (delivery == null)
+                        throw new Exception($"Delivery with id {dto.DeliveryId} not found.");
+                }
+
                 var order = OrderMapper.ToEntity(dto);
-                
-                // Calculate total amount
                 order.TotalAmount = order.OrderItems.Sum(i => i.ItemTotal);
 
-                // Get or create order history for this customer
                 var orderHistory = await GetOrCreateOrderHistoryAsync(dto.CustomerId);
                 order.OrderHistoryId = orderHistory.Id;
 
                 await _orderRepo.AddAsync(order);
                 await _orderRepo.SaveChangesAsync();
 
-                // Send notification to admin about new order
+                if (delivery != null)
+                {
+                    delivery.OrderId = order.Id;
+                }
+                else
+                {
+                    delivery = new Delivery
+                    {
+                        TrackingNumber = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper(),
+                        CustomerId = dto.CustomerId,
+                        OrderId = order.Id,
+                        DeliveryLatitude = dto.DeliveryLatitude,
+                        DeliveryLongitude = dto.DeliveryLongitude,
+                        Status = DeliveryStatus.Pending,
+                        RetryCount = 0,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await _deliveryRepo.AddAsync(delivery);
+                }
+
+                await _deliveryRepo.SaveChangesAsync();
+
                 await _notificationService.SendNotificationToRoleAsync(
                     "Admin",
                     $"New order #{order.Id} has been created by customer {order.CustomerId}",
@@ -93,7 +429,48 @@ namespace Service
                     "Order"
                 );
 
-                // Get the created order with all includes to return proper data
+                await _notificationService.SendNotificationToRoleAsync(
+                    "Delivery",
+                    $"New delivery #{delivery.TrackingNumber} is available for assignment.",
+                    NotificationType.DeliveryAssigned,
+                    delivery.Id,
+                    "Delivery"
+                );
+
+                await _notificationService.SendNotificationToRoleAsync(
+                    "TechCompany",
+                    $"New order #{order.Id} has been created by customer {order.CustomerId}",
+                    NotificationType.OrderCreated,
+                    order.Id,
+                    "Order"
+                );
+
+                if (delivery.DeliveryLatitude.HasValue && delivery.DeliveryLongitude.HasValue)
+                {
+                    var availableDriversResponse = await _deliveryService.GetAvailableDeliveriesAsync();
+
+                    if (availableDriversResponse.Success && availableDriversResponse.Data != null)
+                    {
+                        var availableDrivers = availableDriversResponse.Data
+                            .Where(d => d.Latitude.HasValue && d.Longitude.HasValue && d.IsOnline)
+                            .Select(d => new Delivery
+                            {
+                                Id = d.Id,
+                                Latitude = d.Latitude,
+                                Longitude = d.Longitude,
+                                IsOnline = d.IsOnline,
+                                DeliveryPerson = new DeliveryPerson
+                                {
+                                    Id = d.DeliveryPersonId,
+                                    UserId = d.DeliveryPerson.User.Id
+                                }
+                            })
+                            .ToList();
+
+                        await _deliveryService.AssignDeliveryToNearestAsync(delivery.Id, availableDrivers, 3, 3);
+                    }
+                }
+
                 var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
                     o => o.Id == order.Id,
                     includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
@@ -101,7 +478,7 @@ namespace Service
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = true,
-                    Message = "Order created successfully.",
+                    Message = "Order has been created successfully and sent to Delivery.",
                     Data = OrderMapper.ToReadDTO(createdOrder)
                 };
             }
@@ -110,7 +487,7 @@ namespace Service
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while creating the order.",
+                    Message = $"An unexpected error occurred while creating the order. {ex.Message}",
                     Data = null
                 };
             }
@@ -274,7 +651,6 @@ namespace Service
 
         private async Task<OrderHistory> GetOrCreateOrderHistoryAsync(string customerId)
         {
-            // First, try to find an existing OrderHistory that has orders for this customer
             var existingHistory = await _orderHistoryRepo.GetFirstOrDefaultAsync(
                 oh => oh.Orders.Any(o => o.CustomerId == customerId),
                 includeProperties: "Orders");
@@ -284,7 +660,6 @@ namespace Service
                 return existingHistory;
             }
 
-            // If no existing history found, create a new one
             var newHistory = new OrderHistory
             {
                 Id = Guid.NewGuid().ToString(),
@@ -389,7 +764,6 @@ namespace Service
                 _orderRepo.Update(order);
                 await _orderRepo.SaveChangesAsync();
 
-                // Send notification to customer about order status change
                 await _notificationService.SendNotificationAsync(
                     order.CustomerId,
                     $"Your order #{order.Id} status has been updated to '{newStatus.GetStringValue()}'",
@@ -410,7 +784,7 @@ namespace Service
                 return new GeneralResponse<bool>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while updating order status.",
+                    Message = $"An unexpected error occurred while updating order status. {ex}",
                     Data = false
                 };
             }

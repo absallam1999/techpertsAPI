@@ -15,26 +15,36 @@ namespace Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<Delivery> builder)
         {
             base.Configure(builder);
-            // Many-to-many with TechCompanies is configured on the other side.
-            builder.HasMany(d => d.TechCompanies).WithMany(t => t.Deliveries);
 
-            // Deleting a Customer is restricted if they have a delivery associated with them.
-            builder.HasOne(d => d.Customer)
-                   .WithMany()
-                   .HasForeignKey(d => d.CustomerId)
-                   .OnDelete(DeleteBehavior.Restrict);
-
-            // Deleting a DeliveryPerson is restricted if they are assigned to a delivery.
-            builder.HasOne(d => d.DeliveryPerson)
-                   .WithMany(dp => dp.Deliveries)
-                   .HasForeignKey(d => d.DeliveryPersonId)
-                   .OnDelete(DeleteBehavior.Restrict);
-
-            // Deleting an Order is restricted if it has a delivery.
+            // One-to-one with Order
             builder.HasOne(d => d.Order)
                    .WithOne(o => o.Delivery)
                    .HasForeignKey<Delivery>(d => d.OrderId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            // Many-to-one with Customer
+            builder.HasOne(d => d.Customer)
+                   .WithMany(c => c.Deliveries)
+                   .HasForeignKey(d => d.CustomerId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            // One-to-many with DeliveryOffers
+            builder.HasMany(d => d.Offers)
+                   .WithOne(o => o.Delivery)
+                   .HasForeignKey(o => o.DeliveryId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            // Defaults for background service logic
+            builder.Property(d => d.RetryCount)
+                   .IsRequired()
+                   .HasDefaultValue(0);
+
+            builder.Property(d => d.CreatedAt)
+                   .IsRequired();
+
+            // Indexes for performance
+            builder.HasIndex(d => d.Status);
+            builder.HasIndex(d => d.CreatedAt);
         }
     }
-}
+ }
