@@ -169,7 +169,7 @@ namespace Service
                 // Handle profile photo upload if provided
                 if (dto.ProfilePhoto != null && dto.ProfilePhoto.Length > 0)
                 {
-                    var photoUrl = await _fileService.UploadImageAsync(dto.ProfilePhoto, "profile-photos");
+                    var photoUrl = await _fileService.UploadImageAsync(dto.ProfilePhoto, "profiles");
                     if (!string.IsNullOrEmpty(photoUrl))
                     {
                         user.ProfilePhotoUrl = photoUrl;
@@ -220,7 +220,7 @@ namespace Service
                 }
 
                 // Upload the photo
-                var photoUrl = await _fileService.UploadImageAsync(photoFile, "profile-photos");
+                var photoUrl = await _fileService.UploadImageAsync(photoFile, "profiles");
                 if (string.IsNullOrEmpty(photoUrl))
                 {
                     return new GeneralResponse<string>
