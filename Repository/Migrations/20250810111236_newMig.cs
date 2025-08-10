@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class @new : Migration
+    public partial class newMig : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -76,28 +76,6 @@ namespace Repository.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CommissionPlans",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ProductSaleCommission = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    MaintenanceCommission = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PCAssemblyCommission = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DeliveryCommission = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    MonthlySubscriptionFee = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    IsDefault = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CommissionPlans", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -295,6 +273,8 @@ namespace Repository.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     VehicleNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     VehicleType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    VehicleImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AccountStatus = table.Column<int>(type: "int", nullable: false),
                     IsAvailable = table.Column<bool>(type: "bit", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
@@ -361,7 +341,6 @@ namespace Repository.Migrations
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CommissionPlanId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
                 },
@@ -380,11 +359,6 @@ namespace Repository.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_TechCompanies_CommissionPlans_CommissionPlanId",
-                        column: x => x.CommissionPlanId,
-                        principalTable: "CommissionPlans",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -494,34 +468,6 @@ namespace Repository.Migrations
                         name: "FK_Products_TechCompanies_TechCompanyId",
                         column: x => x.TechCompanyId,
                         principalTable: "TechCompanies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CartItems",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProductId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    CartId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CartItems", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_CartItems_Carts_CartId",
-                        column: x => x.CartId,
-                        principalTable: "Carts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_CartItems_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -755,11 +701,17 @@ namespace Repository.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DeliveryFee = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    RetryCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     PickupAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PickupDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeliveryPersonId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DeliveryPersonId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     OrderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DeliveryLatitude = table.Column<double>(type: "float", nullable: true),
+                    DeliveryLongitude = table.Column<double>(type: "float", nullable: true),
+                    Latitude = table.Column<double>(type: "float", nullable: true),
+                    Longitude = table.Column<double>(type: "float", nullable: true),
+                    IsOnline = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
                 },
@@ -777,13 +729,13 @@ namespace Repository.Migrations
                         column: x => x.DeliveryPersonId,
                         principalTable: "DeliveryPersons",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Deliveries_Orders_OrderId",
                         column: x => x.OrderId,
                         principalTable: "Orders",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -810,6 +762,45 @@ namespace Repository.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_OrderItems_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CartItems",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProductId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    PcAssemblyId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    IsCustomBuild = table.Column<bool>(type: "bit", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ProductTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    AssemblyFee = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    CartId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CartItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CartItems_Carts_CartId",
+                        column: x => x.CartId,
+                        principalTable: "Carts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CartItems_PCAssemblies_PcAssemblyId",
+                        column: x => x.PcAssemblyId,
+                        principalTable: "PCAssemblies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_CartItems_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
@@ -849,101 +840,34 @@ namespace Repository.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ChatRooms",
+                name: "DeliveryOffer",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OrderId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    MaintenanceId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    PCAssemblyId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    DeliveryId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ChatRooms", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ChatRooms_Deliveries_DeliveryId",
-                        column: x => x.DeliveryId,
-                        principalTable: "Deliveries",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_ChatRooms_Maintenances_MaintenanceId",
-                        column: x => x.MaintenanceId,
-                        principalTable: "Maintenances",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_ChatRooms_Orders_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "Orders",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_ChatRooms_PCAssemblies_PCAssemblyId",
-                        column: x => x.PCAssemblyId,
-                        principalTable: "PCAssemblies",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CommissionTransactions",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    OrderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    MaintenanceId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    PCAssemblyId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    DeliveryId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    ServiceType = table.Column<int>(type: "int", nullable: false),
-                    ServiceAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CommissionAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    VendorPayout = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PlatformFee = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TechCompanyId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    DeliveryPersonId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    DeliveryId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DeliveryPersonId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    PayoutDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    PayoutReference = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    RespondedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CommissionTransactions", x => x.Id);
+                    table.PrimaryKey("PK_DeliveryOffer", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CommissionTransactions_Deliveries_DeliveryId",
+                        name: "FK_DeliveryOffer_Deliveries_DeliveryId",
                         column: x => x.DeliveryId,
                         principalTable: "Deliveries",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_CommissionTransactions_DeliveryPersons_DeliveryPersonId",
-                        column: x => x.DeliveryPersonId,
-                        principalTable: "DeliveryPersons",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_CommissionTransactions_Maintenances_MaintenanceId",
-                        column: x => x.MaintenanceId,
-                        principalTable: "Maintenances",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_CommissionTransactions_Orders_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_CommissionTransactions_PCAssemblies_PCAssemblyId",
-                        column: x => x.PCAssemblyId,
-                        principalTable: "PCAssemblies",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_CommissionTransactions_TechCompanies_TechCompanyId",
-                        column: x => x.TechCompanyId,
-                        principalTable: "TechCompanies",
-                        principalColumn: "Id");
+                        name: "FK_DeliveryOffer_DeliveryPersons_DeliveryPersonId",
+                        column: x => x.DeliveryPersonId,
+                        principalTable: "DeliveryPersons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -966,77 +890,6 @@ namespace Repository.Migrations
                         name: "FK_DeliveryTechCompany_TechCompanies_TechCompaniesId",
                         column: x => x.TechCompaniesId,
                         principalTable: "TechCompanies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ChatMessages",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ChatRoomId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    SenderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    FileUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    FileSize = table.Column<long>(type: "bigint", nullable: true),
-                    IsRead = table.Column<bool>(type: "bit", nullable: false),
-                    ReadAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ReplyToMessageId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ChatMessages", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ChatMessages_AspNetUsers_SenderId",
-                        column: x => x.SenderId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ChatMessages_ChatMessages_ReplyToMessageId",
-                        column: x => x.ReplyToMessageId,
-                        principalTable: "ChatMessages",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_ChatMessages_ChatRooms_ChatRoomId",
-                        column: x => x.ChatRoomId,
-                        principalTable: "ChatRooms",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ChatParticipants",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ChatRoomId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Role = table.Column<int>(type: "int", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    LastSeen = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsTyping = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ChatParticipants", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ChatParticipants_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ChatParticipants_ChatRooms_ChatRoomId",
-                        column: x => x.ChatRoomId,
-                        principalTable: "ChatRooms",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -1091,6 +944,11 @@ namespace Repository.Migrations
                 column: "CartId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CartItems_PcAssemblyId",
+                table: "CartItems",
+                column: "PcAssemblyId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CartItems_ProductId",
                 table: "CartItems",
                 column: "ProductId");
@@ -1113,81 +971,6 @@ namespace Repository.Migrations
                 column: "SubCategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChatMessages_ChatRoomId",
-                table: "ChatMessages",
-                column: "ChatRoomId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatMessages_ReplyToMessageId",
-                table: "ChatMessages",
-                column: "ReplyToMessageId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatMessages_SenderId",
-                table: "ChatMessages",
-                column: "SenderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatParticipants_ChatRoomId",
-                table: "ChatParticipants",
-                column: "ChatRoomId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatParticipants_UserId",
-                table: "ChatParticipants",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatRooms_DeliveryId",
-                table: "ChatRooms",
-                column: "DeliveryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatRooms_MaintenanceId",
-                table: "ChatRooms",
-                column: "MaintenanceId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatRooms_OrderId",
-                table: "ChatRooms",
-                column: "OrderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatRooms_PCAssemblyId",
-                table: "ChatRooms",
-                column: "PCAssemblyId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CommissionTransactions_DeliveryId",
-                table: "CommissionTransactions",
-                column: "DeliveryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CommissionTransactions_DeliveryPersonId",
-                table: "CommissionTransactions",
-                column: "DeliveryPersonId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CommissionTransactions_MaintenanceId",
-                table: "CommissionTransactions",
-                column: "MaintenanceId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CommissionTransactions_OrderId",
-                table: "CommissionTransactions",
-                column: "OrderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CommissionTransactions_PCAssemblyId",
-                table: "CommissionTransactions",
-                column: "PCAssemblyId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_CommissionTransactions_TechCompanyId",
-                table: "CommissionTransactions",
-                column: "TechCompanyId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Customers_RoleId",
                 table: "Customers",
                 column: "RoleId");
@@ -1197,6 +980,11 @@ namespace Repository.Migrations
                 table: "Customers",
                 column: "UserId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Deliveries_CreatedAt",
+                table: "Deliveries",
+                column: "CreatedAt");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Deliveries_CustomerId",
@@ -1213,6 +1001,26 @@ namespace Repository.Migrations
                 table: "Deliveries",
                 column: "OrderId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Deliveries_Status",
+                table: "Deliveries",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeliveryOffer_DeliveryId",
+                table: "DeliveryOffer",
+                column: "DeliveryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeliveryOffer_DeliveryPersonId",
+                table: "DeliveryOffer",
+                column: "DeliveryPersonId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeliveryOffer_ExpiryTime",
+                table: "DeliveryOffer",
+                column: "ExpiryTime");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DeliveryPersons_RoleId",
@@ -1326,11 +1134,6 @@ namespace Repository.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TechCompanies_CommissionPlanId",
-                table: "TechCompanies",
-                column: "CommissionPlanId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_TechCompanies_RoleId",
                 table: "TechCompanies",
                 column: "RoleId");
@@ -1391,13 +1194,7 @@ namespace Repository.Migrations
                 name: "CategorySubCategories");
 
             migrationBuilder.DropTable(
-                name: "ChatMessages");
-
-            migrationBuilder.DropTable(
-                name: "ChatParticipants");
-
-            migrationBuilder.DropTable(
-                name: "CommissionTransactions");
+                name: "DeliveryOffer");
 
             migrationBuilder.DropTable(
                 name: "DeliveryTechCompany");
@@ -1421,16 +1218,13 @@ namespace Repository.Migrations
                 name: "Carts");
 
             migrationBuilder.DropTable(
-                name: "ChatRooms");
-
-            migrationBuilder.DropTable(
-                name: "WishLists");
-
-            migrationBuilder.DropTable(
                 name: "Deliveries");
 
             migrationBuilder.DropTable(
                 name: "PCAssemblies");
+
+            migrationBuilder.DropTable(
+                name: "WishLists");
 
             migrationBuilder.DropTable(
                 name: "DeliveryPersons");
@@ -1470,9 +1264,6 @@ namespace Repository.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
-                name: "CommissionPlans");
         }
     }
 }
