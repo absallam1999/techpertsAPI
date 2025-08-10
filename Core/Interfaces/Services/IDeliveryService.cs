@@ -25,6 +25,6 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<DeliveryDTO>>> GetAvailableDeliveriesAsync();
         Task<GeneralResponse<DeliveryDTO>> AcceptDeliveryAsync(string deliveryId, string deliveryPersonId);
         Task<GeneralResponse<DeliveryDTO>> AssignDeliveryToNearestAsync(string deliveryId, List<Delivery> availableDeliveryPersons, int takeNearest , int offerExpiryMinutes);
-
+        Task<Delivery> CreateDeliveryForOrderAsync(Order order, double? latitude, double? longitude, string customerId);
     }
 }

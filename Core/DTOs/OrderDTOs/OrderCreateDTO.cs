@@ -10,7 +10,7 @@ namespace Core.DTOs.OrderDTOs
     {
         public string CustomerId { get; set; }
 
-        public string DeliveryId { get; set; }
+        //public string DeliveryId { get; set; }
 
         public double? DeliveryLatitude { get; set; }
         public double? DeliveryLongitude { get; set; }

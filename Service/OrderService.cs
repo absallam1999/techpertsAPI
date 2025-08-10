@@ -5,6 +5,7 @@ using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Utilities;
+using Microsoft.EntityFrameworkCore;
 using Service.Utilities;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
+using TechpertsSolutions.Repository.Data;
 
 namespace Service
 {
@@ -21,8 +23,9 @@ namespace Service
         private readonly IRepository<Delivery> _deliveryRepo;
         private readonly IRepository<DeliveryPerson> _deliveryPersonRepo;
         private readonly IRepository<DeliveryOffer> _deliveryOfferRepo;
-        private readonly IDeliveryService _deliveryService;
         private readonly IRepository<OrderHistory> _orderHistoryRepo;
+        private readonly TechpertsContext _dbContext;
+        private readonly IDeliveryService _deliveryService;
         private readonly INotificationService _notificationService;
 
         public OrderService(
@@ -32,7 +35,9 @@ namespace Service
             IRepository<DeliveryPerson> deliveryPersonRepo,
             IRepository<DeliveryOffer> deliveryOfferRepo,
             INotificationService notificationService,
-            IDeliveryService deliveryService)
+            IDeliveryService deliveryService,
+            TechpertsContext dbContext
+            )
         {
             _orderRepo = orderRepo;
             _orderHistoryRepo = orderHistoryRepo;
@@ -41,6 +46,7 @@ namespace Service
             _deliveryOfferRepo = deliveryOfferRepo;
             _deliveryService = deliveryService;
             _notificationService = notificationService;
+            _dbContext = dbContext;
         }
 
 
@@ -346,6 +352,300 @@ namespace Service
         //    }
         //}
 
+        //public async Task<GeneralResponse<OrderReadDTO>> CreateOrderAsync(OrderCreateDTO dto)
+        //{
+        //    if (dto == null)
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Order data cannot be null.",
+        //            Data = null
+        //        };
+
+        //    if (string.IsNullOrWhiteSpace(dto.CustomerId))
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Customer ID is required.",
+        //            Data = null
+        //        };
+
+        //    if (!Guid.TryParse(dto.CustomerId, out _))
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Invalid Customer ID format. Expected GUID format.",
+        //            Data = null
+        //        };
+
+        //    if (dto.OrderItems == null || !dto.OrderItems.Any())
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Order must contain at least one item.",
+        //            Data = null
+        //        };
+
+        //    try
+        //    {
+        //        Delivery delivery = null;
+        //        if (!string.IsNullOrEmpty(dto.DeliveryId))
+        //        {
+        //            delivery = await _deliveryRepo.GetByIdAsync(dto.DeliveryId);
+        //            if (delivery == null)
+        //                throw new Exception($"Delivery with id {dto.DeliveryId} not found.");
+        //        }
+
+        //        var order = OrderMapper.ToEntity(dto);
+        //        order.TotalAmount = order.OrderItems.Sum(i => i.ItemTotal);
+
+        //        var orderHistory = await GetOrCreateOrderHistoryAsync(dto.CustomerId);
+        //        order.OrderHistoryId = orderHistory.Id;
+
+        //        await _orderRepo.AddAsync(order);
+        //        await _orderRepo.SaveChangesAsync();
+
+        //        if (delivery != null)
+        //        {
+        //            delivery.OrderId = order.Id;
+        //        }
+        //        else
+        //        {
+        //            delivery = new Delivery
+        //            {
+        //                TrackingNumber = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper(),
+        //                CustomerId = dto.CustomerId,
+        //                OrderId = order.Id,
+        //                DeliveryLatitude = dto.DeliveryLatitude,
+        //                DeliveryLongitude = dto.DeliveryLongitude,
+        //                Status = DeliveryStatus.Pending,
+        //                RetryCount = 0,
+        //                CreatedAt = DateTime.UtcNow
+        //            };
+        //            await _deliveryRepo.AddAsync(delivery);
+        //        }
+
+        //        await _deliveryRepo.SaveChangesAsync();
+
+        //        await _notificationService.SendNotificationToRoleAsync(
+        //            "Admin",
+        //            $"New order #{order.Id} has been created by customer {order.CustomerId}",
+        //            NotificationType.OrderCreated,
+        //            order.Id,
+        //            "Order"
+        //        );
+
+        //        await _notificationService.SendNotificationToRoleAsync(
+        //            "Delivery",
+        //            $"New delivery #{delivery.TrackingNumber} is available for assignment.",
+        //            NotificationType.DeliveryAssigned,
+        //            delivery.Id,
+        //            "Delivery"
+        //        );
+
+        //        await _notificationService.SendNotificationToRoleAsync(
+        //            "TechCompany",
+        //            $"New order #{order.Id} has been created by customer {order.CustomerId}",
+        //            NotificationType.OrderCreated,
+        //            order.Id,
+        //            "Order"
+        //        );
+
+        //        if (delivery.DeliveryLatitude.HasValue && delivery.DeliveryLongitude.HasValue)
+        //        {
+        //            var availableDriversResponse = await _deliveryService.GetAvailableDeliveriesAsync();
+
+        //            if (availableDriversResponse.Success && availableDriversResponse.Data != null)
+        //            {
+        //                var availableDrivers = availableDriversResponse.Data
+        //                    .Where(d => d.Latitude.HasValue && d.Longitude.HasValue && d.IsOnline)
+        //                    .Select(d => new Delivery
+        //                    {
+        //                        Id = d.Id,
+        //                        Latitude = d.Latitude,
+        //                        Longitude = d.Longitude,
+        //                        IsOnline = d.IsOnline,
+        //                        DeliveryPerson = new DeliveryPerson
+        //                        {
+        //                            Id = d.DeliveryPersonId,
+        //                            UserId = d.DeliveryPerson.User.Id
+        //                        }
+        //                    })
+        //                    .ToList();
+
+        //                await _deliveryService.AssignDeliveryToNearestAsync(delivery.Id, availableDrivers, 3, 3);
+        //            }
+        //        }
+
+        //        var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
+        //            o => o.Id == order.Id,
+        //            includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
+
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = true,
+        //            Message = "Order has been created successfully and sent to Delivery.",
+        //            Data = OrderMapper.ToReadDTO(createdOrder)
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = $"An unexpected error occurred while creating the order. {ex.Message}",
+        //            Data = null
+        //        };
+        //    }
+        //}
+
+        //public async Task<GeneralResponse<OrderReadDTO>> CreateOrderAsync(OrderCreateDTO dto)
+        //{
+        //    if (dto == null)
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Order data cannot be null.",
+        //            Data = null
+        //        };
+
+        //    if (string.IsNullOrWhiteSpace(dto.CustomerId))
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Customer ID is required.",
+        //            Data = null
+        //        };
+
+        //    if (!Guid.TryParse(dto.CustomerId, out _))
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Invalid Customer ID format. Expected GUID format.",
+        //            Data = null
+        //        };
+
+        //    if (dto.OrderItems == null || !dto.OrderItems.Any())
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Order must contain at least one item.",
+        //            Data = null
+        //        };
+
+        //    try
+        //    {
+        //        // Begin a transaction (adjust if your repository supports it, otherwise use DbContext transaction)
+        //        using (var transaction = await _orderRepo.BeginTransactionAsync())
+        //        {
+        //            // 1. Create the Order entity from DTO
+        //            var order = OrderMapper.ToEntity(dto);
+        //            order.TotalAmount = order.OrderItems.Sum(i => i.ItemTotal);
+
+        //            // Get or create OrderHistory for the customer
+        //            var orderHistory = await GetOrCreateOrderHistoryAsync(dto.CustomerId);
+        //            order.OrderHistoryId = orderHistory.Id;
+
+        //            // Save Order
+        //            await _orderRepo.AddAsync(order);
+        //            await _orderRepo.SaveChangesAsync();
+
+        //            // 2. Create Delivery linked to newly created Order
+        //            var delivery = new Delivery
+        //            {
+        //                TrackingNumber = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper(),
+        //                CustomerId = dto.CustomerId,
+        //                OrderId = order.Id,
+        //                DeliveryLatitude = dto.DeliveryLatitude,
+        //                DeliveryLongitude = dto.DeliveryLongitude,
+        //                Status = DeliveryStatus.Pending,
+        //                RetryCount = 0,
+        //                CreatedAt = DateTime.UtcNow
+        //            };
+
+        //            await _deliveryRepo.AddAsync(delivery);
+        //            await _deliveryRepo.SaveChangesAsync();
+
+        //            // 3. Assign delivery to nearest available drivers if location exists
+        //            if (delivery.DeliveryLatitude.HasValue && delivery.DeliveryLongitude.HasValue)
+        //            {
+        //                var availableDriversResponse = await _deliveryService.GetAvailableDeliveriesAsync();
+
+        //                if (availableDriversResponse.Success && availableDriversResponse.Data != null)
+        //                {
+        //                    var availableDrivers = availableDriversResponse.Data
+        //                        .Where(d => d.Latitude.HasValue && d.Longitude.HasValue && d.IsOnline)
+        //                        .Select(d => new Delivery
+        //                        {
+        //                            Id = d.Id,
+        //                            Latitude = d.Latitude,
+        //                            Longitude = d.Longitude,
+        //                            IsOnline = d.IsOnline,
+        //                            DeliveryPerson = new DeliveryPerson
+        //                            {
+        //                                Id = d.DeliveryPersonId,
+        //                                UserId = d.DeliveryPerson.User.Id
+        //                            }
+        //                        })
+        //                        .ToList();
+
+        //                    await _deliveryService.AssignDeliveryToNearestAsync(delivery.Id, availableDrivers, 3, 3);
+        //                }
+        //            }
+
+        //            // 4. Send notifications about new order and delivery
+        //            await _notificationService.SendNotificationToRoleAsync(
+        //                "Admin",
+        //                $"New order #{order.Id} has been created by customer {order.CustomerId}",
+        //                NotificationType.OrderCreated,
+        //                order.Id,
+        //                "Order"
+        //            );
+
+        //            await _notificationService.SendNotificationToRoleAsync(
+        //                "Delivery",
+        //                $"New delivery #{delivery.TrackingNumber} is available for assignment.",
+        //                NotificationType.DeliveryAssigned,
+        //                delivery.Id,
+        //                "Delivery"
+        //            );
+
+        //            await _notificationService.SendNotificationToRoleAsync(
+        //                "TechCompany",
+        //                $"New order #{order.Id} has been created by customer {order.CustomerId}",
+        //                NotificationType.OrderCreated,
+        //                order.Id,
+        //                "Order"
+        //            );
+
+        //            // 5. Commit the transaction only after everything is successful
+        //            await transaction.CommitAsync();
+
+        //            // 6. Reload order with related data for returning
+        //            var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
+        //                o => o.Id == order.Id,
+        //                includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory,Delivery,Delivery.DeliveryPerson,Delivery.DeliveryPerson.User"
+        //            );
+
+        //            return new GeneralResponse<OrderReadDTO>
+        //            {
+        //                Success = true,
+        //                Message = "Order has been created successfully and sent to Delivery.",
+        //                Data = OrderMapper.ToReadDTO(createdOrder)
+        //            };
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = $"An unexpected error occurred while creating the order. {ex.Message}",
+        //            Data = null
+        //        };
+        //    }
+        //}
+
         public async Task<GeneralResponse<OrderReadDTO>> CreateOrderAsync(OrderCreateDTO dto)
         {
             if (dto == null)
@@ -382,13 +682,7 @@ namespace Service
 
             try
             {
-                Delivery delivery = null;
-                if (!string.IsNullOrEmpty(dto.DeliveryId))
-                {
-                    delivery = await _deliveryRepo.GetByIdAsync(dto.DeliveryId);
-                    if (delivery == null)
-                        throw new Exception($"Delivery with id {dto.DeliveryId} not found.");
-                }
+                await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
                 var order = OrderMapper.ToEntity(dto);
                 order.TotalAmount = order.OrderItems.Sum(i => i.ItemTotal);
@@ -399,81 +693,79 @@ namespace Service
                 await _orderRepo.AddAsync(order);
                 await _orderRepo.SaveChangesAsync();
 
-                if (delivery != null)
-                {
-                    delivery.OrderId = order.Id;
-                }
-                else
-                {
-                    delivery = new Delivery
-                    {
-                        TrackingNumber = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper(),
-                        CustomerId = dto.CustomerId,
-                        OrderId = order.Id,
-                        DeliveryLatitude = dto.DeliveryLatitude,
-                        DeliveryLongitude = dto.DeliveryLongitude,
-                        Status = DeliveryStatus.Pending,
-                        RetryCount = 0,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    await _deliveryRepo.AddAsync(delivery);
-                }
+                var delivery = await _deliveryService.CreateDeliveryForOrderAsync(order, dto.DeliveryLatitude, dto.DeliveryLongitude, dto.CustomerId);
 
-                await _deliveryRepo.SaveChangesAsync();
+                //var delivery = new Delivery
+                //{
+                //    TrackingNumber = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper(),
+                //    CustomerId = dto.CustomerId,
+                //    OrderId = order.Id,
+                //    DeliveryLatitude = dto.DeliveryLatitude,
+                //    DeliveryLongitude = dto.DeliveryLongitude,
+                //    Status = DeliveryStatus.Pending,
+                //    RetryCount = 0,
+                //    CreatedAt = DateTime.UtcNow
+                //};
 
-                await _notificationService.SendNotificationToRoleAsync(
-                    "Admin",
-                    $"New order #{order.Id} has been created by customer {order.CustomerId}",
-                    NotificationType.OrderCreated,
-                    order.Id,
-                    "Order"
-                );
+                //await _deliveryRepo.AddAsync(delivery);
+                //await _deliveryRepo.SaveChangesAsync();
 
-                await _notificationService.SendNotificationToRoleAsync(
-                    "Delivery",
-                    $"New delivery #{delivery.TrackingNumber} is available for assignment.",
-                    NotificationType.DeliveryAssigned,
-                    delivery.Id,
-                    "Delivery"
-                );
+                //if (delivery.DeliveryLatitude.HasValue && delivery.DeliveryLongitude.HasValue)
+                //{
+                //    var availableDriversResponse = await _deliveryService.GetAvailableDeliveriesAsync();
 
-                await _notificationService.SendNotificationToRoleAsync(
-                    "TechCompany",
-                    $"New order #{order.Id} has been created by customer {order.CustomerId}",
-                    NotificationType.OrderCreated,
-                    order.Id,
-                    "Order"
-                );
+                //    if (availableDriversResponse.Success && availableDriversResponse.Data != null)
+                //    {
+                //        var availableDrivers = availableDriversResponse.Data
+                //            .Where(d => d.Latitude.HasValue && d.Longitude.HasValue && d.IsOnline)
+                //            .Select(d => new Delivery
+                //            {
+                //                Id = d.Id,
+                //                Latitude = d.Latitude,
+                //                Longitude = d.Longitude,
+                //                IsOnline = d.IsOnline,
+                //                DeliveryPerson = new DeliveryPerson
+                //                {
+                //                    Id = d.DeliveryPersonId,
+                //                    UserId = d.DeliveryPerson.User.Id
+                //                }
+                //            })
+                //            .ToList();
 
-                if (delivery.DeliveryLatitude.HasValue && delivery.DeliveryLongitude.HasValue)
-                {
-                    var availableDriversResponse = await _deliveryService.GetAvailableDeliveriesAsync();
+                //        await _deliveryService.AssignDeliveryToNearestAsync(delivery.Id, availableDrivers, 3, 3);
+                //    }
+                //}
 
-                    if (availableDriversResponse.Success && availableDriversResponse.Data != null)
-                    {
-                        var availableDrivers = availableDriversResponse.Data
-                            .Where(d => d.Latitude.HasValue && d.Longitude.HasValue && d.IsOnline)
-                            .Select(d => new Delivery
-                            {
-                                Id = d.Id,
-                                Latitude = d.Latitude,
-                                Longitude = d.Longitude,
-                                IsOnline = d.IsOnline,
-                                DeliveryPerson = new DeliveryPerson
-                                {
-                                    Id = d.DeliveryPersonId,
-                                    UserId = d.DeliveryPerson.User.Id
-                                }
-                            })
-                            .ToList();
+                //await _notificationService.SendNotificationToRoleAsync(
+                //    "Admin",
+                //    $"New order #{order.Id} has been created by customer {order.CustomerId}",
+                //    NotificationType.OrderCreated,
+                //    order.Id,
+                //    "Order"
+                //);
 
-                        await _deliveryService.AssignDeliveryToNearestAsync(delivery.Id, availableDrivers, 3, 3);
-                    }
-                }
+                //await _notificationService.SendNotificationToRoleAsync(
+                //    "Delivery",
+                //    $"New delivery #{delivery.TrackingNumber} is available for assignment.",
+                //    NotificationType.DeliveryAssigned,
+                //    delivery.Id,
+                //    "Delivery"
+                //);
+
+                //await _notificationService.SendNotificationToRoleAsync(
+                //    "TechCompany",
+                //    $"New order #{order.Id} has been created by customer {order.CustomerId}",
+                //    NotificationType.OrderCreated,
+                //    order.Id,
+                //    "Order"
+                //);
+
+                await transaction.CommitAsync();
 
                 var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
                     o => o.Id == order.Id,
-                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
+                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory,Delivery,Delivery.DeliveryPerson,Delivery.DeliveryPerson.User"
+                );
 
                 return new GeneralResponse<OrderReadDTO>
                 {

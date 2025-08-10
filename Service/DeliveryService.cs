@@ -602,8 +602,7 @@ namespace Service
             try
             {
                 var deliveries = await _deliveryrepo.FindWithIncludesAsync(
-                d => d.IsOnline && d.DeliveryPersonId != null && d.DeliveryPerson.IsAvailable,
-                d => d.DeliveryPerson
+                d => d.IsOnline && d.DeliveryPersonId != null && d.DeliveryPerson.IsAvailable
                 );
 
                 return new GeneralResponse<IEnumerable<DeliveryDTO>>
@@ -956,6 +955,77 @@ namespace Service
             }
         }
 
+        public async Task<Delivery> CreateDeliveryForOrderAsync(Order order, double? latitude, double? longitude, string customerId)
+        {
+            var delivery = new Delivery
+            {
+                TrackingNumber = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper(),
+                CustomerId = customerId,
+                OrderId = order.Id,
+                DeliveryLatitude = latitude,
+                DeliveryLongitude = longitude,
+                Status = DeliveryStatus.Pending,
+                RetryCount = 0,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _deliveryrepo.AddAsync(delivery);
+            await _deliveryrepo.SaveChangesAsync();
+
+
+            if (delivery.DeliveryLatitude.HasValue && delivery.DeliveryLongitude.HasValue)
+            {
+                var availableDriversResponse = await GetAvailableDeliveriesAsync();
+
+                if (availableDriversResponse.Success && availableDriversResponse.Data != null)
+                {
+                    var availableDrivers = availableDriversResponse.Data
+                        .Where(d => d.Latitude.HasValue && d.Longitude.HasValue && d.IsOnline)
+                        .Select(d => new Delivery
+                        {
+                            Id = d.Id,
+                            Latitude = d.Latitude,
+                            Longitude = d.Longitude,
+                            IsOnline = d.IsOnline,
+                            DeliveryPerson = new DeliveryPerson
+                            {
+                                Id = d.DeliveryPersonId,
+                                UserId = d.DeliveryPerson.User.Id
+                            }
+                        })
+                        .ToList();
+
+                    await AssignDeliveryToNearestAsync(delivery.Id, availableDrivers, 3, 3);
+                }
+            }
+
+            await _notificationService.SendNotificationToRoleAsync(
+                "Admin",
+                $"New order #{order.Id} has been created by customer {order.CustomerId}",
+                NotificationType.OrderCreated,
+                order.Id,
+                "Order"
+            );
+
+            await _notificationService.SendNotificationToRoleAsync(
+                "Delivery",
+                $"New delivery #{delivery.TrackingNumber} is available for assignment.",
+                NotificationType.DeliveryAssigned,
+                delivery.Id,
+                "Delivery"
+            );
+
+            await _notificationService.SendNotificationToRoleAsync(
+                "TechCompany",
+                $"New order #{order.Id} has been created by customer {order.CustomerId}",
+                NotificationType.OrderCreated,
+                order.Id,
+                "Order"
+            );
+
+            return delivery;
+        }
+
         private double CalculateHaversineDistance(double lat1, double lon1, double lat2, double lon2)
         {
             const double R = 6371; // Earth's radius in km
@@ -971,6 +1041,6 @@ namespace Service
         }
 
         private double DegreesToRadians(double deg) => deg * (Math.PI / 180);
+
     }
 }
-    

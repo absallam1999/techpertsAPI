@@ -54,7 +54,7 @@ namespace Service.Utilities
                     ? item.PCAssembly?.Name ?? "Custom PC Build"
                     : item.Product?.Name ?? "Unknown Product",
                 Price = isCustom
-                    ? item.UnitPrice // Includes assembly fee
+                    ? item.UnitPrice
                     : item.Product?.Price ?? 0,
                 Quantity = item.Quantity,
                 ImageUrl = isCustom
@@ -65,7 +65,6 @@ namespace Service.Utilities
                     : item.Product?.Stock ?? 0,
                 IsCustomBuild = isCustom,
 
-                // ✅ New fields for custom builds
                 AssemblyFee = isCustom ? item.AssemblyFee : null,
                 ProductTotal = isCustom ? item.ProductTotal : null
             };
@@ -101,19 +100,20 @@ namespace Service.Utilities
             {
                 Id = order.Id ?? string.Empty,
                 CustomerId = order.CustomerId ?? string.Empty,
+                CustomerName = order.Customer?.User?.FullName ?? "Unknown Customer",
                 OrderDate = order.OrderDate,
                 TotalAmount = order.TotalAmount,
                 Status = order.Status,
+                DeliveryName = order.Delivery?.DeliveryPerson?.User?.FullName ?? "No Delivery Assigned",
                 OrderItems = order.OrderItems != null
                     ? order.OrderItems.Where(item => item != null)
-                                     .Select(MapToOrderItemReadDTO)
-                                     .Where(dto => dto != null)
-                                     .ToList()
+                                      .Select(MapToOrderItemReadDTO)
+                                      .Where(dto => dto != null)
+                                      .ToList()
                     : new List<OrderItemReadDTO>()
             };
         }
 
-   
         public static OrderItemReadDTO MapToOrderItemReadDTO(OrderItem orderItem)
         {
             if (orderItem == null)

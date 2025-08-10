@@ -1,6 +1,7 @@
 using Core.DTOs;
 using Core.DTOs.DeliveryPersonDTOs;
 using Core.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using TechpertsSolutions.Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
+    [Authorize(Roles = "Admin, DeliveryPerson")]
     [Route("api/[controller]")]
     [ApiController]
     public class DeliveryPersonController : ControllerBase
@@ -36,7 +38,6 @@ namespace TechpertsSolutions.Controllers
             return Ok(result);
         }
 
-        
         [HttpGet("available")]
         public async Task<IActionResult> GetAvailable()
         {

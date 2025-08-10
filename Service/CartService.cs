@@ -26,6 +26,7 @@ namespace Service
         private readonly IRepository<OrderItem> orderItemRepo;
         private readonly IRepository<PCAssembly> pcAssemblyRepo;
         private readonly TechpertsContext dbContext;
+        private readonly IDeliveryService deliveryService;
         private readonly IRepository<PCAssemblyItem> pcAssemblyItemRepo;
 
         public CartService(
@@ -37,6 +38,7 @@ namespace Service
             IRepository<OrderItem> _orderItemRepo,
             IRepository<PCAssembly> _pcAssemblyRepo,
             TechpertsContext _dbContext,
+            IDeliveryService _deliveryService,
             IRepository<PCAssemblyItem> _pcAssemblyItemRepo)
         {
             cartRepo = _cartRepo;
@@ -47,6 +49,7 @@ namespace Service
             orderItemRepo = _orderItemRepo;
             pcAssemblyRepo = _pcAssemblyRepo;
             dbContext = _dbContext;
+            deliveryService = _deliveryService;
             pcAssemblyItemRepo = _pcAssemblyItemRepo;
         }
 
@@ -521,9 +524,6 @@ namespace Service
             }
         }
 
-        
-        
-        
         private async Task<GeneralResponse<OrderReadDTO>> CheckoutCartAsync(
             string customerId, 
             List<string>? selectedProductIds = null, 
@@ -689,17 +689,17 @@ namespace Service
                 
                 if (!string.IsNullOrWhiteSpace(promoCode))
                 {
-                    
-                    
+                    /** @TODO: Handle if Promocode is Null or NOTEXIST **/
                 }
 
                 newOrder.TotalAmount = totalAmount;
 
-                
+
                 await orderRepo.AddAsync(newOrder);
                 await orderRepo.SaveChangesAsync();
 
-                
+                var delivery = await deliveryService.CreateDeliveryForOrderAsync(newOrder, null, null, customerId);
+
                 foreach (var cartItem in itemsToCheckout.ToList())
                 {
                     cart.CartItems?.Remove(cartItem);
@@ -707,26 +707,29 @@ namespace Service
                 }
                 await cartItemRepo.SaveChangesAsync();
 
-                
                 await transaction.CommitAsync();
 
-                var checkoutType = selectedProductIds != null ? "partial" : "full";
+                var createdOrder = await orderRepo.GetFirstOrDefaultAsync(
+                    o => o.Id == newOrder.Id,
+                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory,Delivery,Delivery.DeliveryPerson,Delivery.DeliveryPerson.User"
+                );
+
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = true,
-                    Message = $"? {checkoutType} order placed successfully! Order ID: {newOrder.Id}, Total Amount: ${totalAmount:F2}",
-                    Data = CartMapper.MapToOrderReadDTO(newOrder)
+                    Message = $"? Order placed successfully! Order ID: {newOrder.Id}, Total Amount: ${totalAmount:F2}",
+                    Data = CartMapper.MapToOrderReadDTO(createdOrder)
                 };
             }
             catch (Exception ex)
             {
-                
                 await transaction.RollbackAsync();
-                
+
+                var inner = ex.InnerException != null ? ex.InnerException.Message : "";
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
-                    Message = $"? Error during checkout: {ex.Message}",
+                    Message = $"? Error during checkout: {ex.Message} {inner}",
                     Data = null
                 };
             }

@@ -465,7 +465,7 @@ namespace Service
                 return new GeneralResponse<ProductDTO>
                 {
                     Success = true,
-                    Message = "Product created successfully and is pending approval.",
+                    Message = "Product created successfully.",
                     Data = ProductMapper.MapToProductDTO(finalProduct)
                 };
             }

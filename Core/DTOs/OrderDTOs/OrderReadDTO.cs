@@ -17,6 +17,5 @@ namespace Core.DTOs.OrderDTOs
         public decimal TotalAmount { get; set; }
         public OrderStatus Status { get; set; }
         public List<OrderItemReadDTO> OrderItems { get; set; } = new List<OrderItemReadDTO>();
-
     }
 }

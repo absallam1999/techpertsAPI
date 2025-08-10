@@ -49,7 +49,7 @@ namespace TechpertsSolutions.Core.Entities
         public string? PickupAddress { get; set; }
         public DateTime? PickupDate { get; set; }
 
-        public string DeliveryPersonId { get; set; }
+        public string? DeliveryPersonId { get; set; }
         public string? CustomerId { get; set; }
         public string OrderId { get; set; }
 
@@ -64,8 +64,7 @@ namespace TechpertsSolutions.Core.Entities
         public Order? Order { get; set; }
         public DeliveryPerson? DeliveryPerson { get; set; }
         public Customer? Customer { get; set; }
-        public List<DeliveryOffer> Offers { get; set; } = new();
-
+        public List<DeliveryOffer>? Offers { get; set; } = new List<DeliveryOffer>();
         public List<TechCompany>? TechCompanies { get; set; } = new List<TechCompany>();
     }
 }

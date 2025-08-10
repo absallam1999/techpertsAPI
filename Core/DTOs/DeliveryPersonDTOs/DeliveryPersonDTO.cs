@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
 
-namespace Core.DTOs.DeliveryDTOs
+namespace Core.DTOs.DeliveryPersonDTOs
 {
     public class DeliveryPersonDTO
     {
