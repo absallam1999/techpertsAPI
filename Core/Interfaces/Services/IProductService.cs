@@ -21,6 +21,16 @@ namespace Core.Interfaces.Services
             string? nameSearch = null,
             string? sortBy = null,
             bool sortDescending = false);
+        Task<GeneralResponse<PaginatedDTO<ProductCardDTO>>> GetAllTechCompanyProductAsync(
+                                                                   int pageNumber = 1,
+                                                                   int pageSize = 10,
+                                                   ProductPendingStatus? status = null,
+                                                   ProductCategory? categoryEnum = null,
+                                                           string? subCategoryName = null,
+                                                                string? nameSearch = null,
+                                                                   string? sortBy = null,
+                                                              bool sortDescending = false,
+                                                             string? techCompanyId = null);
 
         Task<GeneralResponse<ProductDTO>> GetByIdAsync(string id);
         Task<GeneralResponse<ProductDTO>> AddAsync(ProductCreateDTO dto, ProductCategory category, ProductPendingStatus status);

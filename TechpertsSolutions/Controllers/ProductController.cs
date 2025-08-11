@@ -194,6 +194,37 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
+        [HttpGet("tech-company")]
+        public async Task<IActionResult> GetTechCompanyProducts(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] ProductPendingStatus? status = null,
+            [FromQuery] ProductCategory? categoryEnum = null,
+            [FromQuery] string? subCategoryName = null,
+            [FromQuery] string? nameSearch = null,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] bool sortDescending = false,
+            [FromQuery] string? techCompanyId = null)
+        {
+            var result = await _productService.GetAllTechCompanyProductAsync(
+                pageNumber,
+                pageSize,
+                status,
+                categoryEnum,
+                subCategoryName,
+                nameSearch,
+                sortBy,
+                sortDescending,
+                techCompanyId
+            );
+
+            if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+
         [HttpDelete("{id}")]
         
         public async Task<IActionResult> DeleteProduct(string id)

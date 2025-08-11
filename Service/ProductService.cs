@@ -22,7 +22,7 @@ namespace Service
         private readonly IRepository<TechCompany> _techCompanyRepo;
         private readonly IFileService _fileService;
         private readonly INotificationService _notificationService;
-
+        
         public ProductService(IRepository<Product> productRepo,
             IRepository<Specification> specRepo,
             IRepository<Warranty> warrantyRepo,
@@ -147,6 +147,110 @@ namespace Service
                 };
             }
         }
+        public async Task<GeneralResponse<PaginatedDTO<ProductCardDTO>>> GetAllTechCompanyProductAsync(
+                                                                   int pageNumber = 1,
+                                                                   int pageSize = 10,
+                                                   ProductPendingStatus? status = null,
+                                                   ProductCategory? categoryEnum = null,
+                                                           string? subCategoryName = null,
+                                                                string? nameSearch = null,
+                                                                   string? sortBy = null,
+                                                              bool sortDescending = false,
+                                                             string? techCompanyId = null) // <-- New filter parameter
+        {
+            if (pageNumber < 1)
+            {
+                return new GeneralResponse<PaginatedDTO<ProductCardDTO>>
+                {
+                    Success = false,
+                    Message = "Page number must be greater than 0.",
+                    Data = null
+                };
+            }
+
+            if (pageSize < 1 || pageSize > 100)
+            {
+                return new GeneralResponse<PaginatedDTO<ProductCardDTO>>
+                {
+                    Success = false,
+                    Message = "Page size must be between 1 and 100.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var allProducts = (await _productRepo.GetAllWithIncludesAsync(
+                    p => p.Category,
+                    p => p.SubCategory,
+                    p => p.TechCompany,
+                    p => p.TechCompany.User,
+                    p => p.Specifications,
+                    p => p.Warranties)).AsQueryable();
+
+                if (status.HasValue)
+                    allProducts = allProducts.Where(p => p.status == status.Value);
+
+                if (categoryEnum.HasValue)
+                {
+                    var categoryName = categoryEnum.Value.GetStringValue();
+                    allProducts = allProducts.Where(p => p.Category != null && p.Category.Name == categoryName);
+                }
+
+                if (!string.IsNullOrWhiteSpace(subCategoryName))
+                    allProducts = allProducts.Where(p => p.SubCategory != null && p.SubCategory.Name == subCategoryName);
+
+                if (!string.IsNullOrWhiteSpace(nameSearch))
+                    allProducts = allProducts.Where(p => p.Name.Contains(nameSearch, StringComparison.OrdinalIgnoreCase));
+
+                if (!string.IsNullOrWhiteSpace(techCompanyId)) // <-- New filter logic
+                    allProducts = allProducts.Where(p => p.TechCompanyId == techCompanyId);
+
+                allProducts = sortBy?.ToLower() switch
+                {
+                    "price" => sortDescending ? allProducts.OrderByDescending(p => p.Price) : allProducts.OrderBy(p => p.Price),
+                    "name" => sortDescending ? allProducts.OrderByDescending(p => p.Name) : allProducts.OrderBy(p => p.Name),
+                    "stock" => sortDescending ? allProducts.OrderByDescending(p => p.Stock) : allProducts.OrderBy(p => p.Stock),
+                    "createdat" => sortDescending ? allProducts.OrderByDescending(p => p.CreatedAt) : allProducts.OrderBy(p => p.CreatedAt),
+                    _ => sortDescending ? allProducts.OrderByDescending(p => p.Name) : allProducts.OrderBy(p => p.Name)
+                };
+
+                var totalCount = allProducts.Count();
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+                var products = allProducts
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                var productDtos = products.Select(ProductMapper.MapToProductCard).ToList();
+
+                var paginatedResult = new PaginatedDTO<ProductCardDTO>
+                {
+                    Items = productDtos,
+                    TotalItems = totalCount,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
+
+                return new GeneralResponse<PaginatedDTO<ProductCardDTO>>
+                {
+                    Success = true,
+                    Message = "Products retrieved successfully.",
+                    Data = paginatedResult
+                };
+            }
+            catch (Exception)
+            {
+                return new GeneralResponse<PaginatedDTO<ProductCardDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving products.",
+                    Data = null
+                };
+            }
+        }
+
 
         public async Task<GeneralResponse<ProductDTO>> GetByIdAsync(string id)
         {
