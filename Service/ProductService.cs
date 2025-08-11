@@ -464,6 +464,7 @@ namespace Service
                     SubCategoryId = subCategoryEntity?.Id,
                     TechCompanyId = dto.TechCompanyId,
                     status = status,
+                    ImageUrl = dto.ImageUrl,
                     Image1Url = dto.Image1Url,
                     Image2Url = dto.Image2Url,
                     Image3Url = dto.Image3Url,
@@ -482,6 +483,8 @@ namespace Service
                     p => p.TechCompany.User,
                     p => p.Specifications,
                     p => p.Warranties);
+
+
 
                 // Add specifications if provided
                 if (dto.Specifications != null && dto.Specifications.Any())
@@ -561,7 +564,7 @@ namespace Service
                 // Send notification to admin about new pending product
                 await _notificationService.SendNotificationToRoleAsync(
                     "Admin",
-                    $"New product '{product.Name}' has been added and is pending approval.",
+                    $"New product '{product.Name}' has been added From {product.TechCompany.User.FullName} and is pending approval.",
                     NotificationType.ProductPending,
                     product.Id,
                     "Product"
@@ -920,7 +923,7 @@ namespace Service
 
             try
             {
-                var product = await _productRepo.GetByIdAsync(productId);
+                var product = await _productRepo.GetByIdWithIncludesAsync(productId, p => p.TechCompany);
                 if (product == null)
                 {
                     return new GeneralResponse<bool>
@@ -947,7 +950,7 @@ namespace Service
 
                 // Send notification to TechCompany about product approval
                 await _notificationService.SendNotificationAsync(
-                    product.TechCompanyId,
+                    product.TechCompany.UserId,
                     $"Your product '{product.Name}' has been approved by admin",
                     NotificationType.ProductApproved,
                     product.Id,

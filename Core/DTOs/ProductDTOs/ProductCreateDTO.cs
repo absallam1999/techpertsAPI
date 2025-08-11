@@ -46,7 +46,8 @@ namespace Core.DTOs.ProductDTOs
         [RegularExpression(@"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", 
             ErrorMessage = "TechCompany ID must be a valid GUID format")]
         public string TechCompanyId { get; set; } = null!;
-
+        public string? ImageUrl { get; set; }
+        //public List<string>? ImageUrls { get; set; }
         public string? Image1Url { get; set; }
         public string? Image2Url { get; set; }
         public string? Image3Url { get; set; }

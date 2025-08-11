@@ -321,6 +321,7 @@ namespace Service
                     CartId = cart.Id,
                     Quantity = itemDto.Quantity,
                     UnitPrice = pcAssemblyItem.UnitPrice, // Use the price from the PC Assembly item
+                    IsCustomBuild = itemDto.IsCustomBuild
                 };
                 await cartItemRepo.AddAsync(newProductItem);
             }
