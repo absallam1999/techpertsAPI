@@ -49,10 +49,8 @@ namespace Service.Utilities
             return new CartItemReadDTO
             {
                 Id = item.Id ?? string.Empty,
-                ProductId = isCustom ? item.PcAssemblyId : item.ProductId,
-                ProductName = isCustom
-                    ? item.PCAssembly?.Name ?? "Custom PC Build"
-                    : item.Product?.Name ?? "Unknown Product",
+                ProductId = item.ProductId,
+                ProductName = item.Product.Name ?? "Default Name",
                 Price = isCustom
                     ? item.UnitPrice
                     : item.Product?.Price ?? 0,

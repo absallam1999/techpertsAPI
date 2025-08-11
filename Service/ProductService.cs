@@ -156,7 +156,7 @@ namespace Service
                                                                 string? nameSearch = null,
                                                                    string? sortBy = null,
                                                               bool sortDescending = false,
-                                                             string? techCompanyId = null) // <-- New filter parameter
+                                                             string? techCompanyId = null)
         {
             if (pageNumber < 1)
             {
