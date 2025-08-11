@@ -142,7 +142,9 @@ namespace Service.Utilities
                 SubCategoryId = product.SubCategoryId,
                 SubCategoryName = product.SubCategory?.Name,
                 DiscountPrice = product.DiscountPrice,
-                Status = product.status.ToString()
+                Status = product.status.ToString(),
+                TechCompanyId = product.TechCompanyId,
+                TechCompanyName = product.TechCompany?.User?.FullName ?? string.Empty,
             };
         }
 
@@ -176,6 +178,8 @@ namespace Service.Utilities
                 SubCategoryId = product.SubCategoryId,
                 SubCategoryName = product.SubCategory?.Name ?? string.Empty,
                 CategoryEnum = categoryEnum,
+                TechCompanyId = product.TechCompanyId,
+                TechCompanyName = product.TechCompany?.User?.FullName ?? string.Empty,
                 Specifications = product.Specifications?.Select(s => new SpecificationDTO
                 {
                     Id = s.Id,

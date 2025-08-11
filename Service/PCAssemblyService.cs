@@ -842,14 +842,14 @@ namespace Service
                             return false;
                     }
 
-                    var caseForGpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Case");
-                    if (caseForGpu != null)
-                    {
-                        var caseGpuLength = int.Parse(GetSpec(caseForGpu, "MaxGPULength") ?? "0");
-                        var gpuLength = int.Parse(candidateSpecs.GetValueOrDefault("Length") ?? "0");
-                        if (gpuLength > caseGpuLength)
-                            return false;
-                    }
+                    //var caseForGpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Case");
+                    //if (caseForGpu != null)
+                    //{
+                    //    var caseGpuLength = int.Parse(GetSpec(caseForGpu, "MaxGPULength") ?? "0");
+                    //    var gpuLength = int.Parse(candidateSpecs.GetValueOrDefault("Length") ?? "0");
+                    //    if (gpuLength > caseGpuLength)
+                    //        return false;
+                    //}
                     break;
 
                 case "Storage":

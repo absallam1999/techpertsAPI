@@ -80,6 +80,7 @@ namespace Service
                     p => p.Category, 
                     p => p.SubCategory, 
                     p => p.TechCompany,
+                    p => p.TechCompany.User,
                     p => p.Specifications,
                     p => p.Warranties)).AsQueryable();
 

@@ -26,7 +26,7 @@ namespace Service.Utilities
                 OrderDate = order.OrderDate,
                 Status = order.Status,
                 TotalAmount = order.TotalAmount,
-                DeliveryName = order.Delivery.DeliveryPerson.User.FullName,
+                DeliveryName = order.Delivery?.DeliveryPerson?.User?.FullName?? "UnKnown Delivery",
                 OrderItems = order.OrderItems != null 
                     ? order.OrderItems.Select(ToItemReadDTO).ToList() 
                     : new List<OrderItemReadDTO>()
