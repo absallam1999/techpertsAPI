@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -130,11 +131,8 @@ namespace TechpertsSolutions
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
                 };
             });
-
-            //builder.Services.AddScoped<INotificationService, NotificationService>();
             
             var app = builder.Build();
-
             
             using (var scope = app.Services.CreateScope())
             {
@@ -155,15 +153,31 @@ namespace TechpertsSolutions
             }
             app.UseDeveloperExceptionPage();
 
-            app.UseStaticFiles();
-     
-            app.UseCors("AllowAll");
             app.UseHttpsRedirection();
-            app.UseAuthentication();
+            app.UseCors("AllowAll");
 
+            app.UseAuthentication();
             app.UseAuthorization();
-            
-            // Add SignalR hubs
+
+            app.UseStaticFiles();
+
+            var assetsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "assets");
+
+            if (Directory.Exists(assetsPath))
+            {
+                var subFolders = Directory.GetDirectories(assetsPath);
+
+                foreach (var folder in subFolders)
+                {
+                    var folderName = Path.GetFileName(folder);
+                    app.UseStaticFiles(new StaticFileOptions
+                    {
+                        FileProvider = new PhysicalFileProvider(folder),
+                        RequestPath = "/" + folderName
+                    });
+                }
+            }
+
             app.MapHub<NotificationHub>("/notificationHub");
             //app.MapHub<ChatHub>("/chatHub");
 

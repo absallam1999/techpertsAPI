@@ -465,10 +465,7 @@ namespace Service
                     TechCompanyId = dto.TechCompanyId,
                     status = status,
                     ImageUrl = dto.ImageUrl,
-                    Image1Url = dto.Image1Url,
-                    Image2Url = dto.Image2Url,
-                    Image3Url = dto.Image3Url,
-                    Image4Url = dto.Image4Url
+                    ImagesURLS = dto.ImageUrls
                 };
 
                 await _productRepo.AddAsync(product);
