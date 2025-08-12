@@ -47,11 +47,7 @@ namespace Core.DTOs.ProductDTOs
             ErrorMessage = "TechCompany ID must be a valid GUID format")]
         public string TechCompanyId { get; set; } = null!;
         public string? ImageUrl { get; set; }
-        //public List<string>? ImageUrls { get; set; }
-        public string? Image1Url { get; set; }
-        public string? Image2Url { get; set; }
-        public string? Image3Url { get; set; }
-        public string? Image4Url { get; set; }
+        public List<string>? ImageUrls { get; set; }
 
         public List<SpecificationCreateDTO>? Specifications { get; set; }
         public List<WarrantyCreateDTO>? Warranties { get; set; }
