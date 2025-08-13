@@ -42,7 +42,6 @@ namespace TechpertsSolutions.Controllers
             }
             return Ok(response);
         }
-
         [HttpPut]
         public async Task<IActionResult> UpdateUserProfile([FromForm] UserProfileUpdateDTO dto)
         {
@@ -57,7 +56,7 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var response = await _userManagementService.UpdateUserProfileAsync(userId, dto);
+            var response = await _userManagementService.UpdateUserProfileAsync(userId,dto);
             if (!response.Success)
             {
                 return BadRequest(response);

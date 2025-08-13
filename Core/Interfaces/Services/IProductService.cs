@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Core.DTOs.ProductDTOs;
 using Microsoft.AspNetCore.Http;
+using TechpertsSolutions.Core.Entities;
 
 namespace Core.Interfaces.Services
 {
@@ -33,8 +34,8 @@ namespace Core.Interfaces.Services
                                                              string? techCompanyId = null);
 
         Task<GeneralResponse<ProductDTO>> GetByIdAsync(string id);
-        Task<GeneralResponse<ProductDTO>> AddAsync(ProductCreateDTO dto, ProductCategory category, ProductPendingStatus status);
-        Task<GeneralResponse<ProductDTO>> UpdateAsync(string id, ProductUpdateDTO dto, ProductCategory category, ProductPendingStatus status);
+        Task<GeneralResponse<ProductDTO>> AddAsync(ProductCreateDTO dto,ProductCreateWarSpecDTO warSpecDTO,ProductCategory category, ProductPendingStatus status);
+        Task<GeneralResponse<ProductDTO>> UpdateAsync(string id,ProductUpdateDTO dto,ProductUpdateWarSpecDTO warSpecDto,ProductCategory category,ProductPendingStatus status);
         Task<GeneralResponse<bool>> DeleteAsync(string id);
         Task<GeneralResponse<bool>> ApproveProductAsync(string productId);
         Task<GeneralResponse<bool>> RejectProductAsync(string productId, string reason);
@@ -51,7 +52,7 @@ namespace Core.Interfaces.Services
             string? sortBy = null,
             bool sortDescending = false);
 
-        Task<GeneralResponse<ImageUploadResponseDTO>> UploadProductImageAsync(IFormFile imageFile, string productId);
+        Task<GeneralResponse<ImageUploadResponseDTO>> UploadProductImageAsync(ProductCreateImageUploadDTO imageUploadDto, string productId);
         Task<GeneralResponse<bool>> DeleteProductImageAsync(string productId);
     }
 }

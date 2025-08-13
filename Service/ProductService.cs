@@ -1,14 +1,15 @@
+using Core.DTOs;
 using Core.DTOs.ProductDTOs;
-using TechpertsSolutions.Core.DTOs;
 using Core.Enums;
 using Core.Interfaces;
-using TechpertsSolutions.Core.Entities;
 using Core.Interfaces.Services;
-using Service.Utilities;
-using System.Linq;
 using Core.Utilities;
 using Microsoft.AspNetCore.Http;
-using Core.DTOs;
+using Microsoft.EntityFrameworkCore;
+using Service.Utilities;
+using System.Linq;
+using TechpertsSolutions.Core.DTOs;
+using TechpertsSolutions.Core.Entities;
 
 namespace Service
 {
@@ -314,7 +315,10 @@ namespace Service
             }
         }
 
-        public async Task<GeneralResponse<ProductDTO>> AddAsync(ProductCreateDTO dto, ProductCategory category, ProductPendingStatus status)
+        public async Task<GeneralResponse<ProductDTO>> AddAsync(ProductCreateDTO dto,
+                                                                 ProductCreateWarSpecDTO WarSpecDto,
+                                                                 ProductCategory category, 
+                                                                 ProductPendingStatus status)
         {
             
             if (dto == null)
@@ -453,6 +457,9 @@ namespace Service
                     };
                 }
 
+               
+
+                // Assign to product entity
                 var product = new Product
                 {
                     Name = dto.Name,
@@ -463,30 +470,16 @@ namespace Service
                     CategoryId = categoryEntity.Id,
                     SubCategoryId = subCategoryEntity?.Id,
                     TechCompanyId = dto.TechCompanyId,
-                    status = status,
-                    ImageUrl = dto.ImageUrl,
-                    ImagesURLS = dto.ImageUrls
+                    status = status
                 };
 
                 await _productRepo.AddAsync(product);
                 await _productRepo.SaveChangesAsync();
 
-                // Get the created product with all necessary includes for DTO mapping
-                var addedProduct = await _productRepo.GetByIdWithIncludesAsync(
-                    product.Id,
-                    p => p.Category,
-                    p => p.SubCategory,
-                    p => p.TechCompany,
-                    p => p.TechCompany.User,
-                    p => p.Specifications,
-                    p => p.Warranties);
-
-
-
                 // Add specifications if provided
-                if (dto.Specifications != null && dto.Specifications.Any())
+                if (WarSpecDto.Specifications != null && WarSpecDto.Specifications.Any())
                 {
-                    foreach (var specDto in dto.Specifications)
+                    foreach (var specDto in WarSpecDto.Specifications)
                     {
                         if (string.IsNullOrWhiteSpace(specDto.Key) || string.IsNullOrWhiteSpace(specDto.Value))
                         {
@@ -498,20 +491,19 @@ namespace Service
                             };
                         }
 
-                        var specification = new Specification
+                        await _specRepo.AddAsync(new Specification
                         {
                             Key = specDto.Key.Trim(),
                             Value = specDto.Value.Trim(),
                             ProductId = product.Id
-                        };
-                        await _specRepo.AddAsync(specification);
+                        });  
                     }
                 }
 
                 // Add warranties if provided
-                if (dto.Warranties != null && dto.Warranties.Any())
+                if (WarSpecDto.Warranties != null && WarSpecDto.Warranties.Any())
                 {
-                    foreach (var warrantyDto in dto.Warranties)
+                    foreach (var warrantyDto in WarSpecDto.Warranties)
                     {
                         if (string.IsNullOrWhiteSpace(warrantyDto.Type) || string.IsNullOrWhiteSpace(warrantyDto.Duration))
                         {
@@ -533,7 +525,8 @@ namespace Service
                             };
                         }
 
-                        var warranty = new Warranty
+                        
+                        await _warrantyRepo.AddAsync(new Warranty
                         {
                             Type = warrantyDto.Type.Trim(),
                             Duration = warrantyDto.Duration,
@@ -541,8 +534,7 @@ namespace Service
                             StartDate = warrantyDto.StartDate,
                             EndDate = warrantyDto.EndDate,
                             ProductId = product.Id
-                        };
-                        await _warrantyRepo.AddAsync(warranty);
+                        });
                     }
                 }
 
@@ -585,7 +577,11 @@ namespace Service
             }
         }
 
-        public async Task<GeneralResponse<ProductDTO>> UpdateAsync(string id, ProductUpdateDTO dto, ProductCategory category, ProductPendingStatus status)
+        public async Task<GeneralResponse<ProductDTO>> UpdateAsync(string id, 
+                                                                   ProductUpdateDTO dto,
+                                                                   ProductUpdateWarSpecDTO warSpecDto,
+                                                                   ProductCategory category, 
+                                                                   ProductPendingStatus status)
         {
             
             if (string.IsNullOrWhiteSpace(id))
@@ -721,10 +717,10 @@ namespace Service
                 }
 
                 // Update specifications if provided
-                if (dto.Specifications != null)
+                if (warSpecDto.Specifications != null)
                 {
                     // Validate specifications
-                    foreach (var specDto in dto.Specifications)
+                    foreach (var specDto in warSpecDto.Specifications)
                     {
                         if (string.IsNullOrWhiteSpace(specDto.Key) || string.IsNullOrWhiteSpace(specDto.Value))
                         {
@@ -745,7 +741,7 @@ namespace Service
                     }
 
                     // Add new specifications
-                    foreach (var specDto in dto.Specifications)
+                    foreach (var specDto in warSpecDto.Specifications)
                     {
                         var specification = new Specification
                         {
@@ -758,10 +754,10 @@ namespace Service
                 }
 
                 // Update warranties if provided
-                if (dto.Warranties != null)
+                if (warSpecDto.Warranties != null)
                 {
                     // Validate warranties
-                    foreach (var warrantyDto in dto.Warranties)
+                    foreach (var warrantyDto in warSpecDto.Warranties)
                     {
                         if (string.IsNullOrWhiteSpace(warrantyDto.Type) || string.IsNullOrWhiteSpace(warrantyDto.Duration))
                         {
@@ -792,7 +788,7 @@ namespace Service
                     }
 
                     // Add new warranties
-                    foreach (var warrantyDto in dto.Warranties)
+                    foreach (var warrantyDto in warSpecDto.Warranties)
                     {
                         var warranty = new Warranty
                         {
@@ -873,6 +869,7 @@ namespace Service
                         Data = false
                     };
                 }
+                await DeleteProductImageAsync(id);
 
                 _productRepo.Remove(product);
                 await _productRepo.SaveChangesAsync();
@@ -1173,7 +1170,7 @@ namespace Service
             {
                 var categoryName = categoryEnum.GetStringValue();
                 var products = await _productRepo.FindWithIncludesAsync(
-                    p => p.Category != null && p.Category.Name == categoryName && p.status == ProductPendingStatus.Approved,
+                    p => p.Category != null && EF.Functions.Like(p.Category.Name, categoryName) && p.status == ProductPendingStatus.Approved,
                     p => p.Category,
                     p => p.SubCategory,
                     p => p.Specifications,
@@ -1222,11 +1219,11 @@ namespace Service
             }
         }
 
-        public async Task<GeneralResponse<ImageUploadResponseDTO>> UploadProductImageAsync(IFormFile imageFile, string productId)
+        public async Task<GeneralResponse<ImageUploadResponseDTO>> UploadProductImageAsync(ProductCreateImageUploadDTO imageUploadDto, string productId)
         {
             try
             {
-                if (imageFile == null || imageFile.Length == 0)
+                if (imageUploadDto == null || imageUploadDto.ImageUrl == null || imageUploadDto.ImageUrl.Length == 0|| imageUploadDto.ImageUrls == null)
                 {
                     return new GeneralResponse<ImageUploadResponseDTO>
                     {
@@ -1235,8 +1232,26 @@ namespace Service
                         Data = null
                     };
                 }
+                // Upload main image
+                string? mainImagePath = null;
+                if (imageUploadDto.ImageUrl != null)
+                {
+                    mainImagePath = await _fileService.UploadImageAsync(imageUploadDto.ImageUrl, "products");
+                }
 
-                if (!_fileService.IsValidImageFile(imageFile))
+                // Upload additional images
+                List<string> imagePaths = new();
+                if (imageUploadDto.ImageUrls != null)
+                {
+                    foreach (var file in imageUploadDto.ImageUrls)
+                    {
+                        var path = await _fileService.UploadImageAsync(file, "products");
+                        imagePaths.Add(path);
+                    }
+                }
+
+
+                if (!_fileService.IsValidImageFile(imageUploadDto.ImageUrl))
                 {
                     return new GeneralResponse<ImageUploadResponseDTO>
                     {
@@ -1246,7 +1261,22 @@ namespace Service
                     };
                 }
 
-                
+                if (imageUploadDto.ImageUrls != null)
+                {
+                    foreach (var url in imageUploadDto.ImageUrls)
+                    {
+                        if (!_fileService.IsValidImageFile(url))
+                        {
+                            return new GeneralResponse<ImageUploadResponseDTO>
+                            {
+                                Success = false,
+                                Message = "Invalid image file. Please upload a valid image (jpg, jpeg, png, gif, bmp, webp) with size less than 5MB",
+                                Data = null
+                            };
+                        }
+                    }
+                }
+
                 var product = await _productRepo.GetByIdAsync(productId);
                 if (product == null)
                 {
@@ -1258,12 +1288,8 @@ namespace Service
                     };
                 }
 
-                
-                var imagePath = await _fileService.UploadImageAsync(imageFile, "products");
-                var imageUrl = _fileService.GetImageUrl(imagePath);
-
-                
-                product.ImageUrl = imagePath;
+                product.ImageUrl = mainImagePath;
+                product.ImagesURLS = imagePaths;
                 _productRepo.Update(product);
                 await _productRepo.SaveChangesAsync();
 
@@ -1275,8 +1301,9 @@ namespace Service
                     {
                         Success = true,
                         Message = "Image uploaded successfully",
-                        ImagePath = imagePath,
-                        ImageUrl = imageUrl
+                        ImagePath = mainImagePath,
+                        ImageUrl = mainImagePath,
+                        ImagePaths = imagePaths
                     }
                 };
             }
@@ -1306,31 +1333,50 @@ namespace Service
                     };
                 }
 
-                if (string.IsNullOrEmpty(product.ImageUrl))
+                // Track if we deleted anything
+                bool deletedSomething = false;
+
+                // Delete main image if exists
+                if (!string.IsNullOrEmpty(product.ImageUrl))
                 {
-                    return new GeneralResponse<bool>
+                    var deletedMain = await _fileService.DeleteImageAsync(product.ImageUrl);
+                    if (deletedMain)
                     {
-                        Success = false,
-                        Message = "Product has no image to delete",
-                        Data = false
-                    };
+                        product.ImageUrl = null;
+                        deletedSomething = true;
+                    }
                 }
 
-                
-                var deleted = await _fileService.DeleteImageAsync(product.ImageUrl);
-                if (deleted)
+                // Delete additional images if exist
+                if (product.ImagesURLS != null && product.ImagesURLS.Any())
                 {
-                    
-                    product.ImageUrl = null;
+                    foreach (var imgPath in product.ImagesURLS)
+                    {
+                        await _fileService.DeleteImageAsync(imgPath);
+                    }
+                    product.ImagesURLS = [];
+                    deletedSomething = true;
+                }
+
+                // Save changes only if something was deleted
+                if (deletedSomething)
+                {
                     _productRepo.Update(product);
                     await _productRepo.SaveChangesAsync();
+
+                    return new GeneralResponse<bool>
+                    {
+                        Success = true,
+                        Message = "Product images deleted successfully",
+                        Data = true
+                    };
                 }
 
                 return new GeneralResponse<bool>
                 {
-                    Success = true,
-                    Message = "Product image deleted successfully",
-                    Data = true
+                    Success = false,
+                    Message = "No images found to delete",
+                    Data = false
                 };
             }
             catch (Exception ex)
@@ -1338,7 +1384,7 @@ namespace Service
                 return new GeneralResponse<bool>
                 {
                     Success = false,
-                    Message = $"Error deleting product image: {ex.Message}",
+                    Message = $"Error deleting product image(s): {ex.Message}",
                     Data = false
                 };
             }

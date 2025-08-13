@@ -27,7 +27,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPut("{id}/profile")]
-        public async Task<IActionResult> UpdateProfile(string id, [FromBody] UserProfileUpdateDTO dto)
+        public async Task<IActionResult> UpdateProfile(string id, [FromForm] UserProfileUpdateDTO dto)
         {
             if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
             {
@@ -39,7 +39,7 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var response = await _userManagementService.UpdateProfileAsync(id, dto);
+            var response = await _userManagementService.UpdateProfileAsync(id,dto);
             if (!response.Success)
             {
                 return BadRequest(response);

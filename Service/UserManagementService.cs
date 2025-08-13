@@ -32,7 +32,7 @@ namespace Service
             _maintenanceRepository = maintenanceRepository;
         }
 
-        public async Task<GeneralResponse<string>> UpdateProfileAsync(string userId, UserProfileUpdateDTO dto)
+        public async Task<GeneralResponse<string>> UpdateProfileAsync(string userId,UserProfileUpdateDTO dto)
         {
             try
             {
