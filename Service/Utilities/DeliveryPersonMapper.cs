@@ -23,7 +23,11 @@ namespace Service.Utilities
                 VehicleImage = entity.VehicleImage,
                 AccountStatus = entity.AccountStatus,
                 IsAvailable = entity.IsAvailable,
-
+                PostalCode = user?.PostalCode ?? "Unknown",
+                Longitude = user?.Longitude,
+                Latitude = user?.Latitude,
+                CurrentLatitude = entity.CurrentLatitude,
+                CurrentLongitude = entity.CurrentLongitude,
                 PhoneNumber = user?.PhoneNumber ?? "Unknown",
                 City = user?.City ?? "Unknown",
                 Country = user?.Country ?? "Unknown",

@@ -8,11 +8,8 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class TechCompany : BaseEntity
     {
-        public string? MapLocation { get; set; }
         public string? Website { get; set; }
         public string? Description { get; set; }
-        //public bool IsActive { get; set; } = true;
-        
         public string UserId { get; set; }
         public AppUser? User { get; set; }
         public string RoleId { get; set; }

@@ -116,6 +116,9 @@ namespace Service
                     ProfilePhotoUrl = user.ProfilePhotoUrl,
                     IsActive = user.IsActive,
                     Role = roles.FirstOrDefault() ?? "No Role",
+                    PostalCode = user.PostalCode,
+                    Latitude = user.Latitude,
+                    Longitude = user.Longitude,
                     CreatedAt = user.CreatedAt,
                     UpdatedAt = user.UpdatedAt
                 };
