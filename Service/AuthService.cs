@@ -1,3 +1,4 @@
+using Core.DTOs;
 using Core.DTOs.WishListDTOs;
 using Core.Enums;
 using Core.Interfaces;
@@ -9,7 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Core.DTOs;
+using System.Web;
 using TechpertsSolutions.Core.DTOs.LoginDTOs;
 using TechpertsSolutions.Core.DTOs.RegisterDTOs;
 using TechpertsSolutions.Core.Entities;
@@ -518,7 +519,7 @@ namespace Service
             }
         }
 
-        public async Task<GeneralResponse<string>> ResetPasswordAsync(ResetPasswordDTO dto)
+        public async Task<GeneralResponse<string>> ForgotPasswordAsync(ForgotPasswordDTO dto)
         {
             var user = await userManager.FindByEmailAsync(dto.Email);
             if (user == null)
@@ -527,11 +528,81 @@ namespace Service
                 {
                     Success = false,
                     Message = "User not found",
-                    Data = $"User email '{dto.Email}' is not registered."
+                    Data = null
                 };
             }
 
-            var result = await userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
+            // Generate JWT with claims
+            var claims = new[]
+            {
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim("purpose", "reset-password")
+        };
+
+            var jwtToken = GenerateJwtToken(claims, TimeSpan.FromMinutes(15)); // using your private method
+            var angularAppUrl = configuration["AppSettings:FrontendUrl"]?.TrimEnd('/');
+            var resetLink = $"{angularAppUrl}/reset-password?token={HttpUtility.UrlEncode(jwtToken)}";
+
+            var emailSent = await emailService.SendPasswordResetEmailAsync(user.Email, jwtToken, resetLink);
+            if (!emailSent)
+            {
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Failed to send reset email.",
+                    Data = null
+                };
+            }
+
+            return new GeneralResponse<string>
+            {
+                Success = true,
+                Message = "Password reset email sent successfully.",
+                Data = jwtToken
+            };
+        }
+
+        public async Task<GeneralResponse<string>> ResetPasswordAsync(ResetPasswordDTO dto)
+        {
+            var principal = ValidateJwtToken(dto.Token);
+            if (principal == null)
+            {
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid or expired token.",
+                    Data = null
+                };
+            }
+
+            var email = principal.FindFirstValue(ClaimTypes.Email);
+            var purpose = principal.FindFirstValue("purpose");
+
+            if (purpose != "reset-password")
+            {
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid token purpose.",
+                    Data = null
+                };
+            }
+
+            var user = await userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "User not found.",
+                    Data = null
+                };
+            }
+
+            // Generate the official Identity reset token internally
+            var identityToken = await userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await userManager.ResetPasswordAsync(user, identityToken, dto.NewPassword);
+
             if (!result.Succeeded)
             {
                 return new GeneralResponse<string>
@@ -547,27 +618,6 @@ namespace Service
                 Success = true,
                 Message = "Password reset successfully.",
                 Data = user.Id
-            };
-        }
-
-        public async Task<GeneralResponse<string>> ForgotPasswordAsync(ForgotPasswordDTO dto)
-        {
-            var user = await userManager.FindByEmailAsync(dto.Email);
-            if (user == null)
-            {
-                return new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "User not found",
-                    Data = $"user email {dto.Email.ToString()} not registered"
-                };
-            }
-            var token = await userManager.GeneratePasswordResetTokenAsync(user);
-            return new GeneralResponse<string>
-            {
-                Success = true,
-                Message = "Password reset token generated successfully.",
-                Data = token
             };
         }
 
@@ -686,6 +736,48 @@ namespace Service
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        // PRIVATE - Generate JWT from claims
+        private string GenerateJwtToken(IEnumerable<Claim> claims, TimeSpan expiry)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: configuration["Jwt:Issuer"],
+                audience: configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.Add(expiry),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        // PRIVATE - Validate JWT
+        private ClaimsPrincipal? ValidateJwtToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = configuration["Jwt:Issuer"],
+                    ValidAudience = configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]))
+                }, out _);
+
+                return principal;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private GeneralResponse<LoginResultDTO> FailRoleWarning(string roleName, string userId)

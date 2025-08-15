@@ -71,11 +71,53 @@ namespace Repository.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DeliveryAssignmentSettings",
+                columns: table => new
+                {
+                    MaxRetries = table.Column<int>(type: "int", nullable: false),
+                    PricePerKm = table.Column<double>(type: "float", nullable: false),
+                    MaxOffersPerDriver = table.Column<int>(type: "int", nullable: false),
+                    OfferExpiryTime = table.Column<TimeSpan>(type: "time", nullable: false),
+                    AssignNearestDriverFirst = table.Column<bool>(type: "bit", nullable: false),
+                    AllowMultipleDriversPerCluster = table.Column<bool>(type: "bit", nullable: false),
+                    MaxDriverDistanceKm = table.Column<double>(type: "float", nullable: false),
+                    CheckInterval = table.Column<TimeSpan>(type: "time", nullable: false),
+                    RetryDelay = table.Column<TimeSpan>(type: "time", nullable: false),
+                    EnableReassignment = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DeliveryClusterTracking",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    clusterId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Location = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastRetryTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    Driver = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DeliveryClusterTracking", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -84,7 +126,9 @@ namespace Repository.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -99,7 +143,9 @@ namespace Repository.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -135,7 +181,9 @@ namespace Repository.Migrations
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -247,7 +295,9 @@ namespace Repository.Migrations
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -274,12 +324,18 @@ namespace Repository.Migrations
                     VehicleNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     VehicleType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     VehicleImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    License = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AccountStatus = table.Column<int>(type: "int", nullable: false),
                     IsAvailable = table.Column<bool>(type: "bit", nullable: false),
+                    LastOnline = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CurrentLatitude = table.Column<double>(type: "float", nullable: true),
+                    CurrentLongitude = table.Column<double>(type: "float", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -311,7 +367,9 @@ namespace Repository.Migrations
                     RelatedEntityType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ReceiverId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -329,20 +387,14 @@ namespace Repository.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     MapLocation = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Latitude = table.Column<double>(type: "float", nullable: true),
-                    Longitude = table.Column<double>(type: "float", nullable: true),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    City = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Country = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PostalCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Website = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -394,7 +446,9 @@ namespace Repository.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -414,7 +468,9 @@ namespace Repository.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -438,16 +494,15 @@ namespace Repository.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Stock = table.Column<int>(type: "int", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Image1Url = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Image2Url = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Image3Url = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Image4Url = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImagesURLS = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CategoryId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     SubCategoryId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     TechCompanyId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -481,7 +536,9 @@ namespace Repository.Migrations
                     Value = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ProductId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -506,7 +563,9 @@ namespace Repository.Migrations
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ProductId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -527,7 +586,9 @@ namespace Repository.Migrations
                     ProductId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WishListId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -563,7 +624,9 @@ namespace Repository.Migrations
                     ServiceFee = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     DeviceImages = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -598,7 +661,9 @@ namespace Repository.Migrations
                     CallCount = table.Column<int>(type: "int", nullable: false),
                     MaintenanceId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -623,7 +688,9 @@ namespace Repository.Migrations
                     ServiceUsageId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     OrderHistoryId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -663,7 +730,9 @@ namespace Repository.Migrations
                     AssemblyFee = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     CompletedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -692,28 +761,32 @@ namespace Repository.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    TrackingNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DeliveryAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CustomerPhone = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CustomerName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TrackingNumber = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    CustomerPhone = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
+                    CustomerName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     EstimatedDeliveryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ActualDeliveryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DeliveryFee = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    DeliveryFee = table.Column<decimal>(type: "decimal(18,2)", nullable: false, defaultValue: 0m),
                     RetryCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    PickupAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PickupAddress = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     PickupDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    PickupLatitude = table.Column<double>(type: "float", nullable: true),
+                    PickupLongitude = table.Column<double>(type: "float", nullable: true),
+                    DropoffLatitude = table.Column<double>(type: "float", nullable: true),
+                    DropoffLongitude = table.Column<double>(type: "float", nullable: true),
                     DeliveryPersonId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     OrderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    DeliveryLatitude = table.Column<double>(type: "float", nullable: true),
-                    DeliveryLongitude = table.Column<double>(type: "float", nullable: true),
-                    Latitude = table.Column<double>(type: "float", nullable: true),
-                    Longitude = table.Column<double>(type: "float", nullable: true),
-                    IsOnline = table.Column<bool>(type: "bit", nullable: false),
+                    ParentDeliveryId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    SequenceNumber = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    RouteOrder = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    IsFinalLeg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -722,6 +795,12 @@ namespace Repository.Migrations
                         name: "FK_Deliveries_Customers_CustomerId",
                         column: x => x.CustomerId,
                         principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Deliveries_Deliveries_ParentDeliveryId",
+                        column: x => x.ParentDeliveryId,
+                        principalTable: "Deliveries",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -749,7 +828,9 @@ namespace Repository.Migrations
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     ItemTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -782,7 +863,9 @@ namespace Repository.Migrations
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     CartId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -820,7 +903,9 @@ namespace Repository.Migrations
                     PCAssemblyId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     IsAssembled = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -840,18 +925,133 @@ namespace Repository.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DeliveryCluster",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DeliveryId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TechCompanyId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TechCompanyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DistanceKm = table.Column<double>(type: "float", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    AssignedDriverId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    AssignedDriverName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AssignmentTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DropoffLatitude = table.Column<double>(type: "float", nullable: true),
+                    DropoffLongitude = table.Column<double>(type: "float", nullable: true),
+                    SequenceOrder = table.Column<int>(type: "int", nullable: false),
+                    EstimatedDistance = table.Column<double>(type: "float", nullable: false),
+                    EstimatedPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TrackingId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DeliveryCluster", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DeliveryCluster_Deliveries_DeliveryId",
+                        column: x => x.DeliveryId,
+                        principalTable: "Deliveries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DeliveryCluster_DeliveryClusterTracking_TrackingId",
+                        column: x => x.TrackingId,
+                        principalTable: "DeliveryClusterTracking",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DeliveryCluster_DeliveryPersons_AssignedDriverId",
+                        column: x => x.AssignedDriverId,
+                        principalTable: "DeliveryPersons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_DeliveryCluster_TechCompanies_TechCompanyId",
+                        column: x => x.TechCompanyId,
+                        principalTable: "TechCompanies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DeliveryTechCompanies",
+                columns: table => new
+                {
+                    DeliveryId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TechCompanyId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DeliveryTechCompanies", x => new { x.DeliveryId, x.TechCompanyId });
+                    table.ForeignKey(
+                        name: "FK_DeliveryTechCompanies_Deliveries_DeliveryId",
+                        column: x => x.DeliveryId,
+                        principalTable: "Deliveries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DeliveryTechCompanies_TechCompanies_TechCompanyId",
+                        column: x => x.TechCompanyId,
+                        principalTable: "TechCompanies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DeliveryClusterDriverOffer",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DeliveryClusterId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DriverId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    OfferTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ResponseTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    OfferedPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DeliveryClusterDriverOffer", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DeliveryClusterDriverOffer_DeliveryCluster_DeliveryClusterId",
+                        column: x => x.DeliveryClusterId,
+                        principalTable: "DeliveryCluster",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DeliveryClusterDriverOffer_DeliveryPersons_DriverId",
+                        column: x => x.DriverId,
+                        principalTable: "DeliveryPersons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DeliveryOffer",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     DeliveryId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ClusterId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     DeliveryPersonId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    OfferedPrice = table.Column<double>(type: "float", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     RespondedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()")
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -863,35 +1063,16 @@ namespace Repository.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_DeliveryOffer_DeliveryCluster_ClusterId",
+                        column: x => x.ClusterId,
+                        principalTable: "DeliveryCluster",
+                        principalColumn: "Id");
+                    table.ForeignKey(
                         name: "FK_DeliveryOffer_DeliveryPersons_DeliveryPersonId",
                         column: x => x.DeliveryPersonId,
                         principalTable: "DeliveryPersons",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DeliveryTechCompany",
-                columns: table => new
-                {
-                    DeliveriesId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    TechCompaniesId = table.Column<string>(type: "nvarchar(450)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DeliveryTechCompany", x => new { x.DeliveriesId, x.TechCompaniesId });
-                    table.ForeignKey(
-                        name: "FK_DeliveryTechCompany_Deliveries_DeliveriesId",
-                        column: x => x.DeliveriesId,
-                        principalTable: "Deliveries",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_DeliveryTechCompany_TechCompanies_TechCompaniesId",
-                        column: x => x.TechCompaniesId,
-                        principalTable: "TechCompanies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -999,13 +1180,58 @@ namespace Repository.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Deliveries_OrderId",
                 table: "Deliveries",
-                column: "OrderId",
-                unique: true);
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Deliveries_ParentDeliveryId",
+                table: "Deliveries",
+                column: "ParentDeliveryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Deliveries_Status",
                 table: "Deliveries",
                 column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeliveryCluster_AssignedDriverId",
+                table: "DeliveryCluster",
+                column: "AssignedDriverId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeliveryCluster_DeliveryId",
+                table: "DeliveryCluster",
+                column: "DeliveryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeliveryCluster_Status",
+                table: "DeliveryCluster",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeliveryCluster_TechCompanyId",
+                table: "DeliveryCluster",
+                column: "TechCompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeliveryCluster_TrackingId",
+                table: "DeliveryCluster",
+                column: "TrackingId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeliveryClusterDriverOffer_DeliveryClusterId_DriverId",
+                table: "DeliveryClusterDriverOffer",
+                columns: new[] { "DeliveryClusterId", "DriverId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeliveryClusterDriverOffer_DriverId",
+                table: "DeliveryClusterDriverOffer",
+                column: "DriverId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeliveryOffer_ClusterId",
+                table: "DeliveryOffer",
+                column: "ClusterId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DeliveryOffer_DeliveryId",
@@ -1034,9 +1260,9 @@ namespace Repository.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_DeliveryTechCompany_TechCompaniesId",
-                table: "DeliveryTechCompany",
-                column: "TechCompaniesId");
+                name: "IX_DeliveryTechCompanies_TechCompanyId",
+                table: "DeliveryTechCompanies",
+                column: "TechCompanyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Maintenances_CustomerId",
@@ -1194,10 +1420,16 @@ namespace Repository.Migrations
                 name: "CategorySubCategories");
 
             migrationBuilder.DropTable(
+                name: "DeliveryAssignmentSettings");
+
+            migrationBuilder.DropTable(
+                name: "DeliveryClusterDriverOffer");
+
+            migrationBuilder.DropTable(
                 name: "DeliveryOffer");
 
             migrationBuilder.DropTable(
-                name: "DeliveryTechCompany");
+                name: "DeliveryTechCompanies");
 
             migrationBuilder.DropTable(
                 name: "Notifications");
@@ -1218,13 +1450,19 @@ namespace Repository.Migrations
                 name: "Carts");
 
             migrationBuilder.DropTable(
-                name: "Deliveries");
+                name: "DeliveryCluster");
 
             migrationBuilder.DropTable(
                 name: "PCAssemblies");
 
             migrationBuilder.DropTable(
                 name: "WishLists");
+
+            migrationBuilder.DropTable(
+                name: "Deliveries");
+
+            migrationBuilder.DropTable(
+                name: "DeliveryClusterTracking");
 
             migrationBuilder.DropTable(
                 name: "DeliveryPersons");

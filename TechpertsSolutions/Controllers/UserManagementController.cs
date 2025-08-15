@@ -1,9 +1,11 @@
+using Core.DTOs;
 using Core.DTOs.CustomerDTOs;
+using Core.DTOs.ProfileDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using TechpertsSolutions.Core.DTOs;
-using Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {

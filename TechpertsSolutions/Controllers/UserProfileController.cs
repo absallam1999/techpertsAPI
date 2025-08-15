@@ -1,5 +1,6 @@
 using Core.DTOs;
 using Core.DTOs.CustomerDTOs;
+using Core.DTOs.ProfileDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -94,6 +95,27 @@ namespace TechpertsSolutions.Controllers
                 return BadRequest(response);
             }
             return Ok(response);
+        }
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromForm] ChangePasswordDTO dto)
+        {
+            var response = await _userManagementService.ChangePasswordAsync(User, dto);
+
+            if (!response.Success)
+                return BadRequest(response);
+
+            return Ok(response);
+        }
+        [HttpPut("update-location")]
+        public async Task<IActionResult> UpdateLocation([FromBody] UserLocationUpdateDTO dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var result = await _userManagementService.UpdateUserLocationAsync(userId, dto);
+
+            if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
         }
     }
 } 

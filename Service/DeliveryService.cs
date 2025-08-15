@@ -7,6 +7,8 @@ using Core.Interfaces;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Service.Utilities;
 using System;
 using System.Collections.Generic;
@@ -14,7 +16,6 @@ using System.Linq;
 using System.Runtime;
 using System.Threading.Tasks;
 using System.Transactions;
-using Microsoft.Extensions.Logging;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service
@@ -26,7 +27,7 @@ namespace Service
         private readonly IRepository<TechCompany> _techCompanyRepo;
         private readonly IRepository<DeliveryCluster> _deliveryClusterRepo;
         private readonly IDeliveryClusterService _clusterService;
-        private readonly LocationService _locationService;
+        private readonly ILocationService _locationService;
         private readonly IDeliveryPersonService _deliveryPersonService;
         private readonly INotificationService _notificationService;
         private readonly DeliveryAssignmentSettings _settings;
@@ -38,10 +39,10 @@ namespace Service
             IRepository<TechCompany> techCompanyRepo,
             IRepository<DeliveryCluster> deliveryClusterRepo,
             IDeliveryClusterService clusterService,
-            LocationService locationService,
+            ILocationService locationService,
             IDeliveryPersonService deliveryPersonService,
             INotificationService notificationService,
-            DeliveryAssignmentSettings settings,
+            IOptions<DeliveryAssignmentSettings> settings,
             ILogger<DeliveryService> logger)
         {
             _deliveryRepo = deliveryRepo ?? throw new ArgumentNullException(nameof(deliveryRepo));
@@ -52,7 +53,7 @@ namespace Service
             _locationService = locationService ?? throw new ArgumentNullException(nameof(locationService));
             _deliveryPersonService = deliveryPersonService ?? throw new ArgumentNullException(nameof(deliveryPersonService));
             _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _settings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -263,13 +264,13 @@ namespace Service
                 if (!string.IsNullOrWhiteSpace(cluster.TechCompanyId))
                 {
                     var techCompany = await _techCompanyRepo.GetByIdAsync(cluster.TechCompanyId);
-                    if (techCompany == null || !techCompany.Latitude.HasValue || !techCompany.Longitude.HasValue)
+                    if (techCompany == null || !techCompany.User.Latitude.HasValue || !techCompany.User.Longitude.HasValue)
                     {
                         _logger.LogWarning("AcceptDeliveryAsync: Tech company {TechCompanyId} location missing for cluster {ClusterId}.", cluster.TechCompanyId, clusterId);
                         return new GeneralResponse<bool> { Success = false, Message = "Tech company location missing." };
                     }
-                    var companyLat = techCompany.Latitude.Value;
-                    var companyLon = techCompany.Longitude.Value;
+                    var companyLat = techCompany.User.Latitude.Value;
+                    var companyLon = techCompany.User.Longitude.Value;
 
                     var distanceToCompany = _locationService.CalculateDistance(driverLat, driverLon, companyLat, companyLon);
 
@@ -931,13 +932,13 @@ namespace Service
                     if (!string.IsNullOrWhiteSpace(clusterDto.TechCompanyId))
                     {
                         var techCompany = await _techCompanyRepo.GetByIdAsync(clusterDto.TechCompanyId);
-                        if (techCompany == null || !techCompany.Latitude.HasValue || !techCompany.Longitude.HasValue)
+                        if (techCompany == null || !techCompany.User.Latitude.HasValue || !techCompany.User.Longitude.HasValue)
                         {
                             _logger.LogWarning("AutoAssignDriverAsync: Tech company {TechCompanyId} coordinates missing for cluster {ClusterId}.", clusterDto.TechCompanyId, clusterId);
                             throw new InvalidOperationException("Tech company coordinates are missing.");
                         }
-                        locationLat = techCompany.Latitude.Value;
-                        locationLon = techCompany.Longitude.Value;
+                        locationLat = techCompany.User.Latitude.Value;
+                        locationLon = techCompany.User.Longitude.Value;
                     }
                     else if (clusterDto.DropoffLatitude.HasValue && clusterDto.DropoffLongitude.HasValue)
                     {

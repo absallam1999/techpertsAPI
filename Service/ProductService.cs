@@ -385,7 +385,8 @@ namespace Service
             try
             {
                 // Validate TechCompany exists and is active
-                var techCompany = await _techCompanyRepo.GetFirstOrDefaultAsync(tc => tc.Id == dto.TechCompanyId);
+                var techCompany = await _techCompanyRepo.GetFirstOrDefaultAsync(tc => tc.Id == dto.TechCompanyId,
+                                                                            query => query.Include(tc => tc.User));
                 if (techCompany == null)
                 {
                     return new GeneralResponse<ProductDTO>
@@ -396,7 +397,7 @@ namespace Service
                     };
                 }
 
-                if (!techCompany.IsActive)
+                if (!techCompany.User.IsActive)
                 {
                     return new GeneralResponse<ProductDTO>
                     {
@@ -652,6 +653,7 @@ namespace Service
                     p => p.Category,
                     p => p.SubCategory,
                     p => p.TechCompany,
+                    p => p.TechCompany.User,
                     p => p.Specifications,
                     p => p.Warranties);
 
@@ -666,7 +668,7 @@ namespace Service
                 }
 
                 // Validate TechCompany is still active
-                if (product.TechCompany != null && !product.TechCompany.IsActive)
+                if (product.TechCompany != null && !product.TechCompany.User.IsActive)
                 {
                     return new GeneralResponse<ProductDTO>
                     {

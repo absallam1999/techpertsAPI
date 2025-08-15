@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Service
 {
-    public class LocationService
+    public class LocationService: ILocationService
     {
         private const double EarthRadiusKm = 6371;
         private double ToRadians(double degrees) => degrees * Math.PI / 180;

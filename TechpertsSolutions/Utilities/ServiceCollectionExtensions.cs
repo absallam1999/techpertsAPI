@@ -35,6 +35,7 @@ namespace TechpertsSolutions.Extensions
             services.AddScoped<IPCAssemblyCompatibilityService, PCAssemblyCompatibilityService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<INotificationHub, NotificationHubService>();
+            services.AddScoped<ILocationService, LocationService>();
 
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IRoleService, RoleService>();

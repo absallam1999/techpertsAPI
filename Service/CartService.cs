@@ -735,5 +735,85 @@ namespace Service
                 };
             }
         }
+        public async Task<GeneralResponse<string>> IncreaseQuantity(string customerId, string productId)
+        {
+            if (string.IsNullOrWhiteSpace(customerId))
+                return new GeneralResponse<string> { Success = false, Message = "? Customer ID cannot be null or empty." };
+
+            if (!Guid.TryParse(customerId, out _))
+                return new GeneralResponse<string> { Success = false, Message = "? Invalid Customer ID format. Expected GUID format." };
+
+            if (string.IsNullOrWhiteSpace(productId))
+                return new GeneralResponse<string> { Success = false, Message = "? Product ID cannot be null or empty." };
+
+            if (!Guid.TryParse(productId, out _))
+                return new GeneralResponse<string> { Success = false, Message = "? Invalid Product ID format. Expected GUID format." };
+
+            var cart = await cartRepo.GetFirstOrDefaultAsync(
+                c => c.CustomerId == customerId,
+                includeProperties: "CartItems.Product"
+            );
+
+            if (cart == null)
+                return new GeneralResponse<string> { Success = false, Message = $"? Cart not found for customer ID {customerId}." };
+
+            var item = cart.CartItems?.FirstOrDefault(ci => ci.ProductId == productId);
+            if (item == null)
+                return new GeneralResponse<string> { Success = false, Message = $"? Product with ID {productId} not found in cart." };
+
+            if (item.Product == null)
+                return new GeneralResponse<string> { Success = false, Message = "? Product details not available for stock check." };
+
+            if (item.Product.Stock < item.Quantity + 1)
+                return new GeneralResponse<string> { Success = false, Message = $"? Not enough stock for '{item.Product.Name}'. Available: {item.Product.Stock}, Requested: {item.Quantity + 1}." };
+
+            item.Quantity += 1;
+            cartItemRepo.Update(item);
+            await cartItemRepo.SaveChangesAsync();
+
+            return new GeneralResponse<string> { Success = true, Message = "? Item quantity increased successfully." };
+        }
+        public async Task<GeneralResponse<string>> DecreaseQuantity(string customerId, string productId)
+        {
+            if (string.IsNullOrWhiteSpace(customerId))
+                return new GeneralResponse<string> { Success = false, Message = "? Customer ID cannot be null or empty." };
+
+            if (!Guid.TryParse(customerId, out _))
+                return new GeneralResponse<string> { Success = false, Message = "? Invalid Customer ID format. Expected GUID format." };
+
+            if (string.IsNullOrWhiteSpace(productId))
+                return new GeneralResponse<string> { Success = false, Message = "? Product ID cannot be null or empty." };
+
+            if (!Guid.TryParse(productId, out _))
+                return new GeneralResponse<string> { Success = false, Message = "? Invalid Product ID format. Expected GUID format." };
+
+            var cart = await cartRepo.GetFirstOrDefaultAsync(
+                c => c.CustomerId == customerId,
+                includeProperties: "CartItems"
+            );
+
+            if (cart == null)
+                return new GeneralResponse<string> { Success = false, Message = $"? Cart not found for customer ID {customerId}." };
+
+            var item = cart.CartItems?.FirstOrDefault(ci => ci.ProductId == productId);
+            if (item == null)
+                return new GeneralResponse<string> { Success = false, Message = $"? Product with ID {productId} not found in cart." };
+
+            if (item.Quantity <= 1)
+            {
+                // If decreasing would drop below 1, remove the item
+                cart.CartItems?.Remove(item);
+                cartItemRepo.Remove(item);
+            }
+            else
+            {
+                item.Quantity -= 1;
+                cartItemRepo.Update(item);
+            }
+
+            await cartItemRepo.SaveChangesAsync();
+
+            return new GeneralResponse<string> { Success = true, Message = "? Item quantity decreased successfully." };
+        }
     }
 }

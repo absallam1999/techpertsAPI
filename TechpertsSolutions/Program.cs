@@ -1,3 +1,4 @@
+using Core.Entities;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -100,7 +101,8 @@ namespace TechpertsSolutions
                 options.User.RequireUniqueEmail = true;
             });
 
-            
+            builder.Services.Configure<DeliveryAssignmentSettings>(builder.Configuration.GetSection("DeliveryAssignmentSettings"));
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", policy =>
