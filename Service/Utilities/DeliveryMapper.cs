@@ -16,6 +16,7 @@ namespace Service.Utilities
             {
                 Id = Guid.NewGuid().ToString(),
                 OrderId = dto.OrderId,
+                CustomerId = dto.customerId,
                 Status = DeliveryStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
                 DropoffLatitude = dto.CustomerLatitude,

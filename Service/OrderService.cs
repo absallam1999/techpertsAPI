@@ -1,4 +1,5 @@
 using Core.DTOs;
+using Core.DTOs.DeliveryDTOs;
 using Core.DTOs.OrderDTOs;
 using Core.Entities;
 using Core.Enums;
@@ -6,6 +7,7 @@ using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Service.Utilities;
 using System;
 using System.Collections.Generic;
@@ -27,6 +29,7 @@ namespace Service
         private readonly TechpertsContext _dbContext;
         private readonly IDeliveryService _deliveryService;
         private readonly INotificationService _notificationService;
+        private readonly ILogger<OrderService> _logger;
 
         public OrderService(
             IRepository<Order> orderRepo,
@@ -36,6 +39,7 @@ namespace Service
             IRepository<DeliveryOffer> deliveryOfferRepo,
             INotificationService notificationService,
             IDeliveryService deliveryService,
+            ILogger<OrderService> logger,
             TechpertsContext dbContext
             )
         {
@@ -47,6 +51,7 @@ namespace Service
             _deliveryService = deliveryService;
             _notificationService = notificationService;
             _dbContext = dbContext;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
 
@@ -138,6 +143,14 @@ namespace Service
         //        };
         //    }
         //}
+
+
+
+
+
+
+
+
 
 
         //public async Task<GeneralResponse<OrderReadDTO>> CreateOrderAsync(OrderCreateDTO dto)
@@ -351,6 +364,16 @@ namespace Service
         //        };
         //    }
         //}
+
+
+
+
+
+
+
+
+
+
 
         //public async Task<GeneralResponse<OrderReadDTO>> CreateOrderAsync(OrderCreateDTO dto)
         //{
@@ -646,6 +669,147 @@ namespace Service
         //    }
         //}
 
+
+
+        //public async Task<GeneralResponse<OrderReadDTO>> CreateOrderAsync(OrderCreateDTO dto)
+        //{
+        //    if (dto == null)
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Order data cannot be null.",
+        //            Data = null
+        //        };
+
+        //    if (string.IsNullOrWhiteSpace(dto.CustomerId))
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Customer ID is required.",
+        //            Data = null
+        //        };
+
+        //    if (!Guid.TryParse(dto.CustomerId, out _))
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Invalid Customer ID format. Expected GUID format.",
+        //            Data = null
+        //        };
+
+        //    if (dto.OrderItems == null || !dto.OrderItems.Any())
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Order must contain at least one item.",
+        //            Data = null
+        //        };
+
+        //    try
+        //    {
+        //        //await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+        //        var order = OrderMapper.ToEntity(dto);
+        //        order.TotalAmount = order.OrderItems.Sum(i => i.ItemTotal);
+
+        //        var orderHistory = await GetOrCreateOrderHistoryAsync(dto.CustomerId);
+        //        order.OrderHistoryId = orderHistory.Id;
+
+        //        await _orderRepo.AddAsync(order);
+        //        await _orderRepo.SaveChangesAsync();
+
+        //        //var delivery = await _deliveryService.CreateDeliveryForOrderAsync(order, dto.DeliveryLatitude, dto.DeliveryLongitude, dto.CustomerId);
+
+        //        //var delivery = new Delivery
+        //        //{
+        //        //    TrackingNumber = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper(),
+        //        //    CustomerId = dto.CustomerId,
+        //        //    OrderId = order.Id,
+        //        //    DeliveryLatitude = dto.DeliveryLatitude,
+        //        //    DeliveryLongitude = dto.DeliveryLongitude,
+        //        //    Status = DeliveryStatus.Pending,
+        //        //    RetryCount = 0,
+        //        //    CreatedAt = DateTime.UtcNow
+        //        //};
+
+        //        //await _deliveryRepo.AddAsync(delivery);
+        //        //await _deliveryRepo.SaveChangesAsync();
+
+        //        //if (delivery.DeliveryLatitude.HasValue && delivery.DeliveryLongitude.HasValue)
+        //        //{
+        //        //    var availableDriversResponse = await _deliveryService.GetAvailableDeliveriesAsync();
+
+        //        //    if (availableDriversResponse.Success && availableDriversResponse.Data != null)
+        //        //    {
+        //        //        var availableDrivers = availableDriversResponse.Data
+        //        //            .Where(d => d.Latitude.HasValue && d.Longitude.HasValue && d.IsOnline)
+        //        //            .Select(d => new Delivery
+        //        //            {
+        //        //                Id = d.Id,
+        //        //                Latitude = d.Latitude,
+        //        //                Longitude = d.Longitude,
+        //        //                IsOnline = d.IsOnline,
+        //        //                DeliveryPerson = new DeliveryPerson
+        //        //                {
+        //        //                    Id = d.DeliveryPersonId,
+        //        //                    UserId = d.DeliveryPerson.User.Id
+        //        //                }
+        //        //            })
+        //        //            .ToList();
+
+        //        //        await _deliveryService.AssignDeliveryToNearestAsync(delivery.Id, availableDrivers, 3, 3);
+        //        //    }
+        //        //}
+
+        //        //await _notificationService.SendNotificationToRoleAsync(
+        //        //    "Admin",
+        //        //    $"New order #{order.Id} has been created by customer {order.CustomerId}",
+        //        //    NotificationType.OrderCreated,
+        //        //    order.Id,
+        //        //    "Order"
+        //        //);
+
+        //        //await _notificationService.SendNotificationToRoleAsync(
+        //        //    "Delivery",
+        //        //    $"New delivery #{delivery.TrackingNumber} is available for assignment.",
+        //        //    NotificationType.DeliveryAssigned,
+        //        //    delivery.Id,
+        //        //    "Delivery"
+        //        //);
+
+        //        //await _notificationService.SendNotificationToRoleAsync(
+        //        //    "TechCompany",
+        //        //    $"New order #{order.Id} has been created by customer {order.CustomerId}",
+        //        //    NotificationType.OrderCreated,
+        //        //    order.Id,
+        //        //    "Order"
+        //        //);
+
+        //        //await transaction.CommitAsync();
+
+        //        var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
+        //            o => o.Id == order.Id,
+        //            includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory,Delivery,Delivery.DeliveryPerson,Delivery.DeliveryPerson.User"
+        //        );
+
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = true,
+        //            Message = "Order has been created successfully and sent to Delivery.",
+        //            Data = OrderMapper.ToReadDTO(createdOrder)
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new GeneralResponse<OrderReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = $"An unexpected error occurred while creating the order. {ex.Message}",
+        //            Data = null
+        //        };
+        //    }
+        //}
+
         public async Task<GeneralResponse<OrderReadDTO>> CreateOrderAsync(OrderCreateDTO dto)
         {
             if (dto == null)
@@ -682,8 +846,6 @@ namespace Service
 
             try
             {
-                //await using var transaction = await _dbContext.Database.BeginTransactionAsync();
-
                 var order = OrderMapper.ToEntity(dto);
                 order.TotalAmount = order.OrderItems.Sum(i => i.ItemTotal);
 
@@ -693,89 +855,49 @@ namespace Service
                 await _orderRepo.AddAsync(order);
                 await _orderRepo.SaveChangesAsync();
 
-                //var delivery = await _deliveryService.CreateDeliveryForOrderAsync(order, dto.DeliveryLatitude, dto.DeliveryLongitude, dto.CustomerId);
+                var deliveryDto = new DeliveryCreateDTO
+                {
+                    OrderId = order.Id,
+                    CustomerLatitude = (double)dto.DeliveryLatitude,
+                    CustomerLongitude = (double)dto.DeliveryLongitude
+                };
 
-                //var delivery = new Delivery
-                //{
-                //    TrackingNumber = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper(),
-                //    CustomerId = dto.CustomerId,
-                //    OrderId = order.Id,
-                //    DeliveryLatitude = dto.DeliveryLatitude,
-                //    DeliveryLongitude = dto.DeliveryLongitude,
-                //    Status = DeliveryStatus.Pending,
-                //    RetryCount = 0,
-                //    CreatedAt = DateTime.UtcNow
-                //};
+                var deliveryResponse = await _deliveryService.CreateAsync(deliveryDto);
 
-                //await _deliveryRepo.AddAsync(delivery);
-                //await _deliveryRepo.SaveChangesAsync();
-
-                //if (delivery.DeliveryLatitude.HasValue && delivery.DeliveryLongitude.HasValue)
-                //{
-                //    var availableDriversResponse = await _deliveryService.GetAvailableDeliveriesAsync();
-
-                //    if (availableDriversResponse.Success && availableDriversResponse.Data != null)
-                //    {
-                //        var availableDrivers = availableDriversResponse.Data
-                //            .Where(d => d.Latitude.HasValue && d.Longitude.HasValue && d.IsOnline)
-                //            .Select(d => new Delivery
-                //            {
-                //                Id = d.Id,
-                //                Latitude = d.Latitude,
-                //                Longitude = d.Longitude,
-                //                IsOnline = d.IsOnline,
-                //                DeliveryPerson = new DeliveryPerson
-                //                {
-                //                    Id = d.DeliveryPersonId,
-                //                    UserId = d.DeliveryPerson.User.Id
-                //                }
-                //            })
-                //            .ToList();
-
-                //        await _deliveryService.AssignDeliveryToNearestAsync(delivery.Id, availableDrivers, 3, 3);
-                //    }
-                //}
-
-                //await _notificationService.SendNotificationToRoleAsync(
-                //    "Admin",
-                //    $"New order #{order.Id} has been created by customer {order.CustomerId}",
-                //    NotificationType.OrderCreated,
-                //    order.Id,
-                //    "Order"
-                //);
-
-                //await _notificationService.SendNotificationToRoleAsync(
-                //    "Delivery",
-                //    $"New delivery #{delivery.TrackingNumber} is available for assignment.",
-                //    NotificationType.DeliveryAssigned,
-                //    delivery.Id,
-                //    "Delivery"
-                //);
-
-                //await _notificationService.SendNotificationToRoleAsync(
-                //    "TechCompany",
-                //    $"New order #{order.Id} has been created by customer {order.CustomerId}",
-                //    NotificationType.OrderCreated,
-                //    order.Id,
-                //    "Order"
-                //);
-
-                //await transaction.CommitAsync();
+                if (!deliveryResponse.Success)
+                {
+                    _logger.LogWarning("CreateOrderAsync: Delivery creation failed for order {OrderId}: {Message}",
+                        order.Id, deliveryResponse.Message);
+                }
+                else
+                {
+                    _logger.LogInformation("CreateOrderAsync: Delivery created successfully for order {OrderId}.", order.Id);
+                }
 
                 var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
                     o => o.Id == order.Id,
-                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory,Delivery,Delivery.DeliveryPerson,Delivery.DeliveryPerson.User"
+                    query => query
+                        .Include(o => o.OrderItems)
+                            .ThenInclude(oi => oi.Product)
+                                .ThenInclude(p => p.TechCompany)
+                        .Include(o => o.Customer)
+                            .ThenInclude(c => c.User)
+                        .Include(o => o.OrderHistory)
+                        .Include(o => o.Deliveries)
+                            .ThenInclude(d => d.DeliveryPerson)
+                                .ThenInclude(dp => dp.User)
                 );
 
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = true,
-                    Message = "Order has been created successfully and sent to Delivery.",
+                    Message = "Order created successfully and delivery offers sent to nearby drivers.",
                     Data = OrderMapper.ToReadDTO(createdOrder)
                 };
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "CreateOrderAsync: Failed to create order.");
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,

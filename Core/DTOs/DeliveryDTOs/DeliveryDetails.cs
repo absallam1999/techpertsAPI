@@ -20,8 +20,8 @@ namespace Core.DTOs.DeliveryDTOs
         public DeliveryStatus DeliveryStatus { get; set; }
         public string Notes { get; set; }
         public decimal? DeliveryFee { get; set; }
-        public DeliveryPersonDTO DeliveryPerson { get; set; }
         public DeliveryOrderDTO Order { get; set; }
+        public DeliveryPersonDTO DeliveryPerson { get; set; }
         public List<DeliveryTechCompanyDTO> TechCompanies { get; set; }
         public List<DeliveryClusterDTO> Clusters { get; set; }
     }

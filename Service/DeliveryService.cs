@@ -22,6 +22,7 @@ namespace Service
 {
     public class DeliveryService : IDeliveryService
     {
+        private readonly IRepository<Order> _orderRepo;
         private readonly IRepository<Delivery> _deliveryRepo;
         private readonly IRepository<DeliveryOffer> _deliveryOfferRepo;
         private readonly IRepository<TechCompany> _techCompanyRepo;
@@ -34,6 +35,7 @@ namespace Service
         private readonly ILogger<DeliveryService> _logger;
 
         public DeliveryService(
+            IRepository<Order> orderRepo,
             IRepository<Delivery> deliveryRepo,
             IRepository<DeliveryOffer> deliveryOfferRepo,
             IRepository<TechCompany> techCompanyRepo,
@@ -45,6 +47,7 @@ namespace Service
             IOptions<DeliveryAssignmentSettings> settings,
             ILogger<DeliveryService> logger)
         {
+            _orderRepo = orderRepo ?? throw new ArgumentNullException(nameof(orderRepo));
             _deliveryRepo = deliveryRepo ?? throw new ArgumentNullException(nameof(deliveryRepo));
             _deliveryOfferRepo = deliveryOfferRepo ?? throw new ArgumentNullException(nameof(deliveryOfferRepo));
             _techCompanyRepo = techCompanyRepo ?? throw new ArgumentNullException(nameof(techCompanyRepo));
@@ -54,8 +57,222 @@ namespace Service
             _deliveryPersonService = deliveryPersonService ?? throw new ArgumentNullException(nameof(deliveryPersonService));
             _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
             _settings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
+
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
+
+        //public async Task<GeneralResponse<DeliveryReadDTO>> CreateAsync(DeliveryCreateDTO dto)
+        //{
+        //    if (dto == null || string.IsNullOrWhiteSpace(dto.OrderId) || dto.CustomerLatitude < 0 || dto.CustomerLongitude < 0)
+        //    {
+        //        _logger.LogWarning("CreateAsync: Invalid input - DTO is null, OrderId is empty, or customer location missing.");
+        //        return new GeneralResponse<DeliveryReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Delivery data, OrderId, and customer location are required.",
+        //            Data = null
+        //        };
+        //    }
+
+        //    using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+        //    try
+        //    {
+        //        // Map and create delivery, set dropoff to customer location
+        //        var delivery = DeliveryMapper.ToEntity(dto);
+        //        delivery.DropoffLatitude = dto.CustomerLatitude;
+        //        delivery.DropoffLongitude = dto.CustomerLongitude;
+        //        await _deliveryRepo.AddAsync(delivery);
+        //        await _deliveryRepo.SaveChangesAsync();
+
+        //        var createdClusters = new List<DeliveryClusterDTO>();
+
+        //        // Handle single or multi-company orders via clusters
+        //        foreach (var clusterDto in dto.Clusters ?? new List<DeliveryClusterCreateDTO>())
+        //        {
+        //            // Set dropoff to customer for all clusters
+        //            clusterDto.DropoffLatitude = dto.CustomerLatitude;
+        //            clusterDto.DropoffLongitude = dto.CustomerLongitude;
+
+        //            var clusterResult = await _clusterService.CreateClusterAsync(delivery.Id, clusterDto);
+
+        //            if (!clusterResult.Success)
+        //            {
+        //                _logger.LogError("CreateAsync: Cluster creation failed for delivery {DeliveryId}: {Message}", delivery.Id, clusterResult.Message);
+        //                return new GeneralResponse<DeliveryReadDTO>
+        //                {
+        //                    Success = false,
+        //                    Message = $"Cluster creation failed: {clusterResult.Message}",
+        //                    Data = null
+        //                };
+        //            }
+
+        //            var createdCluster = clusterResult.Data;
+        //            createdClusters.Add(createdCluster);
+
+        //            if (string.IsNullOrWhiteSpace(createdCluster.AssignedDriverId))
+        //            {
+        //                // Auto-assign nearest driver from customer location
+        //                await AutoAssignDriverAsync(delivery, createdCluster.Id, dto.CustomerLatitude, dto.CustomerLongitude);
+        //            }
+        //        }
+
+        //        var readDto = DeliveryMapper.ToReadDTO(delivery, createdClusters);
+        //        scope.Complete();
+        //        _logger.LogInformation("CreateAsync: Delivery {DeliveryId} created successfully with {ClusterCount} clusters.", delivery.Id, createdClusters.Count);
+        //        return new GeneralResponse<DeliveryReadDTO>
+        //        {
+        //            Success = true,
+        //            Message = "Delivery created successfully.",
+        //            Data = readDto
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "CreateAsync: Failed to create delivery for OrderId {OrderId}.", dto.OrderId);
+        //        return new GeneralResponse<DeliveryReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = $"Failed to create delivery: {ex.Message}",
+        //            Data = null
+        //        };
+        //    }
+        //}
+
+
+        //public async Task<GeneralResponse<DeliveryReadDTO>> CreateAsync(DeliveryCreateDTO dto)
+        //{
+        //    if (dto == null || string.IsNullOrWhiteSpace(dto.OrderId) || dto.CustomerLatitude < 0 || dto.CustomerLongitude < 0)
+        //    {
+        //        _logger.LogWarning("CreateAsync: Invalid input - DTO is null, OrderId is empty, or customer location missing.");
+        //        return new GeneralResponse<DeliveryReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Delivery data, OrderId, and customer location are required.",
+        //            Data = null
+        //        };
+        //    }
+
+        //    using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+
+        //    try
+        //    {
+        //        var order = await _orderRepo.GetOrderEntityByIdAsync(dto.OrderId);
+
+        //        if (order == null)
+        //        {
+        //            _logger.LogWarning("CreateAsync: Order {OrderId} not found.", dto.OrderId);
+        //            return new GeneralResponse<DeliveryReadDTO>
+        //            {
+        //                Success = false,
+        //                Message = "Order not found.",
+        //                Data = null
+        //            };
+        //        }
+
+        //        var distinctCompanies = order.OrderItems
+        //            .Select(i => i.Product?.TechCompanyId)
+        //            .Where(id => !string.IsNullOrWhiteSpace(id))
+        //            .Distinct()
+        //            .ToList();
+
+        //        bool isComplex = distinctCompanies.Count > 1;
+        //        _logger.LogInformation("CreateAsync: Order {OrderId} is {OrderType} ({CompanyCount} companies).",
+        //            order.Id, isComplex ? "Complex" : "Easy", distinctCompanies.Count);
+
+        //        var delivery = DeliveryMapper.ToEntity(dto);
+        //        delivery.OrderId = order.Id;
+        //        delivery.CustomerId = order.CustomerId;
+        //        delivery.DropoffLatitude = dto.CustomerLatitude;
+        //        delivery.DropoffLongitude = dto.CustomerLongitude;
+
+        //        await _deliveryRepo.AddAsync(delivery);
+        //        await _deliveryRepo.SaveChangesAsync();
+
+        //        var createdClusters = new List<DeliveryClusterDTO>();
+
+        //        async Task AssignDriverWithDistanceCheckAsync(DeliveryClusterDTO cluster, double pickupLat, double pickupLng)
+        //        {
+        //            if (!_settings.AssignNearestDriverFirst) return;
+
+        //            var availableDriversResponse = await _deliveryPersonService.GetAvailableDeliveryPersonsAsync();
+
+        //            var nearestDriver = availableDriversResponse.Data?
+        //                .OrderBy(d => _locationService.CalculateDistance((double)d.CurrentLatitude, (double)d.CurrentLongitude, pickupLat, pickupLng))
+        //                .FirstOrDefault();
+
+        //            if (nearestDriver != null)
+        //            {
+        //                double distanceToPickup = _locationService.CalculateDistance(
+        //                    (double)nearestDriver.CurrentLatitude, (double)nearestDriver.CurrentLongitude, pickupLat, pickupLng
+        //                );
+
+        //                if (_settings.EnableReassignment && distanceToPickup > _settings.MaxDriverDistanceKm)
+        //                {
+        //                    _logger.LogWarning("Driver {DriverId} too far ({Distance} km) from pickup {ClusterId}, reassigning...",
+        //                        nearestDriver.Id, distanceToPickup, cluster.Id);
+
+        //                    await CancelDeliveryAsync(nearestDriver.Id);
+
+        //                    await AutoAssignDriverAsync(delivery, cluster.Id, pickupLat, pickupLng);
+        //                }
+        //            }
+        //        }
+
+        //        var companies = isComplex
+        //            ? order.OrderItems.Select(i => i.Product.TechCompany).Distinct().ToList()
+        //            : new List<TechCompany> { order.OrderItems.First().Product.TechCompany };
+
+        //        foreach (var company in companies)
+        //        {
+        //            var clusterDto = new DeliveryClusterCreateDTO
+        //            {
+        //                TechCompanyId = company.Id,
+        //                TechCompanyName = company.Name,
+        //                DropoffLatitude = dto.CustomerLatitude,
+        //                DropoffLongitude = dto.CustomerLongitude
+        //            };
+
+        //            var clusterResult = await _clusterService.CreateClusterAsync(delivery.Id, clusterDto);
+        //            if (!clusterResult.Success)
+        //            {
+        //                _logger.LogError("CreateAsync: Cluster creation failed for delivery {DeliveryId}: {Message}", delivery.Id, clusterResult.Message);
+        //                return new GeneralResponse<DeliveryReadDTO>
+        //                {
+        //                    Success = false,
+        //                    Message = $"Cluster creation failed: {clusterResult.Message}",
+        //                    Data = null
+        //                };
+        //            }
+
+        //            var createdCluster = clusterResult.Data;
+        //            createdClusters.Add(createdCluster);
+
+        //            await AssignDriverWithDistanceCheckAsync(createdCluster, company.Latitude, company.Longitude);
+        //        }
+
+        //        var readDto = DeliveryMapper.ToReadDTO(delivery, createdClusters);
+        //        scope.Complete();
+
+        //        _logger.LogInformation("CreateAsync: Delivery {DeliveryId} created successfully with {ClusterCount} clusters.", delivery.Id, createdClusters.Count);
+
+        //        return new GeneralResponse<DeliveryReadDTO>
+        //        {
+        //            Success = true,
+        //            Message = "Delivery created successfully.",
+        //            Data = readDto
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "CreateAsync: Failed to create delivery for OrderId {OrderId}.", dto.OrderId);
+        //        return new GeneralResponse<DeliveryReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = $"Failed to create delivery: {ex.Message}",
+        //            Data = null
+        //        };
+        //    }
+        //}
 
         public async Task<GeneralResponse<DeliveryReadDTO>> CreateAsync(DeliveryCreateDTO dto)
         {
@@ -71,26 +288,104 @@ namespace Service
             }
 
             using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+
             try
             {
-                // Map and create delivery, set dropoff to customer location
+                var order = await _orderRepo.GetFirstOrDefaultAsync(
+                    o => o.Id == dto.OrderId,
+                    query => query
+                        .Include(o => o.OrderItems)
+                            .ThenInclude(oi => oi.Product)
+                                .ThenInclude(p => p.TechCompany)
+                );
+                if (order == null)
+                {
+                    _logger.LogWarning("CreateAsync: Order {OrderId} not found.", dto.OrderId);
+                    return new GeneralResponse<DeliveryReadDTO>
+                    {
+                        Success = false,
+                        Message = "Order not found.",
+                        Data = null
+                    };
+                }
+
+                var distinctCompanies = order.OrderItems
+                    .Select(i => i.Product?.TechCompany)
+                    .Where(c => c != null)
+                    .Distinct()
+                    .ToList();
+
+                bool isComplex = distinctCompanies.Count > 1;
+                _logger.LogInformation("CreateAsync: Order {OrderId} is {OrderType} ({CompanyCount} companies).",
+                    order.Id, isComplex ? "Complex" : "Easy", distinctCompanies.Count);
+
                 var delivery = DeliveryMapper.ToEntity(dto);
+                delivery.OrderId = order.Id;
+                delivery.CustomerId = order.CustomerId;
                 delivery.DropoffLatitude = dto.CustomerLatitude;
                 delivery.DropoffLongitude = dto.CustomerLongitude;
+
                 await _deliveryRepo.AddAsync(delivery);
                 await _deliveryRepo.SaveChangesAsync();
 
                 var createdClusters = new List<DeliveryClusterDTO>();
 
-                // Handle single or multi-company orders via clusters
-                foreach (var clusterDto in dto.Clusters ?? new List<DeliveryClusterCreateDTO>())
+                async Task AssignDriverWithDistanceCheckAsync(DeliveryClusterDTO cluster, double pickupLat, double pickupLng)
                 {
-                    // Set dropoff to customer for all clusters
-                    clusterDto.DropoffLatitude = dto.CustomerLatitude;
-                    clusterDto.DropoffLongitude = dto.CustomerLongitude;
+                    if (!_settings.AssignNearestDriverFirst) return;
+
+                    var availableDriversResp = await _deliveryPersonService.GetAvailableDeliveryPersonsAsync();
+                    var nearestDriver = availableDriversResp.Data?
+                        .Where(d => d.CurrentLatitude.HasValue && d.CurrentLongitude.HasValue)
+                        .OrderBy(d => _locationService.CalculateDistance(
+                            d.CurrentLatitude.Value,
+                            d.CurrentLongitude.Value,
+                            pickupLat,
+                            pickupLng))
+                        .FirstOrDefault();
+
+                    if (nearestDriver != null)
+                    {
+                        double distanceToPickup = _locationService.CalculateDistance(
+                            nearestDriver.CurrentLatitude.Value,
+                            nearestDriver.CurrentLongitude.Value,
+                            pickupLat,
+                            pickupLng
+                        );
+
+                        if (_settings.EnableReassignment && distanceToPickup > _settings.MaxDriverDistanceKm)
+                        {
+                            _logger.LogWarning("Driver {DriverId} too far ({Distance} km) from cluster {ClusterId}, reassigning...",
+                                nearestDriver.Id, distanceToPickup, cluster.Id);
+
+                            await CancelDeliveryAsync(cluster.Id);
+
+                            await AutoAssignDriverAsync(delivery, cluster.Id, pickupLat, pickupLng);
+                        }
+                        else
+                        {
+                            await AutoAssignDriverAsync(delivery, cluster.Id, pickupLat, pickupLng);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("No available drivers found for cluster {ClusterId}", cluster.Id);
+                    }
+                }
+
+                var companies = isComplex ? distinctCompanies : new List<TechCompany> { distinctCompanies.First() };
+
+                foreach (var company in companies)
+                {
+                    var clusterDto = new DeliveryClusterCreateDTO
+                    {
+                        TechCompanyId = company.Id,
+                        TechCompanyName = company.User.FullName,
+                        DropoffLatitude = dto.CustomerLatitude,
+                        DropoffLongitude = dto.CustomerLongitude
+                    };
 
                     var clusterResult = await _clusterService.CreateClusterAsync(delivery.Id, clusterDto);
-
                     if (!clusterResult.Success)
                     {
                         _logger.LogError("CreateAsync: Cluster creation failed for delivery {DeliveryId}: {Message}", delivery.Id, clusterResult.Message);
@@ -105,16 +400,18 @@ namespace Service
                     var createdCluster = clusterResult.Data;
                     createdClusters.Add(createdCluster);
 
-                    if (string.IsNullOrWhiteSpace(createdCluster.AssignedDriverId))
-                    {
-                        // Auto-assign nearest driver from customer location
-                        await AutoAssignDriverAsync(delivery, createdCluster.Id, dto.CustomerLatitude, dto.CustomerLongitude);
-                    }
+                    double pickupLat = company.User.Latitude ?? dto.CustomerLatitude;
+                    double pickupLng = company.User.Longitude ?? dto.CustomerLongitude;
+
+                    await AssignDriverWithDistanceCheckAsync(createdCluster, pickupLat, pickupLng);
                 }
 
                 var readDto = DeliveryMapper.ToReadDTO(delivery, createdClusters);
                 scope.Complete();
-                _logger.LogInformation("CreateAsync: Delivery {DeliveryId} created successfully with {ClusterCount} clusters.", delivery.Id, createdClusters.Count);
+
+                _logger.LogInformation("CreateAsync: Delivery {DeliveryId} created successfully with {ClusterCount} clusters.",
+                    delivery.Id, createdClusters.Count);
+
                 return new GeneralResponse<DeliveryReadDTO>
                 {
                     Success = true,

@@ -10,6 +10,7 @@ namespace Core.DTOs.DeliveryDTOs
     public class DeliveryCreateDTO
     {
         public string OrderId { get; set; }
+        public string customerId { get; set; }
         public double CustomerLatitude { get; set; }
         public double CustomerLongitude { get; set; }
         public List<DeliveryClusterCreateDTO> Clusters { get; set; } = new();
