@@ -39,8 +39,14 @@ namespace Service.Utilities
                 CategoryName = product.Category?.Name ?? string.Empty,
                 SubCategoryName = product.SubCategory?.Name ?? string.Empty,
                 CategoryEnum = categoryEnum,
-                ImageUrl = product.ImageUrl,
-                ImageUrls = product.ImagesURLS,
+                ImageUrl = product.ImageUrl ?? "assets/products/default-product.png",
+                ImageUrls = (product.ImagesURLS != null && product.ImagesURLS.Any()) ? product.ImagesURLS : new List<string>
+                                                                                      {
+                                                                                        "assets/products/default-product.png",
+                                                                                        "assets/products/default-product.png",
+                                                                                        "assets/products/default-product.png",
+                                                                                        "assets/products/default-product.png"
+                                                                                      },
                 Status = product.status,
                 DiscountPrice = product.DiscountPrice,
                 TechCompanyId = product.TechCompanyId, 
@@ -104,8 +110,14 @@ namespace Service.Utilities
                 Price = product.Price,
                 DiscountPrice = product.DiscountPrice,
                 Status = product.status.ToString(),
-                ImageUrl = product.ImageUrl,
-                ImageURLs = product.ImagesURLS,
+                ImageUrl = product.ImageUrl ?? "assets/products/default-product.png",
+                ImageURLs = (product.ImagesURLS != null && product.ImagesURLS.Any())? product.ImagesURLS: new List<string>
+                                                                                      {
+                                                                                        "assets/products/default-product.png",
+                                                                                        "assets/products/default-product.png",
+                                                                                        "assets/products/default-product.png",
+                                                                                        "assets/products/default-product.png"
+                                                                                      },
                 CategoryId = product.CategoryId,
                 CategoryName = product.Category?.Name ?? string.Empty,
                 SubCategoryId = product.SubCategoryId,

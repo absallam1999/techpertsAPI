@@ -57,7 +57,7 @@ namespace Service.Utilities
                 Quantity = item.Quantity,
                 ImageUrl = isCustom
                     ? "/images/custom-build.png"
-                    : item.Product?.ImageUrl ?? string.Empty,
+                    : item.Product?.ImageUrl ?? "assets/products/default-product.png",
                 Stock = isCustom
                     ? 1
                     : item.Product?.Stock ?? 0,
@@ -126,7 +126,7 @@ namespace Service.Utilities
                 ProductName = orderItem.Product?.Name ?? "Unknown Product", 
                 Quantity = orderItem.Quantity,
                 UnitPrice = orderItem.UnitPrice,
-                ImageUrl = orderItem.Product?.ImageUrl ?? string.Empty,
+                ImageUrl = orderItem.Product?.ImageUrl ?? "assets/products/default-product.png",
                 ItemTotal = orderItem.ItemTotal
             };
         }

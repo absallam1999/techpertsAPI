@@ -26,6 +26,6 @@ namespace Core.DTOs.ProductDTOs
         public List<WarrantyDTO>? Warranties { get; set; }
         public string Status { get; set; } = "Pending";
         public string TechCompanyId { get; set; }
-        public string TechCompanyName { get; set; }
+        public string? TechCompanyName { get; set; }
     }
 }

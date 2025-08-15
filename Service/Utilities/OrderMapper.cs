@@ -47,7 +47,7 @@ namespace Service.Utilities
                 ProductName = item.Product?.Name ?? "Unknown Product",
                 Quantity = item.Quantity,
                 UnitPrice = item.UnitPrice,
-                ImageUrl = item.Product?.ImageUrl ?? string.Empty,
+                ImageUrl = item.Product?.ImageUrl ?? "assets/products/default-product.png",
                 ItemTotal = item.ItemTotal
             };
         }

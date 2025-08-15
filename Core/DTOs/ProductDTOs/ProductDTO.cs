@@ -27,7 +27,7 @@ namespace Core.DTOs.ProductDTOs
         public string? ImageUrl { get; set; }
         public List<string>? ImageUrls { get; set; }
 
-        public string TechCompanyName { get; set; } = null!;
+        public string? TechCompanyName { get; set; }
         public string TechCompanyAddress { get; set; } = null!;
         
         public List<SpecificationDTO>? Specifications { get; set; }
