@@ -52,16 +52,17 @@ namespace Service
             try
             {
                 var categories = await _categoryRepository.GetAllAsync(q => q
-                    .Include(c => c.Products)
-                        .ThenInclude(p => p.Specifications)
-                    .Include(c => c.Products)
-                        .ThenInclude(p => p.Warranties)
-                    .Include(c => c.Products)
-                        .ThenInclude(p => p.SubCategory)
-                    .Include(c => c.Products)
-                        .ThenInclude(p => p.TechCompany)
-                    .Include(c => c.SubCategories)
-                        .ThenInclude(cs => cs.SubCategory));
+                                                        .Include(c => c.Products)
+                                                            .ThenInclude(p => p.Specifications)
+                                                        .Include(c => c.Products)
+                                                            .ThenInclude(p => p.Warranties)
+                                                        .Include(c => c.Products)
+                                                            .ThenInclude(p => p.SubCategory)
+                                                        .Include(c => c.Products)
+                                                            .ThenInclude(p => p.TechCompany)
+                                                                .ThenInclude(tc => tc.User) 
+                                                        .Include(c => c.SubCategories)
+                                                            .ThenInclude(cs => cs.SubCategory));
 
                 // Use the centralized mapper for each category.
                 var categoryDtos = categories.Select(CategoryMapper.MapToCategoryDTO)
@@ -100,18 +101,18 @@ namespace Service
 
             try
             {
-                var category = await _categoryRepository.GetFirstOrDefaultAsync(
-                                c => c.Id == id,
-                                q => q.Include(c => c.Products)
-                                    .ThenInclude(p => p.Specifications)
-                                .Include(c => c.Products)
-                                    .ThenInclude(p => p.Warranties)
-                                .Include(c => c.Products)
-                                    .ThenInclude(p => p.SubCategory)
-                                .Include(c => c.Products)
-                                    .ThenInclude(p => p.TechCompany)
-                                .Include(c => c.SubCategories)
-                                    .ThenInclude(cs => cs.SubCategory));
+                var category = await _categoryRepository.GetFirstOrDefaultAsync(c => c.Id == id,q => q
+                                                        .Include(c => c.Products)
+                                                            .ThenInclude(p => p.Specifications)
+                                                        .Include(c => c.Products)
+                                                            .ThenInclude(p => p.Warranties)
+                                                        .Include(c => c.Products)
+                                                            .ThenInclude(p => p.SubCategory)
+                                                        .Include(c => c.Products)
+                                                            .ThenInclude(p => p.TechCompany)
+                                                                .ThenInclude(tc => tc.User) 
+                                                        .Include(c => c.SubCategories)
+                                                            .ThenInclude(cs => cs.SubCategory));
 
                 if (category == null)
                 {
@@ -157,18 +158,18 @@ namespace Service
 
             try
             {
-                var category = await _categoryRepository.GetFirstOrDefaultAsync(
-                    c => c.Name == name,
-                    q => q.Include(c => c.Products)
-                        .ThenInclude(p => p.Specifications)
-                    .Include(c => c.Products)
-                        .ThenInclude(p => p.Warranties)
-                    .Include(c => c.Products)
-                        .ThenInclude(p => p.SubCategory)
-                    .ThenInclude(c => c.Products)
-                        .ThenInclude(p => p.TechCompany)
-                    .Include(c => c.SubCategories)
-                        .ThenInclude(cs => cs.SubCategory));
+                var category = await _categoryRepository.GetFirstOrDefaultAsync(c => c.Name == name,q => q
+                                                        .Include(c => c.Products)
+                                                            .ThenInclude(p => p.Specifications)
+                                                        .Include(c => c.Products)
+                                                            .ThenInclude(p => p.Warranties)
+                                                        .Include(c => c.Products)
+                                                            .ThenInclude(p => p.SubCategory)
+                                                        .Include(c => c.Products)
+                                                            .ThenInclude(p => p.TechCompany)
+                                                                .ThenInclude(tc => tc.User)
+                                                        .Include(c => c.SubCategories)
+                                                            .ThenInclude(cs => cs.SubCategory));
 
                 if (category == null)
                 {
