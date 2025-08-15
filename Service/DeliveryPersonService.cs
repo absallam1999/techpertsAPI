@@ -157,7 +157,7 @@ namespace Service
                 return new GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while retrieving available delivery persons.",
+                    Message = $"An unexpected error occurred while retrieving available delivery persons.{ex}",
                     Data = null
                 };
             }

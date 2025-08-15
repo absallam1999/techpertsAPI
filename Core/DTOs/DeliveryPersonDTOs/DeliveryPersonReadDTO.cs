@@ -23,5 +23,7 @@ namespace Core.DTOs.DeliveryPersonDTOs
         public string? UserName { get; set; }
         public string? UserFullName { get; set; }
         public string? RoleName { get; set; }
+        public double? CurrentLatitude { get; set; }
+        public double? CurrentLongitude { get; set; }
     }
 } 

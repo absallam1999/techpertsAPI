@@ -9,14 +9,9 @@ namespace Core.DTOs.DeliveryDTOs
 {
     public class DeliveryCreateDTO
     {
-        public string? TrackingNumber { get; set; }
-        public string? DeliveryAddress { get; set; }
-        public string? CustomerPhone { get; set; }
-        public string? CustomerName { get; set; }
-        public DateTime? EstimatedDeliveryDate { get; set; }
-        public string? Notes { get; set; }
-        public decimal? DeliveryFee { get; set; }
-        public string? DeliveryPersonId { get; set; }
-        public string? CustomerId { get; set; }
+        public string OrderId { get; set; }
+        public double CustomerLatitude { get; set; }
+        public double CustomerLongitude { get; set; }
+        public List<DeliveryClusterCreateDTO> Clusters { get; set; } = new();
     }
-} 
+}

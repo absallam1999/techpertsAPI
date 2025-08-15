@@ -1,5 +1,6 @@
 using Core.DTOs;
 using Core.DTOs.DeliveryDTOs;
+using Core.DTOs.DeliveryPersonDTOs;
 using Core.Entities;
 using Core.Enums;
 using Core.Interfaces;
@@ -10,1037 +11,1030 @@ using Service.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime;
 using System.Threading.Tasks;
+using System.Transactions;
+using Microsoft.Extensions.Logging;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service
 {
     public class DeliveryService : IDeliveryService
     {
-        private readonly IRepository<Delivery> _deliveryrepo;
-        private readonly IRepository<DeliveryPerson> _deliveryPersonRepo;
+        private readonly IRepository<Delivery> _deliveryRepo;
         private readonly IRepository<DeliveryOffer> _deliveryOfferRepo;
+        private readonly IRepository<TechCompany> _techCompanyRepo;
+        private readonly IRepository<DeliveryCluster> _deliveryClusterRepo;
+        private readonly IDeliveryClusterService _clusterService;
+        private readonly LocationService _locationService;
+        private readonly IDeliveryPersonService _deliveryPersonService;
         private readonly INotificationService _notificationService;
+        private readonly DeliveryAssignmentSettings _settings;
+        private readonly ILogger<DeliveryService> _logger;
 
-        public DeliveryService(IRepository<Delivery> deliveryRepo, IRepository<DeliveryPerson> deliveryPersonRepo, IRepository<DeliveryOffer> deliveryOfferRepo, INotificationService notificationService)
+        public DeliveryService(
+            IRepository<Delivery> deliveryRepo,
+            IRepository<DeliveryOffer> deliveryOfferRepo,
+            IRepository<TechCompany> techCompanyRepo,
+            IRepository<DeliveryCluster> deliveryClusterRepo,
+            IDeliveryClusterService clusterService,
+            LocationService locationService,
+            IDeliveryPersonService deliveryPersonService,
+            INotificationService notificationService,
+            DeliveryAssignmentSettings settings,
+            ILogger<DeliveryService> logger)
         {
-            _deliveryrepo = deliveryRepo;
-            _deliveryOfferRepo = deliveryOfferRepo;
-            _deliveryPersonRepo = deliveryPersonRepo;
-            _notificationService = notificationService;
+            _deliveryRepo = deliveryRepo ?? throw new ArgumentNullException(nameof(deliveryRepo));
+            _deliveryOfferRepo = deliveryOfferRepo ?? throw new ArgumentNullException(nameof(deliveryOfferRepo));
+            _techCompanyRepo = techCompanyRepo ?? throw new ArgumentNullException(nameof(techCompanyRepo));
+            _deliveryClusterRepo = deliveryClusterRepo ?? throw new ArgumentNullException(nameof(deliveryClusterRepo));
+            _clusterService = clusterService ?? throw new ArgumentNullException(nameof(clusterService));
+            _locationService = locationService ?? throw new ArgumentNullException(nameof(locationService));
+            _deliveryPersonService = deliveryPersonService ?? throw new ArgumentNullException(nameof(deliveryPersonService));
+            _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<GeneralResponse<IEnumerable<DeliveryDTO>>> GetAllAsync()
+        public async Task<GeneralResponse<DeliveryReadDTO>> CreateAsync(DeliveryCreateDTO dto)
         {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.OrderId) || dto.CustomerLatitude < 0 || dto.CustomerLongitude < 0)
+            {
+                _logger.LogWarning("CreateAsync: Invalid input - DTO is null, OrderId is empty, or customer location missing.");
+                return new GeneralResponse<DeliveryReadDTO>
+                {
+                    Success = false,
+                    Message = "Delivery data, OrderId, and customer location are required.",
+                    Data = null
+                };
+            }
+
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
             try
             {
-                // Optimized includes for delivery listing with essential related data
-                var deliveries = await _deliveryrepo.GetAllWithIncludesAsync(
-                    d => d.Customer,
-                    d => d.Customer.User,
-                    d => d.DeliveryPerson,
-                    d => d.DeliveryPerson.User);
+                // Map and create delivery, set dropoff to customer location
+                var delivery = DeliveryMapper.ToEntity(dto);
+                delivery.DropoffLatitude = dto.CustomerLatitude;
+                delivery.DropoffLongitude = dto.CustomerLongitude;
+                await _deliveryRepo.AddAsync(delivery);
+                await _deliveryRepo.SaveChangesAsync();
 
-                var deliveryDtos = deliveries.Select(DeliveryMapper.MapToDeliveryDTO).ToList();
+                var createdClusters = new List<DeliveryClusterDTO>();
 
-                return new GeneralResponse<IEnumerable<DeliveryDTO>>
+                // Handle single or multi-company orders via clusters
+                foreach (var clusterDto in dto.Clusters ?? new List<DeliveryClusterCreateDTO>())
                 {
-                    Success = true,
-                    Message = "Deliveries retrieved successfully.",
-                    Data = deliveryDtos
-                };
-            }
-            catch (Exception ex)
-            {
-                return new GeneralResponse<IEnumerable<DeliveryDTO>>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred while retrieving deliveries.",
-                    Data = null
-                };
-            }
-        }
+                    // Set dropoff to customer for all clusters
+                    clusterDto.DropoffLatitude = dto.CustomerLatitude;
+                    clusterDto.DropoffLongitude = dto.CustomerLongitude;
 
-        public async Task<GeneralResponse<DeliveryDTO>> GetByIdAsync(string id)
-        {
-            
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = false,
-                    Message = "Delivery ID cannot be null or empty.",
-                    Data = null
-                };
-            }
+                    var clusterResult = await _clusterService.CreateClusterAsync(delivery.Id, clusterDto);
 
-            if (!Guid.TryParse(id, out _))
-            {
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = false,
-                    Message = "Invalid Delivery ID format. Expected GUID format.",
-                    Data = null
-                };
-            }
-
-            try
-            {
-                // Comprehensive includes for detailed delivery view
-                var delivery = await _deliveryrepo.GetByIdWithIncludesAsync(id,
-                    d => d.Customer,
-                    d => d.Customer.User,
-                    d => d.DeliveryPerson,
-                    d => d.DeliveryPerson.User);
-
-                if (delivery == null)
-                {
-                    return new GeneralResponse<DeliveryDTO>
+                    if (!clusterResult.Success)
                     {
-                        Success = false,
-                        Message = $"Delivery with ID '{id}' not found.",
-                        Data = null
-                    };
+                        _logger.LogError("CreateAsync: Cluster creation failed for delivery {DeliveryId}: {Message}", delivery.Id, clusterResult.Message);
+                        return new GeneralResponse<DeliveryReadDTO>
+                        {
+                            Success = false,
+                            Message = $"Cluster creation failed: {clusterResult.Message}",
+                            Data = null
+                        };
+                    }
+
+                    var createdCluster = clusterResult.Data;
+                    createdClusters.Add(createdCluster);
+
+                    if (string.IsNullOrWhiteSpace(createdCluster.AssignedDriverId))
+                    {
+                        // Auto-assign nearest driver from customer location
+                        await AutoAssignDriverAsync(delivery, createdCluster.Id, dto.CustomerLatitude, dto.CustomerLongitude);
+                    }
                 }
 
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = true,
-                    Message = "Delivery retrieved successfully.",
-                    Data = DeliveryMapper.MapToDeliveryDTO(delivery)
-                };
-            }
-            catch (Exception ex)
-            {
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred while retrieving the delivery.",
-                    Data = null
-                };
-            }
-        }
-
-        public async Task<GeneralResponse<DeliveryDTO>> AddAsync(DeliveryCreateDTO dto)
-        {
-            try
-            {
-                var entity = DeliveryMapper.MapToDelivery(dto);
-
-                await _deliveryrepo.AddAsync(entity);
-                await _deliveryrepo.SaveChangesAsync();
-
-                return new GeneralResponse<DeliveryDTO>
+                var readDto = DeliveryMapper.ToReadDTO(delivery, createdClusters);
+                scope.Complete();
+                _logger.LogInformation("CreateAsync: Delivery {DeliveryId} created successfully with {ClusterCount} clusters.", delivery.Id, createdClusters.Count);
+                return new GeneralResponse<DeliveryReadDTO>
                 {
                     Success = true,
                     Message = "Delivery created successfully.",
-                    Data = DeliveryMapper.MapToDeliveryDTO(entity)
+                    Data = readDto
                 };
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<DeliveryDTO>
+                _logger.LogError(ex, "CreateAsync: Failed to create delivery for OrderId {OrderId}.", dto.OrderId);
+                return new GeneralResponse<DeliveryReadDTO>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while creating the delivery.",
+                    Message = $"Failed to create delivery: {ex.Message}",
                     Data = null
                 };
             }
         }
 
-        public async Task<GeneralResponse<DeliveryDTO>> UpdateAsync(string id, DeliveryUpdateDTO dto)
+        public async Task<GeneralResponse<bool>> AssignDriverToClusterAsync(string clusterId, string driverId)
+        {
+            if (string.IsNullOrWhiteSpace(clusterId) || string.IsNullOrWhiteSpace(driverId))
+            {
+                _logger.LogWarning("AssignDriverToClusterAsync: Invalid input - clusterId or driverId is empty.");
+                return new GeneralResponse<bool> { Success = false, Message = "Cluster ID and Driver ID are required." };
+            }
+
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+            try
+            {
+                var clusterResult = await _clusterService.GetByIdAsync(clusterId);
+                if (!clusterResult.Success || clusterResult.Data == null)
+                {
+                    _logger.LogWarning("AssignDriverToClusterAsync: Cluster {ClusterId} not found.", clusterId);
+                    return new GeneralResponse<bool> { Success = false, Message = "Cluster not found." };
+                }
+
+                var cluster = clusterResult.Data;
+                var delivery = await _deliveryRepo.GetByIdAsync(cluster.DeliveryId);
+                if (delivery == null)
+                {
+                    _logger.LogWarning("AssignDriverToClusterAsync: Delivery {DeliveryId} not found for cluster {ClusterId}.", cluster.DeliveryId, clusterId);
+                    return new GeneralResponse<bool> { Success = false, Message = "Delivery not found." };
+                }
+
+                var assignResult = await _clusterService.AssignDriverAsync(clusterId, driverId);
+                if (!assignResult.Success)
+                {
+                    _logger.LogError("AssignDriverToClusterAsync: Failed to assign driver {DriverId} to cluster {ClusterId}: {Message}", driverId, clusterId, assignResult.Message);
+                    return new GeneralResponse<bool> { Success = false, Message = assignResult.Message };
+                }
+
+                delivery.DeliveryPersonId = driverId;
+                delivery.Status = DeliveryStatus.Assigned;
+                _deliveryRepo.Update(delivery);
+
+                var offer = new DeliveryOffer
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    DeliveryId = delivery.Id,
+                    ClusterId = clusterId,  // Link to cluster
+                    DeliveryPersonId = driverId,
+                    Status = DeliveryOfferStatus.Pending,
+                    CreatedAt = DateTime.UtcNow,
+                    ExpiryTime = DateTime.UtcNow.Add(_settings.OfferExpiryTime),
+                    IsActive = true
+                };
+                await _deliveryOfferRepo.AddAsync(offer);
+                await _deliveryOfferRepo.SaveChangesAsync();
+
+                await _notificationService.SendNotificationAsync(
+                    driverId,
+                    $"New delivery offer: #{delivery.TrackingNumber ?? delivery.Id} assigned to you.",
+                    NotificationType.DeliveryOfferCreated,
+                    delivery.Id,
+                    "Delivery");
+
+                scope.Complete();
+                _logger.LogInformation("AssignDriverToClusterAsync: Driver {DriverId} assigned to cluster {ClusterId}.", driverId, clusterId);
+                return new GeneralResponse<bool> { Success = true, Message = "Driver assigned successfully.", Data = true };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "AssignDriverToClusterAsync: Failed to assign driver {DriverId} to cluster {ClusterId}.", driverId, clusterId);
+                return new GeneralResponse<bool> { Success = false, Message = $"Failed to assign driver: {ex.Message}", Data = false };
+            }
+        }
+
+        public async Task<GeneralResponse<bool>> AcceptDeliveryAsync(string clusterId, string driverId)
+        {
+            if (string.IsNullOrWhiteSpace(clusterId) || string.IsNullOrWhiteSpace(driverId))
+            {
+                _logger.LogWarning("AcceptDeliveryAsync: Invalid input - clusterId or driverId is empty.");
+                return new GeneralResponse<bool> { Success = false, Message = "Cluster ID and Driver ID are required." };
+            }
+
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+            try
+            {
+                var clusterResult = await _clusterService.GetByIdAsync(clusterId);
+                if (!clusterResult.Success || clusterResult.Data == null)
+                {
+                    _logger.LogWarning("AcceptDeliveryAsync: Cluster {ClusterId} not found.", clusterId);
+                    return new GeneralResponse<bool> { Success = false, Message = "Cluster not found." };
+                }
+
+                var cluster = clusterResult.Data;
+                if (cluster.AssignedDriverId != driverId)
+                {
+                    _logger.LogWarning("AcceptDeliveryAsync: Driver {DriverId} not assigned to cluster {ClusterId}.", driverId, clusterId);
+                    return new GeneralResponse<bool> { Success = false, Message = "Driver not assigned to this cluster." };
+                }
+
+                var delivery = await _deliveryRepo.GetByIdAsync(cluster.DeliveryId);
+                if (delivery == null)
+                {
+                    _logger.LogWarning("AcceptDeliveryAsync: Delivery {DeliveryId} not found for cluster {ClusterId}.", cluster.DeliveryId, clusterId);
+                    return new GeneralResponse<bool> { Success = false, Message = "Delivery not found." };
+                }
+
+                var offer = (await _deliveryOfferRepo.GetAllAsync()).FirstOrDefault(o => o.ClusterId == clusterId && o.DeliveryPersonId == driverId && o.IsActive);
+                if (offer == null)
+                {
+                    _logger.LogWarning("AcceptDeliveryAsync: No active offer found for driver {DriverId} in cluster {ClusterId}.", driverId, clusterId);
+                    return new GeneralResponse<bool> { Success = false, Message = "No active offer found." };
+                }
+
+                offer.Status = DeliveryOfferStatus.Accepted;
+                offer.RespondedAt = DateTime.UtcNow;
+                offer.IsActive = false;
+                _deliveryOfferRepo.Update(offer);
+
+                // Get driver location
+                var driverResponse = await _deliveryPersonService.GetByIdAsync(driverId);
+                if (!driverResponse.Success || driverResponse.Data == null)
+                {
+                    _logger.LogWarning("AcceptDeliveryAsync: Driver {DriverId} not found.", driverId);
+                    return new GeneralResponse<bool> { Success = false, Message = "Driver not found." };
+                }
+                var driverDto = driverResponse.Data;
+                var driverLat = driverDto.CurrentLatitude ?? throw new InvalidOperationException("Driver location missing.");
+                var driverLon = driverDto.CurrentLongitude ?? throw new InvalidOperationException("Driver location missing.");
+
+                bool isSplit = false;
+                string newClusterId = clusterId;
+
+                if (!string.IsNullOrWhiteSpace(cluster.TechCompanyId))
+                {
+                    var techCompany = await _techCompanyRepo.GetByIdAsync(cluster.TechCompanyId);
+                    if (techCompany == null || !techCompany.Latitude.HasValue || !techCompany.Longitude.HasValue)
+                    {
+                        _logger.LogWarning("AcceptDeliveryAsync: Tech company {TechCompanyId} location missing for cluster {ClusterId}.", cluster.TechCompanyId, clusterId);
+                        return new GeneralResponse<bool> { Success = false, Message = "Tech company location missing." };
+                    }
+                    var companyLat = techCompany.Latitude.Value;
+                    var companyLon = techCompany.Longitude.Value;
+
+                    var distanceToCompany = _locationService.CalculateDistance(driverLat, driverLon, companyLat, companyLon);
+
+                    if (distanceToCompany > _settings.MaxDriverDistanceKm)
+                    {
+                        isSplit = true;
+                        var customerLat = cluster.DropoffLatitude ?? delivery.DropoffLatitude ?? throw new InvalidOperationException("Customer location missing.");
+                        var customerLon = cluster.DropoffLongitude ?? delivery.DropoffLongitude ?? throw new InvalidOperationException("Customer location missing.");
+
+                        var (handoverLat, handoverLon) = _locationService.GetMidpoint(companyLat, companyLon, customerLat, customerLon);
+
+                        // Create pickup leg (company to handover)
+                        var pickupClusterDto = new DeliveryClusterCreateDTO
+                        {
+                            DeliveryId = delivery.Id,
+                            TechCompanyId = cluster.TechCompanyId,
+                            TechCompanyName = cluster.TechCompanyName,
+                            DistanceKm = _locationService.CalculateDistance(companyLat, companyLon, handoverLat, handoverLon),
+                            Price = cluster.Price / 2,  // Adjust pricing logic as needed
+                            DropoffLatitude = handoverLat,
+                            DropoffLongitude = handoverLon,
+                            SequenceOrder = cluster.SequenceOrder
+                        };
+                        var pickupResult = await _clusterService.CreateClusterAsync(delivery.Id, pickupClusterDto);
+                        if (!pickupResult.Success)
+                        {
+                            _logger.LogError("AcceptDeliveryAsync: Failed to create pickup cluster: {Message}", pickupResult.Message);
+                            return new GeneralResponse<bool> { Success = false, Message = pickupResult.Message };
+                        }
+
+                        // Auto-assign pickup leg nearest to company (no override, uses company location)
+                        await AutoAssignDriverAsync(delivery, pickupResult.Data.Id);
+
+                        // Create delivery leg (handover to customer, assign original driver)
+                        var deliveryLegDto = new DeliveryClusterCreateDTO
+                        {
+                            DeliveryId = delivery.Id,
+                            DistanceKm = _locationService.CalculateDistance(handoverLat, handoverLon, customerLat, customerLon),
+                            Price = cluster.Price / 2,
+                            PickupLatitude = handoverLat,
+                            PickupLongitude = handoverLon,
+                            DropoffLatitude = customerLat,
+                            DropoffLongitude = customerLon,
+                            SequenceOrder = cluster.SequenceOrder + 1,
+                            AssignedDriverId = driverId
+                        };
+                        var deliveryLegResult = await _clusterService.CreateClusterAsync(delivery.Id, deliveryLegDto);
+                        if (!deliveryLegResult.Success)
+                        {
+                            _logger.LogError("AcceptDeliveryAsync: Failed to create delivery leg cluster: {Message}", deliveryLegResult.Message);
+                            return new GeneralResponse<bool> { Success = false, Message = deliveryLegResult.Message };
+                        }
+
+                        newClusterId = deliveryLegResult.Data.Id;
+
+                        // Update offer to new delivery leg
+                        offer.ClusterId = newClusterId;
+                        _deliveryOfferRepo.Update(offer);
+
+                        // Delete original cluster
+                        var deleteResult = await _clusterService.DeleteClusterAsync(clusterId);
+                        if (!deleteResult.Success)
+                        {
+                            _logger.LogError("AcceptDeliveryAsync: Failed to delete original cluster {ClusterId}: {Message}", clusterId, deleteResult.Message);
+                            return new GeneralResponse<bool> { Success = false, Message = deleteResult.Message };
+                        }
+
+                        await _notificationService.SendNotificationAsync(
+                            driverId,
+                            $"Delivery updated for #{delivery.TrackingNumber ?? delivery.Id} due to distance split.",
+                            NotificationType.DeliveryAssigned,
+                            delivery.Id,
+                            "Delivery");
+                    }
+                }
+
+                // Update statuses
+                delivery.Status = DeliveryStatus.Assigned;
+                _deliveryRepo.Update(delivery);
+
+                var updatedClusterDto = new DeliveryClusterDTO
+                {
+                    Id = newClusterId,
+                    DeliveryId = delivery.Id,
+                    TechCompanyId = cluster.TechCompanyId,
+                    TechCompanyName = cluster.TechCompanyName,
+                    DistanceKm = cluster.DistanceKm,
+                    Price = cluster.Price,
+                    Status = DeliveryClusterStatus.Assigned,
+                    AssignedDriverId = driverId,
+                    AssignedDriverName = cluster.AssignedDriverName,
+                    AssignmentTime = DateTime.UtcNow,
+                    DropoffLatitude = cluster.DropoffLatitude,
+                    DropoffLongitude = cluster.DropoffLongitude,
+                    SequenceOrder = cluster.SequenceOrder,
+                    DriverOfferCount = cluster.DriverOfferCount,
+                    Latitude = cluster.Latitude,
+                    Longitude = cluster.Longitude,
+                    EstimatedDistance = cluster.EstimatedDistance,
+                    EstimatedPrice = cluster.EstimatedPrice,
+                    PickupLatitude = cluster.PickupLatitude,
+                    PickupLongitude = cluster.PickupLongitude
+                };
+                var clusterUpdate = await _clusterService.UpdateClusterAsync(newClusterId, updatedClusterDto);
+                if (!clusterUpdate.Success)
+                {
+                    _logger.LogError("AcceptDeliveryAsync: Failed to update cluster {ClusterId}: {Message}", newClusterId, clusterUpdate.Message);
+                    return new GeneralResponse<bool> { Success = false, Message = clusterUpdate.Message };
+                }
+
+                await _deliveryRepo.SaveChangesAsync();
+                await _deliveryOfferRepo.SaveChangesAsync();
+
+                await _notificationService.SendNotificationAsync(
+                    driverId,
+                    $"Delivery offer accepted: #{delivery.TrackingNumber ?? delivery.Id}.",
+                    NotificationType.DeliveryOfferAccepted,
+                    delivery.Id,
+                    "Delivery");
+
+                scope.Complete();
+                _logger.LogInformation("AcceptDeliveryAsync: Driver {DriverId} accepted cluster {ClusterId} (split: {IsSplit}).", driverId, clusterId, isSplit);
+                return new GeneralResponse<bool> { Success = true, Message = "Delivery offer accepted.", Data = true };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "AcceptDeliveryAsync: Failed for driver {DriverId} on cluster {ClusterId}.", driverId, clusterId);
+                return new GeneralResponse<bool> { Success = false, Message = $"Failed to accept delivery: {ex.Message}", Data = false };
+            }
+        }
+
+        public async Task<GeneralResponse<bool>> DeclineDeliveryAsync(string clusterId, string driverId)
+        {
+            if (string.IsNullOrWhiteSpace(clusterId) || string.IsNullOrWhiteSpace(driverId))
+            {
+                _logger.LogWarning("DeclineDeliveryAsync: Invalid input - clusterId or driverId is empty.");
+                return new GeneralResponse<bool> { Success = false, Message = "Cluster ID and Driver ID are required." };
+            }
+
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+            try
+            {
+                var clusterResult = await _clusterService.GetByIdAsync(clusterId);
+                if (!clusterResult.Success || clusterResult.Data == null)
+                {
+                    _logger.LogWarning("DeclineDeliveryAsync: Cluster {ClusterId} not found.", clusterId);
+                    return new GeneralResponse<bool> { Success = false, Message = "Cluster not found." };
+                }
+
+                var cluster = clusterResult.Data;
+                if (cluster.AssignedDriverId != driverId)
+                {
+                    _logger.LogWarning("DeclineDeliveryAsync: Driver {DriverId} not assigned to cluster {ClusterId}.", driverId, clusterId);
+                    return new GeneralResponse<bool> { Success = false, Message = "Driver not assigned to this cluster." };
+                }
+
+                var delivery = await _deliveryRepo.GetByIdAsync(cluster.DeliveryId);
+                if (delivery == null)
+                {
+                    _logger.LogWarning("DeclineDeliveryAsync: Delivery {DeliveryId} not found for cluster {ClusterId}.", cluster.DeliveryId, clusterId);
+                    return new GeneralResponse<bool> { Success = false, Message = "Delivery not found." };
+                }
+
+                var offer = (await _deliveryOfferRepo.GetAllAsync()).FirstOrDefault(o => o.ClusterId == clusterId && o.DeliveryPersonId == driverId && o.IsActive);
+                if (offer == null)
+                {
+                    _logger.LogWarning("DeclineDeliveryAsync: No active offer found for driver {DriverId} in cluster {ClusterId}.", driverId, clusterId);
+                    return new GeneralResponse<bool> { Success = false, Message = "No active offer found." };
+                }
+
+                offer.Status = DeliveryOfferStatus.Declined;
+                offer.RespondedAt = DateTime.UtcNow;
+                offer.IsActive = false;
+                _deliveryOfferRepo.Update(offer);
+
+                // Clear assignment
+                var clusterUpdateDto = new DeliveryClusterDTO
+                {
+                    Id = cluster.Id,
+                    DeliveryId = cluster.DeliveryId,
+                    TechCompanyId = cluster.TechCompanyId,
+                    TechCompanyName = cluster.TechCompanyName,
+                    DistanceKm = cluster.DistanceKm,
+                    Price = cluster.Price,
+                    Status = DeliveryClusterStatus.Pending,
+                    AssignedDriverId = null,
+                    AssignedDriverName = null,
+                    AssignmentTime = null,
+                    DropoffLatitude = cluster.DropoffLatitude,
+                    DropoffLongitude = cluster.DropoffLongitude,
+                    SequenceOrder = cluster.SequenceOrder,
+                    DriverOfferCount = cluster.DriverOfferCount + 1,
+                    Latitude = cluster.Latitude,
+                    Longitude = cluster.Longitude,
+                    EstimatedDistance = cluster.EstimatedDistance,
+                    EstimatedPrice = cluster.EstimatedPrice,
+                    PickupLatitude = cluster.PickupLatitude,
+                    PickupLongitude = cluster.PickupLongitude
+                };
+                var clusterUpdate = await _clusterService.UpdateClusterAsync(clusterId, clusterUpdateDto);
+                if (!clusterUpdate.Success)
+                {
+                    _logger.LogError("DeclineDeliveryAsync: Failed to update cluster {ClusterId}: {Message}", clusterId, clusterUpdate.Message);
+                    return new GeneralResponse<bool> { Success = false, Message = clusterUpdate.Message };
+                }
+
+                delivery.DeliveryPersonId = null;
+                delivery.Status = DeliveryStatus.Pending;
+                _deliveryRepo.Update(delivery);
+
+                await _deliveryOfferRepo.SaveChangesAsync();
+                await _deliveryRepo.SaveChangesAsync();
+
+                // Re-assign to next nearest if retries allow
+                if (delivery.RetryCount < _settings.MaxRetries)
+                {
+                    delivery.RetryCount++;
+                    _deliveryRepo.Update(delivery);
+                    await _deliveryRepo.SaveChangesAsync();
+
+                    // Use customer location for re-assignment
+                    await AutoAssignDriverAsync(delivery, clusterId, delivery.DropoffLatitude.Value, delivery.DropoffLongitude.Value);
+                }
+
+                await _notificationService.SendNotificationAsync(
+                    driverId,
+                    $"Delivery offer declined: #{delivery.TrackingNumber ?? delivery.Id}.",
+                    NotificationType.DeliveryOfferExpired,
+                    delivery.Id,
+                    "Delivery");
+
+                scope.Complete();
+                _logger.LogInformation("DeclineDeliveryAsync: Driver {DriverId} declined cluster {ClusterId}.", driverId, clusterId);
+                return new GeneralResponse<bool> { Success = true, Message = "Delivery offer declined.", Data = true };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DeclineDeliveryAsync: Failed for driver {DriverId} on cluster {ClusterId}.", driverId, clusterId);
+                return new GeneralResponse<bool> { Success = false, Message = $"Failed to decline delivery: {ex.Message}", Data = false };
+            }
+        }
+
+        public async Task<GeneralResponse<bool>> CancelDeliveryAsync(string deliveryId)
+        {
+            if (string.IsNullOrWhiteSpace(deliveryId))
+            {
+                _logger.LogWarning("CancelDeliveryAsync: Invalid input - deliveryId is empty.");
+                return new GeneralResponse<bool> { Success = false, Message = "Delivery ID is required." };
+            }
+
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+            try
+            {
+                var delivery = await _deliveryRepo.GetByIdAsync(deliveryId);
+                if (delivery == null)
+                {
+                    _logger.LogWarning("CancelDeliveryAsync: Delivery {DeliveryId} not found.", deliveryId);
+                    return new GeneralResponse<bool> { Success = false, Message = "Delivery not found." };
+                }
+
+                if (delivery.Status == DeliveryStatus.Delivered || delivery.Status == DeliveryStatus.Cancelled)
+                {
+                    _logger.LogWarning("CancelDeliveryAsync: Delivery {DeliveryId} is already {Status}.", deliveryId, delivery.Status);
+                    return new GeneralResponse<bool> { Success = false, Message = $"Delivery is already {delivery.Status}." };
+                }
+
+                delivery.Status = DeliveryStatus.Cancelled;
+                delivery.UpdatedAt = DateTime.UtcNow;
+                _deliveryRepo.Update(delivery);
+
+                var clustersResult = await _clusterService.GetByDeliveryIdAsync(deliveryId);
+                if (clustersResult.Success && clustersResult.Data != null)
+                {
+                    foreach (var cluster in clustersResult.Data)
+                    {
+                        var clusterUpdateDto = new DeliveryClusterDTO
+                        {
+                            Id = cluster.Id,
+                            DeliveryId = cluster.DeliveryId,
+                            TechCompanyId = cluster.TechCompanyId,
+                            TechCompanyName = cluster.TechCompanyName,
+                            DistanceKm = cluster.DistanceKm,
+                            Price = cluster.Price,
+                            Status = DeliveryClusterStatus.Cancelled,
+                            AssignedDriverId = null,
+                            AssignedDriverName = null,
+                            AssignmentTime = null,
+                            DropoffLatitude = cluster.DropoffLatitude,
+                            DropoffLongitude = cluster.DropoffLongitude,
+                            SequenceOrder = cluster.SequenceOrder,
+                            DriverOfferCount = cluster.DriverOfferCount,
+                            Latitude = cluster.Latitude,
+                            Longitude = cluster.Longitude,
+                            EstimatedDistance = cluster.EstimatedDistance,
+                            EstimatedPrice = cluster.EstimatedPrice,
+                            PickupLatitude = cluster.PickupLatitude,
+                            PickupLongitude = cluster.PickupLongitude
+                        };
+                        var clusterUpdate = await _clusterService.UpdateClusterAsync(cluster.Id, clusterUpdateDto);
+                        if (!clusterUpdate.Success)
+                        {
+                            _logger.LogError("CancelDeliveryAsync: Failed to cancel cluster {ClusterId}: {Message}", cluster.Id, clusterUpdate.Message);
+                            return new GeneralResponse<bool> { Success = false, Message = $"Failed to cancel cluster: {clusterUpdate.Message}" };
+                        }
+                    }
+                }
+
+                var offers = (await _deliveryOfferRepo.GetAllAsync()).Where(o => o.DeliveryId == deliveryId && o.IsActive);
+                foreach (var offer in offers)
+                {
+                    offer.Status = DeliveryOfferStatus.Expired;
+                    offer.IsActive = false;
+                    offer.RespondedAt = DateTime.UtcNow;
+                    _deliveryOfferRepo.Update(offer);
+                }
+
+                await _deliveryOfferRepo.SaveChangesAsync();
+                await _deliveryRepo.SaveChangesAsync();
+
+                await _notificationService.SendNotificationAsync(
+                    delivery.DeliveryPersonId ?? delivery.CustomerId ?? "admin",
+                    $"Delivery cancelled: #{delivery.TrackingNumber ?? delivery.Id}.",
+                    NotificationType.DeliveryCompleted,
+                    delivery.Id,
+                    "Delivery");
+
+                scope.Complete();
+                _logger.LogInformation("CancelDeliveryAsync: Delivery {DeliveryId} cancelled successfully.", deliveryId);
+                return new GeneralResponse<bool> { Success = true, Message = "Delivery cancelled successfully.", Data = true };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CancelDeliveryAsync: Failed to cancel delivery {DeliveryId}.", deliveryId);
+                return new GeneralResponse<bool> { Success = false, Message = $"Failed to cancel delivery: {ex.Message}", Data = false };
+            }
+        }
+
+        public async Task<GeneralResponse<bool>> CompleteDeliveryAsync(string deliveryId, string driverId)
+        {
+            if (string.IsNullOrWhiteSpace(deliveryId) || string.IsNullOrWhiteSpace(driverId))
+            {
+                _logger.LogWarning("CompleteDeliveryAsync: Invalid input - deliveryId or driverId is empty.");
+                return new GeneralResponse<bool> { Success = false, Message = "Delivery ID and Driver ID are required." };
+            }
+
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+            try
+            {
+                var delivery = await _deliveryRepo.GetByIdAsync(deliveryId);
+                if (delivery == null)
+                {
+                    _logger.LogWarning("CompleteDeliveryAsync: Delivery {DeliveryId} not found.", deliveryId);
+                    return new GeneralResponse<bool> { Success = false, Message = "Delivery not found." };
+                }
+
+                if (delivery.DeliveryPersonId != driverId)
+                {
+                    _logger.LogWarning("CompleteDeliveryAsync: Driver {DriverId} not assigned to delivery {DeliveryId}.", driverId, deliveryId);
+                    return new GeneralResponse<bool> { Success = false, Message = "Driver not assigned to this delivery." };
+                }
+
+                if (delivery.Status == DeliveryStatus.Delivered || delivery.Status == DeliveryStatus.Cancelled)
+                {
+                    _logger.LogWarning("CompleteDeliveryAsync: Delivery {DeliveryId} is already {Status}.", deliveryId, delivery.Status);
+                    return new GeneralResponse<bool> { Success = false, Message = $"Delivery is already {delivery.Status}." };
+                }
+
+                delivery.Status = DeliveryStatus.Delivered;
+                delivery.ActualDeliveryDate = DateTime.UtcNow;
+                delivery.UpdatedAt = DateTime.UtcNow;
+                _deliveryRepo.Update(delivery);
+
+                var clustersResult = await _clusterService.GetByDeliveryIdAsync(deliveryId);
+                if (clustersResult.Success && clustersResult.Data != null)
+                {
+                    foreach (var cluster in clustersResult.Data)
+                    {
+                        var clusterUpdateDto = new DeliveryClusterDTO
+                        {
+                            Id = cluster.Id,
+                            DeliveryId = cluster.DeliveryId,
+                            TechCompanyId = cluster.TechCompanyId,
+                            TechCompanyName = cluster.TechCompanyName,
+                            DistanceKm = cluster.DistanceKm,
+                            Price = cluster.Price,
+                            Status = DeliveryClusterStatus.Completed,
+                            AssignedDriverId = cluster.AssignedDriverId,
+                            AssignedDriverName = cluster.AssignedDriverName,
+                            AssignmentTime = cluster.AssignmentTime,
+                            DropoffLatitude = cluster.DropoffLatitude,
+                            DropoffLongitude = cluster.DropoffLongitude,
+                            SequenceOrder = cluster.SequenceOrder,
+                            DriverOfferCount = cluster.DriverOfferCount,
+                            Latitude = cluster.Latitude,
+                            Longitude = cluster.Longitude,
+                            EstimatedDistance = cluster.EstimatedDistance,
+                            EstimatedPrice = cluster.EstimatedPrice,
+                            PickupLatitude = cluster.PickupLatitude,
+                            PickupLongitude = cluster.PickupLongitude
+                        };
+                        var clusterUpdate = await _clusterService.UpdateClusterAsync(cluster.Id, clusterUpdateDto);
+                        if (!clusterUpdate.Success)
+                        {
+                            _logger.LogError("CompleteDeliveryAsync: Failed to complete cluster {ClusterId}: {Message}", cluster.Id, clusterUpdate.Message);
+                            return new GeneralResponse<bool> { Success = false, Message = $"Failed to complete cluster: {clusterUpdate.Message}" };
+                        }
+                    }
+                }
+
+                var offers = (await _deliveryOfferRepo.GetAllAsync()).Where(o => o.DeliveryId == deliveryId && o.IsActive);
+                foreach (var offer in offers)
+                {
+                    offer.Status = DeliveryOfferStatus.Accepted;
+                    offer.IsActive = false;
+                    offer.RespondedAt = DateTime.UtcNow;
+                    _deliveryOfferRepo.Update(offer);
+                }
+
+                await _deliveryOfferRepo.SaveChangesAsync();
+                await _deliveryRepo.SaveChangesAsync();
+
+                await _notificationService.SendNotificationAsync(
+                    delivery.CustomerId ?? "admin",
+                    $"Delivery completed: #{delivery.TrackingNumber ?? delivery.Id}.",
+                    NotificationType.DeliveryCompleted,
+                    delivery.Id,
+                    "Delivery");
+
+                scope.Complete();
+                _logger.LogInformation("CompleteDeliveryAsync: Delivery {DeliveryId} completed by driver {DriverId}.", deliveryId, driverId);
+                return new GeneralResponse<bool> { Success = true, Message = "Delivery completed successfully.", Data = true };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CompleteDeliveryAsync: Failed to complete delivery {DeliveryId} by driver {DriverId}.", deliveryId, driverId);
+                return new GeneralResponse<bool> { Success = false, Message = $"Failed to complete delivery: {ex.Message}", Data = false };
+            }
+        }
+
+        public async Task<GeneralResponse<DeliveryReadDTO>> GetByIdAsync(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = false,
-                    Message = "Delivery ID cannot be null or empty.",
-                    Data = null
-                };
+                _logger.LogWarning("GetByIdAsync: Invalid input - id is empty.");
+                return new GeneralResponse<DeliveryReadDTO> { Success = false, Message = "Delivery ID is required." };
             }
 
             try
             {
-                var entity = await _deliveryrepo.GetByIdAsync(id);
-                if (entity == null)
+                var delivery = await _deliveryRepo.GetByIdAsync(id);
+                if (delivery == null)
                 {
-                    return new GeneralResponse<DeliveryDTO>
-                    {
-                        Success = false,
-                        Message = $"Delivery with ID '{id}' not found.",
-                        Data = null
-                    };
+                    _logger.LogWarning("GetByIdAsync: Delivery {DeliveryId} not found.", id);
+                    return new GeneralResponse<DeliveryReadDTO> { Success = false, Message = "Delivery not found." };
                 }
 
-                DeliveryMapper.UpdateDelivery(entity, dto);
-                _deliveryrepo.Update(entity);
-                await _deliveryrepo.SaveChangesAsync();
+                var clustersResult = await _clusterService.GetByDeliveryIdAsync(id);
+                var clusters = clustersResult.Success ? clustersResult.Data : Enumerable.Empty<DeliveryClusterDTO>();
 
-                return new GeneralResponse<DeliveryDTO>
+                var readDto = DeliveryMapper.ToReadDTO(delivery, clusters);
+                _logger.LogInformation("GetByIdAsync: Retrieved delivery {DeliveryId}.", id);
+                return new GeneralResponse<DeliveryReadDTO> { Success = true, Message = "Delivery retrieved successfully.", Data = readDto };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetByIdAsync: Failed to retrieve delivery {DeliveryId}.", id);
+                return new GeneralResponse<DeliveryReadDTO> { Success = false, Message = $"Failed to retrieve delivery: {ex.Message}" };
+            }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<DeliveryReadDTO>>> GetAllAsync()
+        {
+            try
+            {
+                var deliveries = await _deliveryRepo.GetAllAsync();
+                var result = new List<DeliveryReadDTO>();
+
+                foreach (var delivery in deliveries)
+                {
+                    var clustersResult = await _clusterService.GetByDeliveryIdAsync(delivery.Id);
+                    var clusters = clustersResult.Success ? clustersResult.Data : Enumerable.Empty<DeliveryClusterDTO>();
+                    result.Add(DeliveryMapper.ToReadDTO(delivery, clusters));
+                }
+
+                _logger.LogInformation("GetAllAsync: Retrieved {DeliveryCount} deliveries.", result.Count);
+                return new GeneralResponse<IEnumerable<DeliveryReadDTO>>
                 {
                     Success = true,
-                    Message = "Delivery updated successfully.",
-                    Data = DeliveryMapper.MapToDeliveryDTO(entity)
+                    Message = "Deliveries retrieved successfully.",
+                    Data = result
                 };
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<DeliveryDTO>
+                _logger.LogError(ex, "GetAllAsync: Failed to retrieve deliveries.");
+                return new GeneralResponse<IEnumerable<DeliveryReadDTO>>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while updating the delivery.",
-                    Data = null
+                    Message = $"Failed to retrieve deliveries: {ex.Message}",
+                    Data = Enumerable.Empty<DeliveryReadDTO>()
                 };
             }
         }
 
         public async Task<GeneralResponse<bool>> DeleteAsync(string id)
         {
-            
             if (string.IsNullOrWhiteSpace(id))
             {
-                return new GeneralResponse<bool>
-                {
-                    Success = false,
-                    Message = "Delivery ID cannot be null or empty.",
-                    Data = false
-                };
+                _logger.LogWarning("DeleteAsync: Invalid input - id is empty.");
+                return new GeneralResponse<bool> { Success = false, Message = "Delivery ID is required." };
             }
 
-            if (!Guid.TryParse(id, out _))
-            {
-                return new GeneralResponse<bool>
-                {
-                    Success = false,
-                    Message = "Invalid Delivery ID format. Expected GUID format.",
-                    Data = false
-                };
-            }
-
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
             try
             {
-                var entity = await _deliveryrepo.GetByIdAsync(id);
-                if (entity == null)
-                {
-                    return new GeneralResponse<bool>
-                    {
-                        Success = false,
-                        Message = $"Delivery with ID '{id}' not found.",
-                        Data = false
-                    };
-                }
-
-                _deliveryrepo.Remove(entity);
-                await _deliveryrepo.SaveChangesAsync();
-                
-                return new GeneralResponse<bool>
-                {
-                    Success = true,
-                    Message = "Delivery deleted successfully.",
-                    Data = true
-                };
-            }
-            catch (Exception ex)
-            {
-                return new GeneralResponse<bool>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred while deleting the delivery.",
-                    Data = false
-                };
-            }
-        }
-
-        public async Task<GeneralResponse<DeliveryDetailsDTO>> GetDetailsByIdAsync(string id)
-        {
-            
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                return new GeneralResponse<DeliveryDetailsDTO>
-                {
-                    Success = false,
-                    Message = "Delivery ID cannot be null or empty.",
-                    Data = null
-                };
-            }
-
-            if (!Guid.TryParse(id, out _))
-            {
-                return new GeneralResponse<DeliveryDetailsDTO>
-                {
-                    Success = false,
-                    Message = "Invalid Delivery ID format. Expected GUID format.",
-                    Data = null
-                };
-            }
-
-            try
-            {
-                var delivery = await _deliveryrepo.GetByIdWithIncludesAsync(id,
-                    d => d.DeliveryPerson,
-                    d => d.Customer,
-                    d => d.TechCompanies
-                );
-
+                var delivery = await _deliveryRepo.GetByIdAsync(id);
                 if (delivery == null)
                 {
-                    return new GeneralResponse<DeliveryDetailsDTO>
+                    _logger.LogWarning("DeleteAsync: Delivery {DeliveryId} not found.", id);
+                    return new GeneralResponse<bool> { Success = false, Message = "Delivery not found." };
+                }
+
+                if (delivery.Status == DeliveryStatus.Delivered)
+                {
+                    _logger.LogWarning("DeleteAsync: Cannot delete delivered delivery {DeliveryId}.", id);
+                    return new GeneralResponse<bool> { Success = false, Message = "Cannot delete a delivered delivery." };
+                }
+
+                delivery.Status = DeliveryStatus.Cancelled;
+                delivery.UpdatedAt = DateTime.UtcNow;
+                _deliveryRepo.Update(delivery);
+
+                var clustersResult = await _clusterService.GetByDeliveryIdAsync(id);
+                if (clustersResult.Success && clustersResult.Data != null)
+                {
+                    foreach (var cluster in clustersResult.Data)
                     {
-                        Success = false,
-                        Message = $"Delivery with ID '{id}' not found.",
-                        Data = null
-                    };
-                }
-
-                return new GeneralResponse<DeliveryDetailsDTO>
-                {
-                    Success = true,
-                    Message = "Delivery details retrieved successfully.",
-                    Data = DeliveryMapper.MapToDeliveryDetailsDTO(delivery)
-                };
-            }
-            catch (Exception ex)
-            {
-                return new GeneralResponse<DeliveryDetailsDTO>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred while retrieving delivery details.",
-                    Data = null
-                };
-            }
-        }
-
-        public async Task<GeneralResponse<IEnumerable<DeliveryDTO>>> GetByDeliveryPersonIdAsync(string deliveryPersonId)
-        {
-            if (string.IsNullOrWhiteSpace(deliveryPersonId))
-            {
-                return new GeneralResponse<IEnumerable<DeliveryDTO>>
-                {
-                    Success = false,
-                    Message = "Delivery Person ID cannot be null or empty.",
-                    Data = null
-                };
-            }
-
-            try
-            {
-                var deliveries = await _deliveryrepo.FindWithIncludesAsync(
-                    d => d.DeliveryPersonId == deliveryPersonId,
-                    d => d.DeliveryPerson,
-                    d => d.Customer
-                );
-
-                return new GeneralResponse<IEnumerable<DeliveryDTO>>
-                {
-                    Success = true,
-                    Message = "Deliveries for delivery person retrieved successfully.",
-                    Data = DeliveryMapper.MapToDeliveryDTOList(deliveries)
-                };
-            }
-            catch (Exception ex)
-            {
-                return new GeneralResponse<IEnumerable<DeliveryDTO>>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred while retrieving deliveries for delivery person.",
-                    Data = null
-                };
-            }
-        }
-
-        public async Task<GeneralResponse<IEnumerable<DeliveryDTO>>> GetByStatusAsync(string status)
-        {
-            if (string.IsNullOrWhiteSpace(status))
-            {
-                return new GeneralResponse<IEnumerable<DeliveryDTO>>
-                {
-                    Success = false,
-                    Message = "Status cannot be null or empty.",
-                    Data = null
-                };
-            }
-
-            try
-            {
-                // Parse the string status to enum
-                if (Enum.TryParse<DeliveryStatus>(status, out var deliveryStatus))
-                {
-                    var deliveries = await _deliveryrepo.FindWithIncludesAsync(
-                        d => d.Status == deliveryStatus,
-                        d => d.DeliveryPerson,
-                        d => d.Customer
-                    );
-
-                    return new GeneralResponse<IEnumerable<DeliveryDTO>>
-                    {
-                        Success = true,
-                        Message = $"Deliveries with status '{status}' retrieved successfully.",
-                        Data = DeliveryMapper.MapToDeliveryDTOList(deliveries)
-                    };
-                }
-                else
-                {
-                    return new GeneralResponse<IEnumerable<DeliveryDTO>>
-                    {
-                        Success = false,
-                        Message = $"Invalid status: {status}",
-                        Data = null
-                    };
-                }
-            }
-            catch (Exception ex)
-            {
-                return new GeneralResponse<IEnumerable<DeliveryDTO>>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred while retrieving deliveries by status.",
-                    Data = null
-                };
-            }
-        }
-
-        public async Task<GeneralResponse<DeliveryDTO>> AssignDeliveryToPersonAsync(string deliveryId, string deliveryPersonId)
-        {
-            if (string.IsNullOrWhiteSpace(deliveryId) || string.IsNullOrWhiteSpace(deliveryPersonId))
-            {
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = false,
-                    Message = "Delivery ID and Delivery Person ID cannot be null or empty.",
-                    Data = null
-                };
-            }
-
-            try
-            {
-                var delivery = await _deliveryrepo.GetByIdAsync(deliveryId);
-                if (delivery == null)
-                {
-                    return new GeneralResponse<DeliveryDTO>
-                    {
-                        Success = false,
-                        Message = "Delivery not found.",
-                        Data = null
-                    };
-                }
-
-                if (!string.IsNullOrEmpty(delivery.DeliveryPersonId) && delivery.DeliveryPersonId != deliveryPersonId)
-                {
-                    return new GeneralResponse<DeliveryDTO>
-                    {
-                        Success = false,
-                        Message = "This delivery is already assigned to another person.",
-                        Data = null
-                    };
-                }
-
-                if (delivery.Status != DeliveryStatus.Pending)
-                {
-                    return new GeneralResponse<DeliveryDTO>
-                    {
-                        Success = false,
-                        Message = $"Cannot assign delivery in status '{delivery.Status}'.",
-                        Data = null
-                    };
-                }
-
-                var deliveryPerson = await _deliveryPersonRepo.GetByIdAsync(deliveryPersonId);
-                if (deliveryPerson == null || !deliveryPerson.IsAvailable || !delivery.IsOnline)
-                {
-                    return new GeneralResponse<DeliveryDTO>
-                    {
-                        Success = false,
-                        Message = "Delivery person is not available for assignment.",
-                        Data = null
-                    };
-                }
-
-                delivery.DeliveryPersonId = deliveryPersonId;
-                delivery.Status = DeliveryStatus.Assigned;
-
-                _deliveryrepo.Update(delivery);
-                await _deliveryrepo.SaveChangesAsync();
-
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = true,
-                    Message = "Delivery assigned to delivery person successfully.",
-                    Data = DeliveryMapper.MapToDeliveryDTO(delivery)
-                };
-            }
-            catch (Exception)
-            {
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred while assigning delivery.",
-                    Data = null
-                };
-            }
-        }
-
-        public async Task<GeneralResponse<DeliveryDTO>> UpdateDeliveryStatusAsync(string deliveryId, string newStatus)
-        {
-            if (string.IsNullOrWhiteSpace(deliveryId) || string.IsNullOrWhiteSpace(newStatus))
-            {
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = false,
-                    Message = "Delivery ID and new status cannot be null or empty.",
-                    Data = null
-                };
-            }
-
-            try
-            {
-                var delivery = await _deliveryrepo.GetByIdAsync(deliveryId);
-                if (delivery == null)
-                {
-                    return new GeneralResponse<DeliveryDTO>
-                    {
-                        Success = false,
-                        Message = "Delivery not found.",
-                        Data = null
-                    };
-                }
-
-                if (Enum.TryParse<DeliveryStatus>(newStatus, out var status))
-                {
-                    delivery.Status = status;
-                }
-                else
-                {
-                    return new GeneralResponse<DeliveryDTO>
-                    {
-                        Success = false,
-                        Message = $"Invalid status: {newStatus}",
-                        Data = null
-                    };
-                }
-                _deliveryrepo.Update(delivery);
-                await _deliveryrepo.SaveChangesAsync();
-
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = true,
-                    Message = $"Delivery status updated to '{newStatus}' successfully.",
-                    Data = DeliveryMapper.MapToDeliveryDTO(delivery)
-                };
-            }
-            catch (Exception ex)
-            {
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred while updating delivery status.",
-                    Data = null
-                };
-            }
-        }
-
-        public async Task<GeneralResponse<DeliveryDTO>> CompleteDeliveryAsync(string deliveryId, string deliveryPersonId)
-        {
-            if (string.IsNullOrWhiteSpace(deliveryId) || string.IsNullOrWhiteSpace(deliveryPersonId))
-            {
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = false,
-                    Message = "Delivery ID and Delivery Person ID cannot be null or empty.",
-                    Data = null
-                };
-            }
-
-            try
-            {
-                var delivery = await _deliveryrepo.GetByIdAsync(deliveryId);
-                if (delivery == null)
-                {
-                    return new GeneralResponse<DeliveryDTO>
-                    {
-                        Success = false,
-                        Message = "Delivery not found.",
-                        Data = null
-                    };
-                }
-
-                if (delivery.DeliveryPersonId != deliveryPersonId)
-                {
-                    return new GeneralResponse<DeliveryDTO>
-                    {
-                        Success = false,
-                        Message = "This delivery is not assigned to you.",
-                        Data = null
-                    };
-                }
-
-                delivery.Status = DeliveryStatus.Delivered;
-                delivery.ActualDeliveryDate = DateTime.UtcNow;
-                _deliveryrepo.Update(delivery);
-                await _deliveryrepo.SaveChangesAsync();
-
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = true,
-                    Message = "Delivery completed successfully.",
-                    Data = DeliveryMapper.MapToDeliveryDTO(delivery)
-                };
-            }
-            catch (Exception ex)
-            {
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred while completing delivery.",
-                    Data = null
-                };
-            }
-        }
-
-        public async Task<GeneralResponse<IEnumerable<DeliveryDTO>>> GetAvailableDeliveriesAsync()
-        {
-            try
-            {
-                var deliveries = await _deliveryrepo.FindWithIncludesAsync(
-                d => d.IsOnline && d.DeliveryPersonId != null && d.DeliveryPerson.IsAvailable
-                );
-
-                return new GeneralResponse<IEnumerable<DeliveryDTO>>
-                {
-                    Success = true,
-                    Message = "Available deliveries retrieved successfully.",
-                    Data = DeliveryMapper.MapToDeliveryDTOList(deliveries)
-                };
-            }
-            catch (Exception ex)
-            {
-                return new GeneralResponse<IEnumerable<DeliveryDTO>>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred while retrieving available deliveries.",
-                    Data = null
-                };
-            }
-        }
-
-        //public async Task<GeneralResponse<DeliveryDTO>> AcceptDeliveryAsync(string deliveryId, string deliveryPersonId)
-        //{
-        //    if (string.IsNullOrWhiteSpace(deliveryId) || string.IsNullOrWhiteSpace(deliveryPersonId))
-        //    {
-        //        return new GeneralResponse<DeliveryDTO>
-        //        {
-        //            Success = false,
-        //            Message = "Delivery ID and Delivery Person ID cannot be null or empty.",
-        //            Data = null
-        //        };
-        //    }
-
-        //    try
-        //    {
-        //        var delivery = await _deliveryrepo.GetByIdAsync(deliveryId);
-        //        if (delivery == null)
-        //        {
-        //            return new GeneralResponse<DeliveryDTO>
-        //            {
-        //                Success = false,
-        //                Message = "Delivery not found.",
-        //                Data = null
-        //            };
-        //        }
-
-        //        if (delivery.Status != DeliveryStatus.Assigned || delivery.DeliveryPersonId != null)
-        //        {
-        //            return new GeneralResponse<DeliveryDTO>
-        //            {
-        //                Success = false,
-        //                Message = "This delivery is not available for acceptance.",
-        //                Data = null
-        //            };
-        //        }
-
-        //        delivery.DeliveryPersonId = deliveryPersonId;
-        //        delivery.Status = DeliveryStatus.PickedUp;
-        //        _deliveryrepo.Update(delivery);
-        //        await _deliveryrepo.SaveChangesAsync();
-
-        //        return new GeneralResponse<DeliveryDTO>
-        //        {
-        //            Success = true,
-        //            Message = "Delivery accepted successfully.",
-        //            Data = DeliveryMapper.MapToDeliveryDTO(delivery)
-        //        };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new GeneralResponse<DeliveryDTO>
-        //        {
-        //            Success = false,
-        //            Message = "An unexpected error occurred while accepting delivery.",
-        //            Data = null
-        //        };
-        //    }
-        //}
-
-        //public async Task<GeneralResponse<DeliveryDTO>> AssignDeliveryToNearestAsync(string deliveryId, List<Delivery> availableDrivers)
-        //{
-        //    // Get delivery entity
-        //    var delivery = await _deliveryrepo.GetByIdAsync(deliveryId);
-        //    if (delivery == null)
-        //    {
-        //        return new GeneralResponse<DeliveryDTO>
-        //        {
-        //            Success = false,
-        //            Message = $"Delivery with ID {deliveryId} not found.",
-        //            Data = null
-        //        };
-        //    }
-
-        //    // Ensure delivery has coordinates
-        //    if (!delivery.DeliveryLatitude.HasValue || !delivery.DeliveryLongitude.HasValue)
-        //    {
-        //        return new GeneralResponse<DeliveryDTO>
-        //        {
-        //            Success = false,
-        //            Message = "Delivery coordinates are missing.",
-        //            Data = null
-        //        };
-        //    }
-
-        //    Delivery nearestDriver = null;
-        //    double shortestDistance = double.MaxValue;
-
-        //    // Loop through available drivers
-        //    foreach (var driver in availableDrivers)
-        //    {
-        //        if (!driver.Latitude.HasValue || !driver.Longitude.HasValue)
-        //            continue;
-
-        //        var distance = CalculateHaversineDistance(
-        //            delivery.DeliveryLatitude.Value,
-        //            delivery.DeliveryLongitude.Value,
-        //            driver.Latitude.Value,
-        //            driver.Longitude.Value
-        //        );
-
-        //        if (distance < shortestDistance)
-        //        {
-        //            shortestDistance = distance;
-        //            nearestDriver = driver;
-        //        }
-        //    }
-
-        //    if (nearestDriver == null)
-        //    {
-        //        return new GeneralResponse<DeliveryDTO>
-        //        {
-        //            Success = false,
-        //            Message = "No available drivers found near the delivery location.",
-        //            Data = null
-        //        };
-        //    }
-
-        //    // Assign the nearest driver
-        //    delivery.DeliveryPersonId = nearestDriver.DeliveryPersonId;
-        //    _deliveryrepo.Update(delivery);
-        //    await _deliveryrepo.SaveChangesAsync();
-
-        //    // Optionally send a notification to the driver
-        //    await _notificationService.SendNotificationAsync(
-        //        nearestDriver.DeliveryPerson.UserId,
-        //        $"You have been assigned a new delivery: {delivery.TrackingNumber}",
-        //        NotificationType.DeliveryAssigned,
-        //        delivery.Id,
-        //        "Delivery"
-        //    );
-
-        //    return new GeneralResponse<DeliveryDTO>
-        //    {
-        //        Success = true,
-        //        Message = $"Delivery assigned to nearest driver {nearestDriver.DeliveryPersonId} ({shortestDistance:F2} km away).",
-        //        Data = DeliveryMapper.MapToDeliveryDTO(delivery)
-        //    };
-        //}
-
-
-        public async Task<GeneralResponse<DeliveryDTO>> AcceptDeliveryAsync(string deliveryId, string deliveryPersonId)
-        {
-            if (string.IsNullOrWhiteSpace(deliveryId) || string.IsNullOrWhiteSpace(deliveryPersonId))
-                return new GeneralResponse<DeliveryDTO> { Success = false, Message = "Delivery ID and Delivery Person ID are required.", Data = null };
-
-            try
-            {
-                // Load delivery and its offers (assumes you have a GetByIdWithIncludesAsync that can include Offers)
-                var delivery = await _deliveryrepo.GetByIdWithIncludesAsync(
-                    deliveryId,
-                    d => d.Offers,            // include offers to update statuses
-                    d => d.DeliveryPerson     // include current assigned person if any
-                );
-
-                if (delivery == null)
-                    return new GeneralResponse<DeliveryDTO> { Success = false, Message = "Delivery not found.", Data = null };
-
-                // Ensure there is a pending offer for this delivery/person
-                var offer = await _deliveryOfferRepo.GetFirstOrDefaultAsync(
-                    o => o.DeliveryId == deliveryId && o.DeliveryPersonId == deliveryPersonId && o.Status == DeliveryOfferStatus.Pending);
-
-                if (offer == null)
-                    return new GeneralResponse<DeliveryDTO> { Success = false, Message = "No active offer found for this delivery and delivery person.", Data = null };
-
-                // Ensure delivery is still unassigned (first-come wins)
-                if (!string.IsNullOrWhiteSpace(delivery.DeliveryPersonId))
-                {
-                    return new GeneralResponse<DeliveryDTO> { Success = false, Message = "Delivery has already been accepted by another driver.", Data = null };
-                }
-
-                // Mark the offer accepted
-                offer.Status = DeliveryOfferStatus.Accepted;
-                offer.RespondedAt = DateTime.UtcNow;
-                _deliveryOfferRepo.Update(offer);
-
-                // Mark all other pending offers for this delivery as Declined/Expired
-                var otherOffers = await _deliveryOfferRepo.FindWithIncludesAsync(
-                    o => o.DeliveryId == deliveryId && o.Id != offer.Id && o.Status == DeliveryOfferStatus.Pending);
-
-                foreach (var o in otherOffers)
-                {
-                    o.Status = DeliveryOfferStatus.Declined;
-                    o.RespondedAt = DateTime.UtcNow;
-                    _deliveryOfferRepo.Update(o);
-                }
-
-                await _deliveryOfferRepo.SaveChangesAsync();
-
-                // Assign delivery to this delivery person
-                delivery.DeliveryPersonId = deliveryPersonId;
-                delivery.Status = DeliveryStatus.Assigned; // accepted => assigned; driver later sets PickedUp
-                _deliveryrepo.Update(delivery);
-                await _deliveryrepo.SaveChangesAsync();
-
-                // Notifications: admin + customer + driver confirmation
-                await _notificationService.SendNotificationToRoleAsync(
-                    "Admin",
-                    $"Delivery #{delivery.TrackingNumber ?? delivery.Id} accepted by driver {deliveryPersonId}.",
-                    NotificationType.DeliveryOfferAccepted,
-                    delivery.Id,
-                    "Delivery");
-
-                // notify customer (if you have customer's user id)
-                if (!string.IsNullOrWhiteSpace(delivery.CustomerId))
-                {
-                    await _notificationService.SendNotificationAsync(
-                        delivery.CustomerId,
-                        $"Your delivery #{delivery.TrackingNumber ?? delivery.Id} was accepted and is being prepared for pickup.",
-                        NotificationType.DeliveryAssigned,
-                        delivery.Id,
-                        "Delivery");
-                }
-
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = true,
-                    Message = "Delivery accepted successfully.",
-                    Data = DeliveryMapper.MapToDeliveryDTO(delivery)
-                };
-            }
-            catch (Exception ex)
-            {
-                return new GeneralResponse<DeliveryDTO>
-                {
-                    Success = false,
-                    Message = $"An unexpected error occurred while accepting delivery: {ex.Message}",
-                    Data = null
-                };
-            }
-        }
-
-        public async Task<GeneralResponse<DeliveryDTO>> AssignDeliveryToNearestAsync(
-            string deliveryId,
-            List<Delivery> availableDrivers,
-            int takeNearest = 3,                // configurable number of initial offers
-            int offerExpiryMinutes = 3)         // configurable expiry for offers
-        {
-            if (string.IsNullOrWhiteSpace(deliveryId))
-                return new GeneralResponse<DeliveryDTO> { Success = false, Message = "Delivery ID is required.", Data = null };
-
-            if (availableDrivers == null || !availableDrivers.Any())
-                return new GeneralResponse<DeliveryDTO> { Success = false, Message = "No available drivers provided.", Data = null };
-
-            try
-            {
-                var delivery = await _deliveryrepo.GetByIdAsync(deliveryId);
-                if (delivery == null)
-                    return new GeneralResponse<DeliveryDTO> { Success = false, Message = "Delivery not found.", Data = null };
-
-                if (!delivery.DeliveryLatitude.HasValue || !delivery.DeliveryLongitude.HasValue)
-                    return new GeneralResponse<DeliveryDTO> { Success = false, Message = "Delivery coordinates are missing.", Data = null };
-
-                // filter valid drivers: have coordinates, online and have DeliveryPerson info
-                var validDrivers = availableDrivers
-                    .Where(d => d.Latitude.HasValue && d.Longitude.HasValue && d.IsOnline && d.DeliveryPerson != null)
-                    .Select(d => new
-                    {
-                        DriverDelivery = d,
-                        Distance = CalculateHaversineDistance(
-                            delivery.DeliveryLatitude.Value,
-                            delivery.DeliveryLongitude.Value,
-                            d.Latitude.Value,
-                            d.Longitude.Value)
-                    })
-                    .OrderBy(x => x.Distance)
-                    .Take(takeNearest)
-                    .ToList();
-
-                if (!validDrivers.Any())
-                    return new GeneralResponse<DeliveryDTO> { Success = false, Message = "No nearby online drivers found.", Data = null };
-
-                var now = DateTime.UtcNow;
-                var expiry = now.AddMinutes(offerExpiryMinutes);
-                var createdOffers = new List<DeliveryOffer>();
-
-                foreach (var entry in validDrivers)
-                {
-                    var driver = entry.DriverDelivery;
-
-                    // avoid duplicate offers for same delivery+person (check existing pending offers)
-                    var existingOffer = await _deliveryOfferRepo.GetFirstOrDefaultAsync(
-                        o => o.DeliveryId == delivery.Id && o.DeliveryPersonId == driver.DeliveryPerson.Id && o.Status == DeliveryOfferStatus.Pending);
-
-                    if (existingOffer != null)
-                        continue;
-
-                    var offer = new DeliveryOffer
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        DeliveryId = delivery.Id,
-                        DeliveryPersonId = driver.DeliveryPerson.Id,
-                        Status = DeliveryOfferStatus.Pending,
-                        CreatedAt = now,
-                        ExpiryTime = expiry
-                    };
-
-                    await _deliveryOfferRepo.AddAsync(offer);
-                    createdOffers.Add(offer);
-
-                    // send persistent + realtime notification (SendNotificationAsync stores + SignalR)
-                    var notifyUserId = driver.DeliveryPerson.UserId;
-                    if (!string.IsNullOrWhiteSpace(notifyUserId))
-                    {
-                        await _notificationService.SendNotificationAsync(
-                            notifyUserId,
-                            $"New delivery offer: #{delivery.TrackingNumber ?? delivery.Id} — {entry.Distance:F2} km from you",
-                            NotificationType.DeliveryOfferCreated,
-                            delivery.Id,
-                            "Delivery");
+                        var deleteResult = await _clusterService.DeleteClusterAsync(cluster.Id);
+                        if (!deleteResult.Success)
+                        {
+                            _logger.LogError("DeleteAsync: Failed to delete cluster {ClusterId}: {Message}", cluster.Id, deleteResult.Message);
+                            return new GeneralResponse<bool> { Success = false, Message = $"Failed to delete cluster: {deleteResult.Message}" };
+                        }
                     }
                 }
 
-                if (createdOffers.Any())
-                    await _deliveryOfferRepo.SaveChangesAsync();
+                var offers = (await _deliveryOfferRepo.GetAllAsync()).Where(o => o.DeliveryId == id && o.IsActive);
+                foreach (var offer in offers)
+                {
+                    offer.Status = DeliveryOfferStatus.Expired;
+                    offer.IsActive = false;
+                    offer.RespondedAt = DateTime.UtcNow;
+                    _deliveryOfferRepo.Update(offer);
+                }
 
-                return new GeneralResponse<DeliveryDTO>
+                await _deliveryOfferRepo.SaveChangesAsync();
+                await _deliveryRepo.SaveChangesAsync();
+
+                scope.Complete();
+                _logger.LogInformation("DeleteAsync: Delivery {DeliveryId} deleted (cancelled) successfully.", id);
+                return new GeneralResponse<bool> { Success = true, Message = "Delivery deleted successfully.", Data = true };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DeleteAsync: Failed to delete delivery {DeliveryId}.", id);
+                return new GeneralResponse<bool> { Success = false, Message = $"Failed to delete delivery: {ex.Message}", Data = false };
+            }
+        }
+
+        public async Task<GeneralResponse<DeliveryTrackingDTO>> GetDeliveryTrackingAsync(string deliveryId)
+        {
+            if (string.IsNullOrWhiteSpace(deliveryId))
+            {
+                _logger.LogWarning("GetDeliveryTrackingAsync: Invalid input - deliveryId is empty.");
+                return new GeneralResponse<DeliveryTrackingDTO> { Success = false, Message = "Delivery ID is required." };
+            }
+
+            try
+            {
+                var delivery = await _deliveryRepo.GetByIdAsync(deliveryId);
+                if (delivery == null)
+                {
+                    _logger.LogWarning("GetDeliveryTrackingAsync: Delivery {DeliveryId} not found.", deliveryId);
+                    return new GeneralResponse<DeliveryTrackingDTO> { Success = false, Message = "Delivery not found." };
+                }
+
+                var clustersResult = await _clusterService.GetByDeliveryIdAsync(deliveryId);
+                var clusterTracking = new List<DeliveryClusterTrackingDTO>();
+                if (clustersResult.Success && clustersResult.Data != null)
+                {
+                    foreach (var cluster in clustersResult.Data)
+                    {
+                        var trackingResult = await _clusterService.GetTrackingAsync(cluster.Id);
+                        if (trackingResult.Success && trackingResult.Data != null)
+                        {
+                            clusterTracking.Add(trackingResult.Data);
+                        }
+                    }
+                }
+
+                var trackingDto = new DeliveryTrackingDTO
+                {
+                    DeliveryId = delivery.Id,
+                    Status = delivery.Status,
+                    CurrentLat = delivery.DropoffLatitude,
+                    CurrentLng = delivery.DropoffLongitude,
+                    EstimatedArrival = delivery.EstimatedDeliveryDate,
+                    Clusters = clusterTracking
+                };
+
+                _logger.LogInformation("GetDeliveryTrackingAsync: Retrieved tracking for delivery {DeliveryId}.", deliveryId);
+                return new GeneralResponse<DeliveryTrackingDTO>
                 {
                     Success = true,
-                    Message = $"Delivery offers created and notifications sent to {createdOffers.Count} drivers.",
-                    Data = DeliveryMapper.MapToDeliveryDTO(delivery)
+                    Message = "Tracking retrieved successfully.",
+                    Data = trackingDto
                 };
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<DeliveryDTO>
+                _logger.LogError(ex, "GetDeliveryTrackingAsync: Failed to retrieve tracking for delivery {DeliveryId}.", deliveryId);
+                return new GeneralResponse<DeliveryTrackingDTO>
                 {
                     Success = false,
-                    Message = $"An unexpected error occurred while creating offers: {ex.Message}",
+                    Message = $"Failed to retrieve tracking: {ex.Message}",
                     Data = null
                 };
             }
         }
 
-        public async Task<Delivery> CreateDeliveryForOrderAsync(Order order, double? latitude, double? longitude, string customerId)
+        public async Task AutoAssignDriverAsync(Delivery delivery, string clusterId, double? overrideLat = null, double? overrideLon = null)
         {
-            var delivery = new Delivery
+            if (delivery == null || string.IsNullOrWhiteSpace(clusterId))
             {
-                TrackingNumber = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper(),
-                CustomerId = customerId,
-                OrderId = order.Id,
-                DeliveryLatitude = latitude,
-                DeliveryLongitude = longitude,
-                Status = DeliveryStatus.Pending,
-                RetryCount = 0,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await _deliveryrepo.AddAsync(delivery);
-            await _deliveryrepo.SaveChangesAsync();
-
-
-            if (delivery.DeliveryLatitude.HasValue && delivery.DeliveryLongitude.HasValue)
-            {
-                var availableDriversResponse = await GetAvailableDeliveriesAsync();
-
-                if (availableDriversResponse.Success && availableDriversResponse.Data != null)
-                {
-                    var availableDrivers = availableDriversResponse.Data
-                        .Where(d => d.Latitude.HasValue && d.Longitude.HasValue && d.IsOnline)
-                        .Select(d => new Delivery
-                        {
-                            Id = d.Id,
-                            Latitude = d.Latitude,
-                            Longitude = d.Longitude,
-                            IsOnline = d.IsOnline,
-                            DeliveryPerson = new DeliveryPerson
-                            {
-                                Id = d.DeliveryPersonId,
-                                UserId = d.DeliveryPerson.User.Id
-                            }
-                        })
-                        .ToList();
-
-                    await AssignDeliveryToNearestAsync(delivery.Id, availableDrivers, 3, 3);
-                }
+                _logger.LogWarning("AutoAssignDriverAsync: Invalid input - delivery or clusterId is null/empty.");
+                throw new ArgumentNullException("Delivery and cluster ID are required.");
             }
 
-            await _notificationService.SendNotificationToRoleAsync(
-                "Admin",
-                $"New order #{order.Id} has been created by customer {order.CustomerId}",
-                NotificationType.OrderCreated,
-                order.Id,
-                "Order"
-            );
+            try
+            {
+                var clusterResult = await _clusterService.GetByIdAsync(clusterId);
+                if (!clusterResult.Success || clusterResult.Data == null)
+                {
+                    _logger.LogWarning("AutoAssignDriverAsync: Cluster {ClusterId} not found.", clusterId);
+                    throw new InvalidOperationException("Cluster not found.");
+                }
 
-            await _notificationService.SendNotificationToRoleAsync(
-                "Delivery",
-                $"New delivery #{delivery.TrackingNumber} is available for assignment.",
-                NotificationType.DeliveryAssigned,
-                delivery.Id,
-                "Delivery"
-            );
+                var clusterDto = clusterResult.Data;
 
-            await _notificationService.SendNotificationToRoleAsync(
-                "TechCompany",
-                $"New order #{order.Id} has been created by customer {order.CustomerId}",
-                NotificationType.OrderCreated,
-                order.Id,
-                "Order"
-            );
+                // Determine location for distance calculation
+                double locationLat, locationLon;
+                if (overrideLat.HasValue && overrideLon.HasValue)
+                {
+                    locationLat = overrideLat.Value;
+                    locationLon = overrideLon.Value;
+                }
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(clusterDto.TechCompanyId))
+                    {
+                        var techCompany = await _techCompanyRepo.GetByIdAsync(clusterDto.TechCompanyId);
+                        if (techCompany == null || !techCompany.Latitude.HasValue || !techCompany.Longitude.HasValue)
+                        {
+                            _logger.LogWarning("AutoAssignDriverAsync: Tech company {TechCompanyId} coordinates missing for cluster {ClusterId}.", clusterDto.TechCompanyId, clusterId);
+                            throw new InvalidOperationException("Tech company coordinates are missing.");
+                        }
+                        locationLat = techCompany.Latitude.Value;
+                        locationLon = techCompany.Longitude.Value;
+                    }
+                    else if (clusterDto.DropoffLatitude.HasValue && clusterDto.DropoffLongitude.HasValue)
+                    {
+                        locationLat = clusterDto.DropoffLatitude.Value;
+                        locationLon = clusterDto.DropoffLongitude.Value;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("AutoAssignDriverAsync: Unable to determine location for cluster {ClusterId}.", clusterId);
+                        throw new InvalidOperationException("Unable to determine location for cluster.");
+                    }
+                }
 
-            return delivery;
+                var response = await _deliveryPersonService.GetAvailableDeliveryPersonsAsync();
+                var availableDrivers = response.Success ? response.Data?.ToList() ?? new List<DeliveryPersonReadDTO>() : new List<DeliveryPersonReadDTO>();
+
+                if (!availableDrivers.Any())
+                {
+                    _logger.LogWarning("AutoAssignDriverAsync: No available drivers for cluster {ClusterId}.", clusterId);
+                    throw new InvalidOperationException("No available drivers found.");
+                }
+
+                var candidates = availableDrivers
+                    .Where(d => d.CurrentLatitude.HasValue && d.CurrentLongitude.HasValue)
+                    .Select(d => new
+                    {
+                        Driver = d,
+                        DistanceKm = _locationService.CalculateDistance(locationLat, locationLon, d.CurrentLatitude.Value, d.CurrentLongitude.Value)
+                    })
+                    .OrderBy(x => x.DistanceKm)
+                    .ToList();
+
+                if (!candidates.Any())
+                {
+                    _logger.LogWarning("AutoAssignDriverAsync: No drivers with location data for cluster {ClusterId}.", clusterId);
+                    throw new InvalidOperationException("No available drivers with location data found.");
+                }
+
+                var best = candidates.First();
+                if (_settings.MaxDriverDistanceKm > 0 && best.DistanceKm > _settings.MaxDriverDistanceKm)
+                {
+                    _logger.LogWarning("AutoAssignDriverAsync: Nearest driver {DistanceKm:F1} km exceeds max {MaxDistanceKm} km for cluster {ClusterId}.", best.DistanceKm, _settings.MaxDriverDistanceKm, clusterId);
+                    throw new InvalidOperationException($"Nearest driver {best.DistanceKm:F1} km is beyond allowed max distance ({_settings.MaxDriverDistanceKm} km).");
+                }
+
+                var nearestDriver = best.Driver;
+                var assignResult = await _clusterService.AssignDriverAsync(clusterId, nearestDriver.Id);
+                if (!assignResult.Success)
+                {
+                    _logger.LogError("AutoAssignDriverAsync: Failed to assign driver {DriverId} to cluster {ClusterId}: {Message}", nearestDriver.Id, clusterId, assignResult.Message);
+                    throw new InvalidOperationException($"Failed to assign driver to cluster: {assignResult.Message}");
+                }
+
+                delivery.DeliveryPersonId = nearestDriver.Id;
+                delivery.Status = DeliveryStatus.Assigned;
+                _deliveryRepo.Update(delivery);
+
+                var offer = new DeliveryOffer
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    DeliveryId = delivery.Id,
+                    ClusterId = clusterId,
+                    DeliveryPersonId = nearestDriver.Id,
+                    Status = DeliveryOfferStatus.Pending,
+                    CreatedAt = DateTime.UtcNow,
+                    ExpiryTime = DateTime.UtcNow.Add(_settings.OfferExpiryTime),
+                    IsActive = true
+                };
+
+                await _deliveryOfferRepo.AddAsync(offer);
+                await _deliveryOfferRepo.SaveChangesAsync();
+                await _deliveryRepo.SaveChangesAsync();
+
+                var notifyUserId = nearestDriver.UserId ?? nearestDriver.Id;
+                await _notificationService.SendNotificationAsync(
+                    notifyUserId,
+                    $"New delivery offer: #{delivery.TrackingNumber ?? delivery.Id} — {best.DistanceKm:F2} km from you",
+                    NotificationType.DeliveryOfferCreated,
+                    delivery.Id,
+                    "Delivery");
+
+                _logger.LogInformation("AutoAssignDriverAsync: Driver {DriverId} assigned to cluster {ClusterId} for delivery {DeliveryId}.", nearestDriver.Id, clusterId, delivery.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "AutoAssignDriverAsync: Failed for cluster {ClusterId} in delivery {DeliveryId}.", clusterId, delivery?.Id);
+                throw;
+            }
         }
 
-        private double CalculateHaversineDistance(double lat1, double lon1, double lat2, double lon2)
+        public async Task<IEnumerable<Delivery>> GetDeliveriesWithExpiredOffersAsync()
         {
-            const double R = 6371; // Earth's radius in km
-            var dLat = DegreesToRadians(lat2 - lat1);
-            var dLon = DegreesToRadians(lon2 - lon1);
-
-            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                    Math.Cos(DegreesToRadians(lat1)) * Math.Cos(DegreesToRadians(lat2)) *
-                    Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-
-            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-            return R * c;
+            return await _deliveryRepo.FindWithIncludesAsync(
+                d => d.Status == DeliveryStatus.Pending &&
+                     d.Offers.Any(o => o.IsActive && o.ExpiryTime <= DateTime.UtcNow),
+                d => d.Offers
+            );
         }
-
-        private double DegreesToRadians(double deg) => deg * (Math.PI / 180);
-
     }
 }

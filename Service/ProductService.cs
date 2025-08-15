@@ -1031,7 +1031,7 @@ namespace Service
 
                 // Send notification to TechCompany about product rejection
                 await _notificationService.SendNotificationAsync(
-                    product.TechCompanyId,
+                    product.TechCompany.UserId,
                     $"Your product '{product.Name}' has been rejected. Reason: {reason}",
                     NotificationType.ProductRejected,
                     product.Id,

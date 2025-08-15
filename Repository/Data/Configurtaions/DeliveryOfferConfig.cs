@@ -16,19 +16,16 @@ namespace Repository.Data.Configurtaions
         {
             base.Configure(builder);
 
-            // Many-to-one with Delivery
             builder.HasOne(o => o.Delivery)
                    .WithMany(d => d.Offers)
                    .HasForeignKey(o => o.DeliveryId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            // Many-to-one with DeliveryPerson
             builder.HasOne(o => o.DeliveryPerson)
                    .WithMany()
                    .HasForeignKey(o => o.DeliveryPersonId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            // Index for faster expiry checks
             builder.HasIndex(o => o.ExpiryTime);
         }
     }

@@ -682,7 +682,7 @@ namespace Service
 
             try
             {
-                await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+                //await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
                 var order = OrderMapper.ToEntity(dto);
                 order.TotalAmount = order.OrderItems.Sum(i => i.ItemTotal);
@@ -693,7 +693,7 @@ namespace Service
                 await _orderRepo.AddAsync(order);
                 await _orderRepo.SaveChangesAsync();
 
-                var delivery = await _deliveryService.CreateDeliveryForOrderAsync(order, dto.DeliveryLatitude, dto.DeliveryLongitude, dto.CustomerId);
+                //var delivery = await _deliveryService.CreateDeliveryForOrderAsync(order, dto.DeliveryLatitude, dto.DeliveryLongitude, dto.CustomerId);
 
                 //var delivery = new Delivery
                 //{
@@ -760,7 +760,7 @@ namespace Service
                 //    "Order"
                 //);
 
-                await transaction.CommitAsync();
+                //await transaction.CommitAsync();
 
                 var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
                     o => o.Id == order.Id,
@@ -815,7 +815,7 @@ namespace Service
                     o => o.OrderItems,
                     o => o.Customer,
                     o => o.OrderHistory,
-                    o => o.Delivery,
+                    o => o.Deliveries,
                     o => o.ServiceUsage);
 
                 if (order == null)

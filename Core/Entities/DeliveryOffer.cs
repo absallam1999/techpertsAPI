@@ -12,15 +12,16 @@ namespace Core.Entities
     public class DeliveryOffer : BaseEntity
     {
         public string DeliveryId { get; set; }
+        public string? ClusterId { get; set; }
         public string DeliveryPersonId { get; set; }
+        public double OfferedPrice { get; set; } 
         public DeliveryOfferStatus Status { get; set; } = DeliveryOfferStatus.Pending;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? RespondedAt { get; set; }
         public DateTime? ExpiryTime {get; set;}
-        public bool IsActive { get; set; } = true; // Useful for quick filtering
-
-        // Navigation props
+        public bool IsActive { get; set; } = true;
         public Delivery Delivery { get; set; }
+        public DeliveryCluster Cluster { get; set; }
         public DeliveryPerson DeliveryPerson { get; set; }
     }
 }

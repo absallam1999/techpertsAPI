@@ -214,5 +214,14 @@ namespace Repository
             var query = ApplyExpressionIncludes(_dbSet.Where(predicate), includes);
             return await query.ToListAsync();
         }
+
+        public async Task UpdateRangeAsync(IEnumerable<T> entities)
+        {
+            if (entities == null || !entities.Any())
+                throw new ArgumentException("No entities provided for update.", nameof(entities));
+
+            _dbSet.UpdateRange(entities);
+            await _context.SaveChangesAsync();
+        }
     }
 }

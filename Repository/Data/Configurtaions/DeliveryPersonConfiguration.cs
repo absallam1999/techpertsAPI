@@ -17,30 +17,25 @@ namespace Repository.Data.Configurtaions
         {
             base.Configure(builder);
 
-            // One-to-one with AppUser
             builder.HasOne(dp => dp.User)
                    .WithOne(u => u.DeliveryPerson)
                    .HasForeignKey<DeliveryPerson>(dp => dp.UserId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            // Many-to-one with Role
             builder.HasOne(dp => dp.Role)
                    .WithMany()
                    .HasForeignKey(dp => dp.RoleId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            // One-to-many with Deliveries (keep history if driver deleted)
             builder.HasMany(dp => dp.Deliveries)
                    .WithOne(d => d.DeliveryPerson)
                    .HasForeignKey(d => d.DeliveryPersonId)
                    .OnDelete(DeleteBehavior.SetNull);
 
-            // One-to-many with DeliveryOffers (restrict to keep history)
-            builder.HasMany<DeliveryOffer>()
+            builder.HasMany(dp => dp.Offers)
                    .WithOne(o => o.DeliveryPerson)
                    .HasForeignKey(o => o.DeliveryPersonId)
                    .OnDelete(DeleteBehavior.Restrict);
         }
     }
-
 }

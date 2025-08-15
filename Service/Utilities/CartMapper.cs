@@ -102,7 +102,7 @@ namespace Service.Utilities
                 OrderDate = order.OrderDate,
                 TotalAmount = order.TotalAmount,
                 Status = order.Status,
-                DeliveryName = order.Delivery?.DeliveryPerson?.User?.FullName ?? "No Delivery Assigned",
+                //DeliveryName = order.Delivery?.DeliveryPerson?.User?.FullName ?? "No Delivery Assigned",
                 OrderItems = order.OrderItems != null
                     ? order.OrderItems.Where(item => item != null)
                                       .Select(MapToOrderItemReadDTO)

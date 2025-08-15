@@ -8,7 +8,6 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class TechCompany : BaseEntity
     {
-        // Business-specific properties
         public string? MapLocation { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
@@ -25,9 +24,6 @@ namespace TechpertsSolutions.Core.Entities
         public AppUser? User { get; set; }
         public string RoleId { get; set; }
         public AppRole? Role { get; set; }
-        
-        //public string? CommissionPlanId { get; set; }
-        //public CommissionPlan? CommissionPlan { get; set; }
         
         // Role-specific dashboard data
         public List<Maintenance>? Maintenances { get; set; } = new List<Maintenance>();

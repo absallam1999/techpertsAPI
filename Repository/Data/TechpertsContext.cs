@@ -1,3 +1,4 @@
+using Core.Entities;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +44,11 @@ namespace TechpertsSolutions.Repository.Data
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Delivery> Deliveries { get; set; }
         public DbSet<DeliveryPerson> DeliveryPersons { get; set; }
+        public DbSet<DeliveryOffer> DeliveryOffer { get; set; }
+        public DbSet<DeliveryCluster> DeliveryCluster { get; set; }
+        public DbSet<DeliveryClusterTracking> DeliveryClusterTracking { get; set; }
+        public DbSet<DeliveryAssignmentSettings> DeliveryAssignmentSettings { get; set; }
+        public DbSet<DeliveryClusterDriverOffer> DeliveryClusterDriverOffer { get; set; }
         public DbSet<Maintenance> Maintenances { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
@@ -58,10 +64,5 @@ namespace TechpertsSolutions.Repository.Data
         public DbSet<WishList> WishLists { get; set; }
         public DbSet<WishListItem> WishListItems { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        //public DbSet<CommissionPlan> CommissionPlans { get; set; }
-        //public DbSet<CommissionTransaction> CommissionTransactions { get; set; }
-        //public DbSet<ChatRoom> ChatRooms { get; set; }
-        //public DbSet<ChatMessage> ChatMessages { get; set; }
-        //public DbSet<ChatParticipant> ChatParticipants { get; set; }
     }
 }

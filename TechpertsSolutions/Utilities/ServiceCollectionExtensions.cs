@@ -18,6 +18,7 @@ namespace TechpertsSolutions.Extensions
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IDeliveryService, DeliveryService>();
             services.AddScoped<IDeliveryPersonService, DeliveryPersonService>();
+            services.AddScoped<IDeliveryClusterService, DeliveryClusterService>();
             services.AddScoped<IMaintenanceService, MaintenanceService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<ISubCategoryService, SubCategoryService>();
@@ -34,11 +35,7 @@ namespace TechpertsSolutions.Extensions
             services.AddScoped<IPCAssemblyCompatibilityService, PCAssemblyCompatibilityService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<INotificationHub, NotificationHubService>();
-            //services.AddScoped<IDeliveryOfferService, DeliveryOfferService>();
-            //services.AddScoped<ICommissionService, CommissionService>();
-            services.AddScoped<ILocationService, LocationService>();
 
-            // Scoped services that need factories due to complex dependencies
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<ICartService, CartService>();

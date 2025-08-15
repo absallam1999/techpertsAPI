@@ -472,7 +472,7 @@ namespace Service
         
         public async Task<GeneralResponse<OrderReadDTO>> PlaceOrderAsync(string customerId, string? deliveryId = null, string? serviceUsageId = null)
         {
-            return await CheckoutCartAsync(customerId, null, deliveryId, serviceUsageId);
+            return await CheckoutCartAsync(customerId, null, serviceUsageId);
         }
 
         
@@ -480,16 +480,13 @@ namespace Service
         
         public async Task<GeneralResponse<OrderReadDTO>> PartialCheckoutAsync(string customerId, List<string> productIds, string? promoCode = null)
         {
-            return await CheckoutCartAsync(customerId, productIds, null, null, promoCode);
+            return await CheckoutCartAsync(customerId, productIds, null, promoCode);
         }
 
         public async Task<GeneralResponse<CartReadDTO>> AddPCBuildToCartAsync(string assemblyId, decimal total, decimal assemblyFee)
         {
             try
             {
-                // This is a simplified implementation for PC builds
-                // In a real scenario, you would need to handle the PC build as a special cart item
-                
                 var cartItem = new CartItemDTO
                 {
                     ProductId = assemblyId, // Using assembly ID as product ID for PC builds
@@ -498,8 +495,6 @@ namespace Service
                     TotalPrice = total
                 };
 
-                // For now, return a success response indicating the PC build was added
-                // In a full implementation, you would add this to the actual cart
                 return new GeneralResponse<CartReadDTO>
                 {
                     Success = true,
@@ -528,7 +523,7 @@ namespace Service
         private async Task<GeneralResponse<OrderReadDTO>> CheckoutCartAsync(
             string customerId, 
             List<string>? selectedProductIds = null, 
-            string? deliveryId = null, 
+            //string? deliveryId = null, 
             string? serviceUsageId = null,
             string? promoCode = null)
         {
@@ -554,15 +549,15 @@ namespace Service
             }
 
             
-            if (!string.IsNullOrWhiteSpace(deliveryId) && !Guid.TryParse(deliveryId, out _))
-            {
-                return new GeneralResponse<OrderReadDTO>
-                {
-                    Success = false,
-                    Message = "? Invalid Delivery ID format. Expected GUID format.",
-                    Data = null
-                };
-            }
+            //if (!string.IsNullOrWhiteSpace(deliveryId) && !Guid.TryParse(deliveryId, out _))
+            //{
+            //    return new GeneralResponse<OrderReadDTO>
+            //    {
+            //        Success = false,
+            //        Message = "? Invalid Delivery ID format. Expected GUID format.",
+            //        Data = null
+            //    };
+            //}
 
             if (!string.IsNullOrWhiteSpace(serviceUsageId) && !Guid.TryParse(serviceUsageId, out _))
             {
@@ -690,7 +685,12 @@ namespace Service
                 
                 if (!string.IsNullOrWhiteSpace(promoCode))
                 {
-                    /** @TODO: Handle if Promocode is Null or NOTEXIST **/
+                    return new GeneralResponse<OrderReadDTO>
+                    {
+                        Success = false,
+                        Message = "Promocode is unvalid.",
+                        Data = null
+                    };
                 }
 
                 newOrder.TotalAmount = totalAmount;
@@ -699,7 +699,7 @@ namespace Service
                 await orderRepo.AddAsync(newOrder);
                 await orderRepo.SaveChangesAsync();
 
-                var delivery = await deliveryService.CreateDeliveryForOrderAsync(newOrder, null, null, customerId);
+                //var delivery = await deliveryService.CreateDeliveryForOrderAsync(newOrder, null, null, customerId);
 
                 foreach (var cartItem in itemsToCheckout.ToList())
                 {

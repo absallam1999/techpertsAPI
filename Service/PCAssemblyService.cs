@@ -154,19 +154,19 @@ namespace Service
                 var assemblies = await _pcAssemblyRepo.GetAllAsync(query =>
                                               query.Include(a => a.Customer)
                                               .ThenInclude(c => c.User)
-     .Include(a => a.TechCompany)
-     .ThenInclude(tc => tc.User)
-     .Include(a => a.ServiceUsage)
-     .Include(a => a.PCAssemblyItems)
-         .ThenInclude(item => item.Product)
-             .ThenInclude(p => p.Category)
-     .Include(a => a.PCAssemblyItems)
-         .ThenInclude(item => item.Product)
-             .ThenInclude(p => p.SubCategory)
-     .Include(a => a.PCAssemblyItems)
-         .ThenInclude(item => item.Product)
-             .ThenInclude(p => p.TechCompany)
- );
+                                             .Include(a => a.TechCompany)
+                                             .ThenInclude(tc => tc.User)
+                                             .Include(a => a.ServiceUsage)
+                                             .Include(a => a.PCAssemblyItems)
+                                                 .ThenInclude(item => item.Product)
+                                                     .ThenInclude(p => p.Category)
+                                             .Include(a => a.PCAssemblyItems)
+                                                 .ThenInclude(item => item.Product)
+                                                     .ThenInclude(p => p.SubCategory)
+                                             .Include(a => a.PCAssemblyItems)
+                                                 .ThenInclude(item => item.Product)
+                                                     .ThenInclude(p => p.TechCompany)
+                                         );
 
                 var assemblyDtos = assemblies.Select(PCAssemblyMapper.ToReadDTO).ToList();
 
@@ -611,7 +611,7 @@ namespace Service
                     IsCustomBuild = true,
                     PcAssemblyId = assembly.Id,
                     Quantity = 1,
-                    UnitPrice = totalAmount,       // ✅ Price includes fee
+                    UnitPrice = totalAmount,
                     ProductTotal = componentsTotal,
                     AssemblyFee = assemblyFee
                 });
@@ -671,7 +671,6 @@ namespace Service
                     };
                 }
 
-                // Define all PC component categories
                 var allCategories = new[]
                 {
                     ProductCategory.Processor,
@@ -767,7 +766,6 @@ namespace Service
                 _ => category.ToString()
             };
         }
-        // Compatibility rule engine
         private bool IsProductCompatible(Product candidate, List<Product> selectedItems, string targetCategory)
         {
             var candidateSpecs = candidate.Specifications.ToDictionary(s => s.Key, s => s.Value);
@@ -841,15 +839,14 @@ namespace Service
                         if (gpuPcieVersion == null || mbPcieVersion == null)
                             return false;
                     }
-
-                    //var caseForGpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Case");
-                    //if (caseForGpu != null)
-                    //{
-                    //    var caseGpuLength = int.Parse(GetSpec(caseForGpu, "MaxGPULength") ?? "0");
-                    //    var gpuLength = int.Parse(candidateSpecs.GetValueOrDefault("Length") ?? "0");
-                    //    if (gpuLength > caseGpuLength)
-                    //        return false;
-                    //}
+                    var caseForGpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Case");
+                    if (caseForGpu != null)
+                    {
+                        var caseGpuLength = int.Parse(GetSpec(caseForGpu, "MaxGPULength") ?? "0");
+                        var gpuLength = int.Parse(candidateSpecs.GetValueOrDefault("Length") ?? "0");
+                        if (gpuLength > caseGpuLength)
+                            return false;
+                    }
                     break;
 
                 case "Storage":
@@ -868,7 +865,7 @@ namespace Service
                         int.TryParse(GetSpec(p, "PowerDraw"), out var draw) ? draw : 0
                     );
                     var psuWattage = int.TryParse(candidateSpecs.GetValueOrDefault("Wattage"), out var watt) ? watt : 0;
-                    if (psuWattage < totalPowerDraw * 1.2) // 20% buffer
+                    if (psuWattage < totalPowerDraw * 1.2)
                         return false;
                     break;
 
@@ -935,13 +932,12 @@ namespace Service
                     break;
 
                 case "Accessories":
-                    return true; // Optional, no strict compatibility
+                    return true;
             }
 
-            return true; // If all checks pass
+            return true;
         }
 
-        // Compatibility score calculation
         private decimal CalculateCompatibilityScore(Dictionary<string, string> selectedSpecs, IEnumerable<Specification> candidateSpecs)
         {
             int matched = 0;
@@ -966,7 +962,6 @@ namespace Service
                 return new GeneralResponse<bool> { Success = false, Message = "Assembly ID cannot be null or empty.", Data = false };
             }
 
-            // Get the PC assembly with all its items
             var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
                 a => a.Id == assemblyId,
                 query => query.Include(a => a.PCAssemblyItems)
@@ -977,7 +972,6 @@ namespace Service
                 return new GeneralResponse<bool> { Success = false, Message = "PC Assembly not found.", Data = false };
             }
 
-            // A customerId is required to add to a cart
             if (string.IsNullOrWhiteSpace(assembly.CustomerId))
             {
                 return new GeneralResponse<bool> { Success = false, Message = "Customer ID is not associated with this PC Assembly.", Data = false };
@@ -985,7 +979,6 @@ namespace Service
 
             var customerId = assembly.CustomerId;
 
-            // Add all components to the cart
             foreach (var assemblyItem in assembly.PCAssemblyItems)
             {
                 var cartItemDto = new CartAssemblyItemDTO
@@ -1023,8 +1016,7 @@ namespace Service
                 await cartService.AddItemAsync(customerId, assemblyFeeDto);
             }
 
-            // After moving to the cart, you might want to change the assembly's status.
-            assembly.Status = PCAssemblyStatus.Completed; // Or a new status like 'MovedToCart'
+            assembly.Status = PCAssemblyStatus.Completed;
             _pcAssemblyRepo.Update(assembly);
             await _pcAssemblyRepo.SaveChangesAsync();
 
