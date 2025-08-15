@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,10 @@ namespace Core.DTOs.DeliveryDTOs
         public double? PickupLatitude { get; set; }
         public double? PickupLongitude { get; set; }
 
+        public bool PickupConfirmed { get; set; } = false;
+        public DateTime? PickupConfirmedAt { get; set; }
+
         public int SequenceOrder { get; set; }
+        public DeliveryClusterTracking Tracking { get; set; }
     }
 }

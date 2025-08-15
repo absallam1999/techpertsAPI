@@ -14,5 +14,8 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>> GetAllAsync();
         Task<GeneralResponse<DeliveryPersonReadDTO>> UpdateAsync(string id, DeliveryPersonUpdateDTO dto);
         Task<GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>> GetAvailableDeliveryPersonsAsync();
+        Task<GeneralResponse<bool>> AcceptOfferAsync(string offerId, string driverId);
+        Task<GeneralResponse<bool>> DeclineOfferAsync(string offerId, string driverId);
+        Task<GeneralResponse<bool>> CancelOfferAsync(string offerId, string driverId);
     }
 } 

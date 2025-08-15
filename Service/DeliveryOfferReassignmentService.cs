@@ -1,14 +1,12 @@
 ﻿using Core.Entities;
 using Core.Enums;
+using Core.Interfaces;
 using Core.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using TechpertsSolutions.Core.Entities;
 
 public class DeliveryReassignmentService : BackgroundService
 {
@@ -42,10 +40,12 @@ public class DeliveryReassignmentService : BackgroundService
                 using var scope = _scopeFactory.CreateScope();
 
                 var clusterService = scope.ServiceProvider.GetRequiredService<IDeliveryClusterService>();
+                var deliveryRepo = scope.ServiceProvider.GetRequiredService<IRepository<Delivery>>();
+                var deliveryService = scope.ServiceProvider.GetRequiredService<IDeliveryService>();
                 var deliveryPersonService = scope.ServiceProvider.GetRequiredService<IDeliveryPersonService>();
                 var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
-                // Get unassigned clusters (still needs implementation in service)
+                // Get unassigned clusters
                 var unassignedClustersResponse = await clusterService.GetUnassignedClustersAsync();
                 if (!unassignedClustersResponse.Success || unassignedClustersResponse.Data == null)
                 {
@@ -53,35 +53,32 @@ public class DeliveryReassignmentService : BackgroundService
                     continue;
                 }
 
-                foreach (var cluster in unassignedClustersResponse.Data)
+                foreach (var clusterDto in unassignedClustersResponse.Data)
                 {
-                    // Ensure we only retry the same order's cluster if not accepted
-                    if (cluster.RetryCount >= _settings.MaxRetries)
+                    // Retry limits
+                    if (clusterDto.RetryCount >= _settings.MaxRetries)
                     {
                         await notificationService.SendNotificationToRoleAsync(
                             "Admin",
-                            $"Cluster #{cluster.Id} could not be assigned after {_settings.MaxRetries} attempts.",
+                            $"Cluster #{clusterDto.Id} could not be assigned after {_settings.MaxRetries} attempts.",
                             NotificationType.SystemAlert,
-                            cluster.Id,
+                            clusterDto.Id,
                             "DeliveryCluster"
                         );
                         continue;
                     }
 
-                    // Wait between retries for this cluster
-                    if (cluster.LastRetryTime.HasValue && (DateTime.UtcNow - cluster.LastRetryTime.Value).TotalSeconds < _settings.RetryDelaySeconds)
-                    {
-                        continue; // Not yet time for the next retry
-                    }
+                    if (clusterDto.LastRetryTime.HasValue && (DateTime.UtcNow - clusterDto.LastRetryTime.Value).TotalSeconds < _settings.RetryDelaySeconds)
+                        continue;
 
                     var availableDriversResponse = await deliveryPersonService.GetAvailableDeliveryPersonsAsync();
                     if (!availableDriversResponse.Success || availableDriversResponse.Data == null || !availableDriversResponse.Data.Any())
                     {
                         await notificationService.SendNotificationToRoleAsync(
                             "Admin",
-                            $"No available drivers for cluster #{cluster.Id}.",
+                            $"No available drivers for cluster #{clusterDto.Id}.",
                             NotificationType.SystemAlert,
-                            cluster.Id,
+                            clusterDto.Id,
                             "DeliveryCluster"
                         );
                         continue;
@@ -91,21 +88,33 @@ public class DeliveryReassignmentService : BackgroundService
                     if (chosenDriver == null)
                         continue;
 
-                    var assignResult = await clusterService.AssignDriverAsync(cluster.Id, chosenDriver.Id);
-                    if (!assignResult.Success)
+                    // Load full Delivery entity with includes
+                    var deliveryEntity = await deliveryRepo.GetByIdWithIncludesAsync(
+                        clusterDto.DeliveryId,
+                        d => d.Offers,
+                        d => d.TechCompanies,
+                        d => d.SubDeliveries,
+                        d => d.DeliveryPerson
+                    );
+
+                    if (deliveryEntity == null)
                     {
-                        _logger.LogWarning($"Failed to assign driver to cluster {cluster.Id}: {assignResult.Message}");
+                        _logger.LogWarning("Delivery {DeliveryId} not found for cluster {ClusterId}", clusterDto.DeliveryId, clusterDto.Id);
                         continue;
                     }
 
-                    // Update retry count and last retry time in DB
-                    cluster.RetryCount++;
-                    cluster.LastRetryTime = DateTime.UtcNow;
-                    await clusterService.UpdateClusterAsync(cluster.Id, cluster);
+                    // Auto assign driver (creates offers)
+                    await deliveryService.AutoAssignDriverAsync(deliveryEntity, clusterDto.Id);
 
+                    // Update retry info
+                    clusterDto.RetryCount++;
+                    clusterDto.LastRetryTime = DateTime.UtcNow;
+                    await clusterService.UpdateClusterAsync(clusterDto.Id, clusterDto);
+
+                    // Notify driver
                     await notificationService.NotifyDeliveryPersonAsync(
                         chosenDriver.Id,
-                        $"A delivery cluster #{cluster.Id} has been assigned to you."
+                        $"A delivery cluster #{clusterDto.Id} has been assigned to you."
                     );
                 }
             }

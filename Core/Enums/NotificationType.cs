@@ -89,14 +89,20 @@ namespace Core.Enums
         [StringValue("DeliveryOfferExpired")] 
         DeliveryOfferExpired = 32,
 
+        [StringValue("DeliveryOfferCanceled")]
+        DeliveryOfferCanceled= 33,
+
+        [StringValue("DeliveryOfferDeclined")]
+        DeliveryOfferDeclined= 34,
+
         [StringValue("DeliveryAssigned")]
-        DeliveryAssigned = 33,
+        DeliveryAssigned = 35,
 
         [StringValue("DeliveryPickedUp")]
-        DeliveryPickedUp = 34,
+        DeliveryPickedUp = 36,
 
         [StringValue("DeliveryCompleted")]
-        DeliveryCompleted = 35,
+        DeliveryCompleted = 37,
 
         // System
         [StringValue("SystemAlert")]

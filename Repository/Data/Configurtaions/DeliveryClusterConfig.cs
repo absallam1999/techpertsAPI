@@ -16,25 +16,32 @@ namespace Repository.Data.Configurtaions
         {
             base.Configure(builder);
 
-            // Relationships
+            // Delivery relationship
             builder.HasOne(dc => dc.Delivery)
-                   .WithMany()
+                   .WithMany(d => d.Clusters)
                    .HasForeignKey(dc => dc.DeliveryId)
                    .OnDelete(DeleteBehavior.Cascade);
 
+            // TechCompany relationship
             builder.HasOne(dc => dc.TechCompany)
                    .WithMany()
                    .HasForeignKey(dc => dc.TechCompanyId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            // AssignedDriver relationship
             builder.HasOne(dc => dc.AssignedDriver)
                    .WithMany()
                    .HasForeignKey(dc => dc.AssignedDriverId)
                    .OnDelete(DeleteBehavior.SetNull);
 
-            // Indexes for better query performance
+            // Indexes
             builder.HasIndex(dc => dc.Status);
             builder.HasIndex(dc => dc.AssignedDriverId);
+            builder.HasIndex(dc => dc.DeliveryId);
+
+            // Coordinates precision
+            builder.Property(dc => dc.DropoffLatitude).HasColumnType("decimal(9,6)").IsRequired(false);
+            builder.Property(dc => dc.DropoffLongitude).HasColumnType("decimal(9,6)").IsRequired(false);
         }
     }
 }

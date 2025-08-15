@@ -17,25 +17,33 @@ namespace Repository.Data.Configurtaions
         {
             base.Configure(builder);
 
+            // User
             builder.HasOne(dp => dp.User)
                    .WithOne(u => u.DeliveryPerson)
                    .HasForeignKey<DeliveryPerson>(dp => dp.UserId)
                    .OnDelete(DeleteBehavior.Cascade);
 
+            // Role
             builder.HasOne(dp => dp.Role)
                    .WithMany()
                    .HasForeignKey(dp => dp.RoleId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            // Deliveries assigned
             builder.HasMany(dp => dp.Deliveries)
                    .WithOne(d => d.DeliveryPerson)
                    .HasForeignKey(d => d.DeliveryPersonId)
                    .OnDelete(DeleteBehavior.SetNull);
 
+            // DeliveryOffers assigned
             builder.HasMany(dp => dp.Offers)
                    .WithOne(o => o.DeliveryPerson)
                    .HasForeignKey(o => o.DeliveryPersonId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes
+            builder.HasIndex(dp => dp.RoleId);
+            builder.HasIndex(dp => dp.UserId).IsUnique();
         }
     }
 }

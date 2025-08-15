@@ -36,6 +36,7 @@ namespace Core.DTOs.DeliveryDTOs
 
         public int SequenceOrder { get; set; }
         public int DriverOfferCount { get; set; }
+
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
 
@@ -43,5 +44,6 @@ namespace Core.DTOs.DeliveryDTOs
         public decimal? EstimatedPrice { get; set; }
 
         public DeliveryClusterTrackingDTO? Tracking { get; set; }
+        public List<DeliveryOfferDTO>? Offers { get; set; } = new List<DeliveryOfferDTO>();
     }
 }

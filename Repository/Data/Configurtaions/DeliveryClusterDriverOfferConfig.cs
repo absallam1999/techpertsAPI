@@ -16,11 +16,13 @@ namespace Repository.Data.Configurtaions
         {
             base.Configure(builder);
 
+            // Cluster relationship
             builder.HasOne(o => o.DeliveryCluster)
                    .WithMany(dc => dc.DriverOffers)
                    .HasForeignKey(o => o.DeliveryClusterId)
                    .OnDelete(DeleteBehavior.Cascade);
 
+            // Driver relationship
             builder.HasOne(o => o.Driver)
                    .WithMany()
                    .HasForeignKey(o => o.DriverId)
@@ -34,8 +36,15 @@ namespace Repository.Data.Configurtaions
                    .HasMaxLength(500)
                    .IsRequired(false);
 
+            builder.Property(o => o.Status)
+                   .HasConversion<string>()
+                   .HasMaxLength(50)
+                   .IsRequired();
+
             builder.HasIndex(o => new { o.DeliveryClusterId, o.DriverId }).IsUnique();
             builder.HasIndex(o => o.DriverId);
+            builder.HasIndex(o => o.Status);
+            builder.HasIndex(o => o.OfferTime);
         }
     }
 }

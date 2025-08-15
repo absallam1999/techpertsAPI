@@ -35,8 +35,11 @@ namespace Core.Entities
         public double EstimatedDistance { get; set; }
         public decimal EstimatedPrice { get; set; }
 
+        public bool PickupConfirmed { get; set; } = false;
+        public DateTime? PickupConfirmedAt { get; set; }
+
         public DeliveryClusterTracking Tracking { get; set; }
 
-        public List<DeliveryClusterDriverOffer> DriverOffers { get; set; } = new();
+        public List<DeliveryClusterDriverOffer> DriverOffers { get; set; } = new List<DeliveryClusterDriverOffer>();
     }
 }

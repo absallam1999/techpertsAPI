@@ -35,15 +35,21 @@ namespace TechpertsSolutions.Core.Entities
         public string? ParentDeliveryId { get; set; }
         public int SequenceNumber { get; set; } = 0;
         public int RouteOrder { get; set; } = 0;
+
+        public bool PickupConfirmed { get; set; }
+        public DateTime? PickupConfirmedAt { get; set; }
+
         public bool IsFinalLeg { get; set; } = false;
 
         public Order? Order { get; set; }
         public Customer? Customer { get; set; }
         public Delivery? ParentDelivery { get; set; }
         public DeliveryPerson? DeliveryPerson { get; set; }
+        public DeliveryClusterTracking Tracking { get; set; }
         public List<Delivery> SubDeliveries { get; set; } = new List<Delivery>();
         public List<DeliveryOffer> Offers { get; set; } = new List<DeliveryOffer>();
         public List<TechCompany> TechCompanies { get; set; } = new List<TechCompany>();
+        public List<DeliveryCluster> Clusters { get; set; } = new List<DeliveryCluster>();
     }
 }
 

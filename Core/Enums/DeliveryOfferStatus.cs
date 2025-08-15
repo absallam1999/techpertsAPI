@@ -18,7 +18,10 @@ namespace Core.Enums
         [StringValue("Declined")]
         Declined = 2,
 
+        [StringValue("Canceled")]
+        Canceled = 3,
+
         [StringValue("Expired")]
-        Expired = 3
+        Expired = 4
     }
 }

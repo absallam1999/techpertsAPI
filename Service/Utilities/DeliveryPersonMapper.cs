@@ -1,6 +1,8 @@
+using Core.DTOs.DeliveryDTOs;
 using Core.DTOs.DeliveryPersonDTOs;
-using TechpertsSolutions.Core.Entities;
+using Core.Entities;
 using System;
+using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities
 {
@@ -84,6 +86,44 @@ namespace Service.Utilities
                 entity.IsAvailable = dto.IsAvailable.Value;
 
             entity.AccountStatus = dto.AccountStatus;
+        }
+
+        public static DeliveryOfferDTO ToDTO(DeliveryOffer offer)
+        {
+            if (offer == null) return null;
+
+            return new DeliveryOfferDTO
+            {
+                Id = offer.Id,
+                DeliveryId = offer.DeliveryId,
+                ClusterId = offer.ClusterId,
+                DeliveryPersonId = offer.DeliveryPersonId,
+                Status = offer.Status,
+                CreatedAt = offer.CreatedAt,
+                ExpiryTime = offer.ExpiryTime,
+                IsActive = offer.IsActive,
+                DeliveryTrackingNumber = offer.Delivery?.TrackingNumber,
+                DeliveryLatitude = offer.Delivery?.DropoffLatitude,
+                DeliveryLongitude = offer.Delivery?.DropoffLongitude,
+                CustomerName = offer.Delivery?.CustomerName // assuming Delivery has CustomerName
+            };
+        }
+
+        public static DeliveryOffer ToEntity(DeliveryOfferDTO dto)
+        {
+            if (dto == null) return null;
+
+            return new DeliveryOffer
+            {
+                Id = dto.Id,
+                DeliveryId = dto.DeliveryId,
+                ClusterId = dto.ClusterId,
+                DeliveryPersonId = dto.DeliveryPersonId,
+                Status = dto.Status,
+                CreatedAt = dto.CreatedAt,
+                ExpiryTime = dto.ExpiryTime,
+                IsActive = dto.IsActive
+            };
         }
     }
 }
