@@ -15,6 +15,6 @@ namespace Core.Entities
         public DateTime LastUpdated { get; set; }
         public DateTime? LastRetryTime { get; set; }
         public DeliveryClusterStatus Status { get; set; }
-        public string? Driver { get; set; }
+        public string Driver { get; set; }
     }
 }

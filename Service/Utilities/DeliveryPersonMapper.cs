@@ -1,7 +1,7 @@
+using System;
 using Core.DTOs.DeliveryDTOs;
 using Core.DTOs.DeliveryPersonDTOs;
 using Core.Entities;
-using System;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities
@@ -105,7 +105,7 @@ namespace Service.Utilities
                 DeliveryTrackingNumber = offer.Delivery?.TrackingNumber,
                 DeliveryLatitude = offer.Delivery?.DropoffLatitude,
                 DeliveryLongitude = offer.Delivery?.DropoffLongitude,
-                CustomerName = offer.Delivery?.CustomerName // assuming Delivery has CustomerName
+                CustomerName = offer.Delivery?.CustomerName
             };
         }
 

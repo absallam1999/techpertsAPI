@@ -15,7 +15,7 @@ namespace Core.Entities
         public TimeSpan OfferExpiryTime { get; set; } = TimeSpan.FromMinutes(10);
         public bool AssignNearestDriverFirst { get; set; } = true;
         public bool AllowMultipleDriversPerCluster { get; set; } = false;
-        public double MaxDriverDistanceKm { get; set; } = 15;
+        public double MaxDriverDistanceKm { get; set; } = 50;
 
         public TimeSpan CheckInterval { get; set; } = TimeSpan.FromMinutes(1);
 

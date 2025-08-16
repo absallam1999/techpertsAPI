@@ -503,12 +503,12 @@ namespace Service
                 {
                     if (!_settings.AssignNearestDriverFirst) return;
 
-                    var availableDriversResp = await _deliveryPersonService.GetAvailableDeliveryPersonsAsync();
-                    var nearestDriver = availableDriversResp.Data?
-                        .Where(d => d.CurrentLatitude.HasValue && d.CurrentLongitude.HasValue)
+                    var availableDrivers = await _deliveryPersonService.GetAvailableDeliveryPersonsAsync();
+                    var nearestDriver = availableDrivers.Data?
+                        .Where(d => d.Latitude.HasValue && d.Longitude.HasValue)
                         .OrderBy(d => _locationService.CalculateDistance(
-                            d.CurrentLatitude.Value,
-                            d.CurrentLongitude.Value,
+                            d.Latitude.Value,
+                            d.Longitude.Value,
                             pickupLat,
                             pickupLng))
                         .FirstOrDefault();
@@ -516,8 +516,8 @@ namespace Service
                     if (nearestDriver != null)
                     {
                         double distanceToPickup = _locationService.CalculateDistance(
-                            nearestDriver.CurrentLatitude.Value,
-                            nearestDriver.CurrentLongitude.Value,
+                            nearestDriver.Latitude.Value,
+                            nearestDriver.Longitude.Value,
                             pickupLat,
                             pickupLng
                         );
@@ -556,8 +556,8 @@ namespace Service
 
                     double distance = nearestDriver != null
                         ? _locationService.CalculateDistance(
-                            nearestDriver.CurrentLatitude.Value,
-                            nearestDriver.CurrentLongitude.Value,
+                            nearestDriver.Latitude.Value,
+                            nearestDriver.Longitude.Value,
                             company.User.Latitude ?? dto.CustomerLatitude,
                             company.User.Longitude ?? dto.CustomerLongitude)
                         : double.MaxValue;
@@ -871,11 +871,11 @@ namespace Service
 
                 // Filter and sort by distance
                 var candidates = availableDrivers
-                    .Where(d => d.CurrentLatitude.HasValue && d.CurrentLongitude.HasValue)
+                    .Where(d => d.Latitude.HasValue && d.Longitude.HasValue)
                     .Select(d => new
                     {
                         Driver = d,
-                        DistanceKm = _locationService.CalculateDistance(locationLat, locationLon, d.CurrentLatitude.Value, d.CurrentLongitude.Value)
+                        DistanceKm = _locationService.CalculateDistance(locationLat, locationLon, d.Latitude.Value, d.Longitude.Value)
                     })
                     .OrderBy(x => x.DistanceKm)
                     .ToList();
@@ -924,7 +924,6 @@ namespace Service
             catch (Exception ex)
             {
                 _logger.LogError(ex, "AutoAssignDriverAsync: Failed for cluster {ClusterId} in delivery {DeliveryId}.", clusterId, delivery?.Id);
-                throw;
             }
         }
 
@@ -1212,7 +1211,6 @@ namespace Service
         //        return new GeneralResponse<bool> { Success = false, Message = $"Failed to accept delivery: {ex.Message}", Data = false };
         //    }
         //}
-
 
         public async Task<GeneralResponse<bool>> AcceptDeliveryAsync(string clusterId, string driverId)
         {
@@ -1736,7 +1734,7 @@ namespace Service
                 await _deliveryRepo.SaveChangesAsync();
 
                 await _notificationService.SendNotificationAsync(
-                    delivery.DeliveryPersonId ?? delivery.CustomerId ?? "admin",
+                    delivery.DeliveryPersonId ?? delivery.CustomerId ?? "Admin",
                     NotificationType.DeliveryCompleted,
                     delivery.Id,
                     "Delivery",
@@ -1785,13 +1783,13 @@ namespace Service
 
                 var offers = (await _deliveryOfferRepo.GetAllAsync()).Where(o => o.DeliveryId == deliveryId && o.IsActive);
                 foreach (var offer in offers)
-                    await UpdateOfferStatusAsync(offer, DeliveryOfferStatus.Accepted); // Optionally create a "Completed" status
+                    await UpdateOfferStatusAsync(offer, DeliveryOfferStatus.Accepted);
 
                 await _deliveryOfferRepo.SaveChangesAsync();
                 await _deliveryRepo.SaveChangesAsync();
 
                 await _notificationService.SendNotificationAsync(
-                    delivery.CustomerId ?? "admin",
+                    delivery.CustomerId ?? "Admin",
                     NotificationType.DeliveryCompleted,
                     delivery.Id,
                     "Delivery",

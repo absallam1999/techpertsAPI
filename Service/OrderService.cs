@@ -99,19 +99,25 @@ namespace Service
                 await _orderRepo.AddAsync(order);
                 await _orderRepo.SaveChangesAsync();
 
-                var deliveryDto = new DeliveryCreateDTO
+                DeliveryCreateDTO? deliveryDto = null;
+                GeneralResponse<DeliveryReadDTO>? deliveryResponse = null;
+
+                if (dto.DeliveryLatitude.HasValue && dto.DeliveryLongitude.HasValue)
                 {
-                    OrderId = order.Id,
-                    CustomerLatitude = (double)dto.DeliveryLatitude,
-                    CustomerLongitude = (double)dto.DeliveryLongitude
-                };
+                    deliveryDto = new DeliveryCreateDTO
+                    {
+                        OrderId = order.Id,
+                        CustomerLatitude = dto.DeliveryLatitude.Value,
+                        CustomerLongitude = dto.DeliveryLongitude.Value
+                    };
 
-                var deliveryResponse = await _deliveryService.CreateAsync(deliveryDto);
+                    deliveryResponse = await _deliveryService.CreateAsync(deliveryDto);
 
-                if (!deliveryResponse.Success)
-                    _logger.LogWarning("CreateOrderAsync: Delivery creation failed for order {OrderId}: {Message}", order.Id, deliveryResponse.Message);
-                else
-                    _logger.LogInformation("CreateOrderAsync: Delivery created successfully for order {OrderId}.", order.Id);
+                    if (!deliveryResponse.Success)
+                        _logger.LogWarning("CreateOrderAsync: Delivery creation failed for order {OrderId}: {Message}", order.Id, deliveryResponse.Message);
+                    else
+                        _logger.LogInformation("CreateOrderAsync: Delivery created successfully for order {OrderId}.", order.Id);
+                }
 
                 var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
                     o => o.Id == order.Id,
