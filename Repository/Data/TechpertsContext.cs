@@ -24,12 +24,12 @@ namespace TechpertsSolutions.Repository.Data
 
                     if (entityType.FindProperty("CreatedAt") != null)
                     {
-                        entity.Property("CreatedAt").HasDefaultValueSql("GETUTCDATE()");
+                        entity.Property("CreatedAt").HasDefaultValueSql("GETDATE()");
                     }
 
                     if (entityType.FindProperty("UpdatedAt") != null)
                     {
-                        entity.Property("UpdatedAt").HasDefaultValueSql("GETUTCDATE()");
+                        entity.Property("UpdatedAt").HasDefaultValueSql("GETDATE()");
                     }
                 }
             }

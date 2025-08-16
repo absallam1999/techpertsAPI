@@ -57,7 +57,7 @@ namespace Service
                     user.PhoneNumber = dto.PhoneNumber;
                 if (!string.IsNullOrWhiteSpace(dto.Address))
                     user.Address = dto.Address;
-                user.UpdatedAt = DateTime.UtcNow;
+                user.UpdatedAt = DateTime.Now;
 
                 var result = await _userManager.UpdateAsync(user);
                 if (!result.Succeeded)
@@ -169,7 +169,7 @@ namespace Service
                 if (!string.IsNullOrWhiteSpace(dto.Country))
                     user.Country = dto.Country;
 
-                user.UpdatedAt = DateTime.UtcNow;
+                user.UpdatedAt = DateTime.Now;
 
                 // Handle profile photo upload if provided
                 if (dto.ProfilePhoto != null && dto.ProfilePhoto.Length > 0)
@@ -419,7 +419,7 @@ namespace Service
                     };
                 }
 
-                user.UpdatedAt = DateTime.UtcNow;
+                user.UpdatedAt = DateTime.Now;
 
                 var result = await _userManager.UpdateAsync(user);
                 if (!result.Succeeded)

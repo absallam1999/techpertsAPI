@@ -12,7 +12,7 @@ using TechpertsSolutions.Repository.Data;
 namespace Repository.Migrations
 {
     [DbContext(typeof(TechpertsContext))]
-    [Migration("20250816013229_newMig")]
+    [Migration("20250816191911_newMig")]
     partial class newMig
     {
         /// <inheritdoc />
@@ -77,7 +77,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -133,7 +133,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -158,7 +158,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -195,7 +195,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -219,7 +219,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -250,7 +250,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("clusterId")
                         .IsRequired()
@@ -273,7 +273,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -307,7 +307,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -453,7 +453,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -468,7 +468,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -536,7 +536,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -596,7 +596,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
@@ -623,7 +623,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("CustomerId")
                         .IsRequired()
@@ -638,7 +638,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -663,7 +663,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -692,7 +692,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -713,7 +713,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -734,7 +734,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -755,7 +755,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("AssignedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(max)");
@@ -775,7 +775,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -790,7 +790,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -817,7 +817,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("CustomerId")
                         .HasColumnType("nvarchar(450)");
@@ -917,7 +917,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -949,7 +949,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<double?>("CurrentLatitude")
                         .HasColumnType("float");
@@ -979,7 +979,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -1015,7 +1015,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("CustomerId")
                         .IsRequired()
@@ -1055,7 +1055,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("WarrantyId")
                         .HasColumnType("nvarchar(450)");
@@ -1079,7 +1079,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -1092,14 +1092,12 @@ namespace Repository.Migrations
 
                     b.Property<string>("Message")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ReceiverId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("ReceiverUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("RelatedEntityId")
                         .HasColumnType("nvarchar(max)");
@@ -1113,11 +1111,11 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ReceiverId");
+                    b.HasIndex("ReceiverUserId");
 
                     b.ToTable("Notifications");
                 });
@@ -1130,7 +1128,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("CustomerId")
                         .IsRequired()
@@ -1162,7 +1160,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1183,7 +1181,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -1194,7 +1192,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1209,7 +1207,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -1237,7 +1235,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1265,7 +1263,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("CustomerId")
                         .IsRequired()
@@ -1296,7 +1294,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1317,7 +1315,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -1351,7 +1349,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1374,7 +1372,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -1415,7 +1413,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<int>("status")
                         .HasColumnType("int");
@@ -1442,7 +1440,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -1460,7 +1458,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime>("UsedOn")
                         .HasColumnType("datetime2");
@@ -1480,7 +1478,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -1499,7 +1497,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Value")
                         .IsRequired()
@@ -1520,7 +1518,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -1538,7 +1536,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1553,7 +1551,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -1571,7 +1569,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -1598,7 +1596,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -1631,7 +1629,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1648,7 +1646,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("CustomerId")
                         .IsRequired()
@@ -1663,7 +1661,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1681,7 +1679,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -1696,7 +1694,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("WishListId")
                         .IsRequired()
@@ -1772,7 +1770,7 @@ namespace Repository.Migrations
                     b.HasOne("TechpertsSolutions.Core.Entities.Delivery", "Delivery")
                         .WithMany("Offers")
                         .HasForeignKey("DeliveryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("TechpertsSolutions.Core.Entities.DeliveryPerson", "DeliveryPerson")
@@ -2034,7 +2032,9 @@ namespace Repository.Migrations
                 {
                     b.HasOne("TechpertsSolutions.Core.Entities.AppUser", "Receiver")
                         .WithMany()
-                        .HasForeignKey("ReceiverId");
+                        .HasForeignKey("ReceiverUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Receiver");
                 });

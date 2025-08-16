@@ -96,7 +96,7 @@ namespace Service
                             {
                                 CategoryId = processorCategory.Id,
                                 SubCategoryId = subCategory.Id,
-                                AssignedAt = DateTime.UtcNow
+                                AssignedAt = DateTime.Now
                             };
                             await _categorySubCategoryRepository.AddAsync(categorySubCategory);
                             await _categorySubCategoryRepository.SaveChangesAsync();
@@ -804,7 +804,7 @@ namespace Service
                 {
                     CategoryId = categoryId,
                     SubCategoryId = subCategoryId,
-                    AssignedAt = DateTime.UtcNow
+                    AssignedAt = DateTime.Now
                 };
 
                 await _categorySubCategoryRepository.AddAsync(categorySubCategory);
@@ -905,7 +905,7 @@ namespace Service
                 {
                     CategoryId = categoryId,
                     SubCategoryId = assignDto.SubCategoryId,
-                    AssignedAt = DateTime.UtcNow
+                    AssignedAt = DateTime.Now
                 }).ToList();
 
                 // Add all relationships

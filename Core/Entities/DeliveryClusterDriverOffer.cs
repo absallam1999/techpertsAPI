@@ -18,7 +18,7 @@ namespace Core.Entities
 
         public DeliveryOfferStatus Status { get; set; } = DeliveryOfferStatus.Pending;
 
-        public DateTime OfferTime { get; set; } = DateTime.UtcNow;
+        public DateTime OfferTime { get; set; } = DateTime.Now;
         public DateTime? ResponseTime { get; set; }
         public decimal OfferedPrice { get; set; }
         public string? Notes { get; set; }

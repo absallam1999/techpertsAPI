@@ -68,7 +68,7 @@ public class DeliveryReassignmentService : BackgroundService
                         continue;
                     }
 
-                    if (clusterDto.LastRetryTime.HasValue && (DateTime.UtcNow - clusterDto.LastRetryTime.Value).TotalSeconds < _settings.RetryDelaySeconds)
+                    if (clusterDto.LastRetryTime.HasValue && (DateTime.Now - clusterDto.LastRetryTime.Value).TotalSeconds < _settings.RetryDelaySeconds)
                         continue;
 
                     var availableDriversResponse = await deliveryPersonService.GetAvailableDeliveryPersonsAsync();
@@ -108,7 +108,7 @@ public class DeliveryReassignmentService : BackgroundService
 
                     // Update retry info
                     clusterDto.RetryCount++;
-                    clusterDto.LastRetryTime = DateTime.UtcNow;
+                    clusterDto.LastRetryTime = DateTime.Now;
                     await clusterService.UpdateClusterAsync(clusterDto.Id, clusterDto);
 
                     // Notify Admin

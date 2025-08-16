@@ -16,7 +16,7 @@ namespace Core.Entities
         public string DeliveryPersonId { get; set; }
         public double OfferedPrice { get; set; } 
         public DeliveryOfferStatus Status { get; set; } = DeliveryOfferStatus.Pending;
-        public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? CreatedAt { get; set; } = DateTime.Now;
         public DateTime? RespondedAt { get; set; }
         public DateTime? ExpiryTime {get; set;}
         public bool IsActive { get; set; } = true;

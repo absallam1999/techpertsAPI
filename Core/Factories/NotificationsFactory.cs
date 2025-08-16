@@ -64,7 +64,7 @@ namespace Core.Factories
                 RelatedEntityId = relatedEntityId,
                 RelatedEntityType = relatedEntityType,
                 IsRead = false,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
         }
 

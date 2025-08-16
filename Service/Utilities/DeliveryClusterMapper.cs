@@ -217,7 +217,7 @@ namespace Service.Utilities
             if (dto.EstimatedDistance.HasValue) entity.EstimatedDistance = dto.EstimatedDistance.Value;
             if (dto.EstimatedPrice.HasValue) entity.EstimatedPrice = dto.EstimatedPrice.Value;
 
-            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedAt = DateTime.Now;
 
             if (dto.Tracking != null)
             {

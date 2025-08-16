@@ -601,7 +601,7 @@ namespace Service
 
                 assembly.AssemblyFee = assemblyFee;
                 assembly.Status = PCAssemblyStatus.Completed;
-                assembly.CompletedDate = DateTime.UtcNow;
+                assembly.CompletedDate = DateTime.Now;
 
                 _pcAssemblyRepo.Update(assembly);
                 await _pcAssemblyRepo.SaveChangesAsync();
