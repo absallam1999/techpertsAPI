@@ -896,8 +896,8 @@ namespace Service
                         ClusterId = clusterId,
                         DeliveryPersonId = candidate.Driver.Id,
                         Status = DeliveryOfferStatus.Pending,
-                        CreatedAt = DateTime.UtcNow,
-                        ExpiryTime = DateTime.UtcNow.Add(_settings.OfferExpiryTime),
+                        CreatedAt = DateTime.Now,
+                        ExpiryTime = DateTime.Now.Add(_settings.OfferExpiryTime),
                         IsActive = true
                     };
 
@@ -1242,7 +1242,7 @@ namespace Service
                     return new GeneralResponse<bool> { Success = false, Message = "No active offer found." };
 
                 offer.Status = DeliveryOfferStatus.Accepted;
-                offer.RespondedAt = DateTime.UtcNow;
+                offer.RespondedAt = DateTime.Now;
                 offer.IsActive = false;
                 _deliveryOfferRepo.Update(offer);
 
@@ -1619,7 +1619,7 @@ namespace Service
                 Status = status,
                 AssignedDriverId = assignedDriverId,
                 AssignedDriverName = assignedDriverId != null ? cluster.AssignedDriverName : null,
-                AssignmentTime = assignedDriverId != null ? DateTime.UtcNow : null,
+                AssignmentTime = assignedDriverId != null ? DateTime.Now : null,
                 DropoffLatitude = cluster.DropoffLatitude,
                 DropoffLongitude = cluster.DropoffLongitude,
                 SequenceOrder = cluster.SequenceOrder,
@@ -1716,7 +1716,7 @@ namespace Service
                     return new GeneralResponse<bool> { Success = false, Message = $"Delivery is already {delivery.Status}." };
 
                 delivery.Status = DeliveryStatus.Cancelled;
-                delivery.UpdatedAt = DateTime.UtcNow;
+                delivery.UpdatedAt = DateTime.Now;
                 _deliveryRepo.Update(delivery);
 
                 var clustersResult = await _clusterService.GetByDeliveryIdAsync(deliveryId);
@@ -1770,8 +1770,8 @@ namespace Service
                     return new GeneralResponse<bool> { Success = false, Message = $"Delivery is already {delivery.Status}." };
 
                 delivery.Status = DeliveryStatus.Delivered;
-                delivery.ActualDeliveryDate = DateTime.UtcNow;
-                delivery.UpdatedAt = DateTime.UtcNow;
+                delivery.ActualDeliveryDate = DateTime.Now;
+                delivery.UpdatedAt = DateTime.Now;
                 _deliveryRepo.Update(delivery);
 
                 var clustersResult = await _clusterService.GetByDeliveryIdAsync(deliveryId);
@@ -1896,7 +1896,7 @@ namespace Service
                 }
 
                 delivery.Status = DeliveryStatus.Cancelled;
-                delivery.UpdatedAt = DateTime.UtcNow;
+                delivery.UpdatedAt = DateTime.Now;
                 _deliveryRepo.Update(delivery);
 
                 var clustersResult = await _clusterService.GetByDeliveryIdAsync(id);
@@ -1918,7 +1918,7 @@ namespace Service
                 {
                     offer.Status = DeliveryOfferStatus.Expired;
                     offer.IsActive = false;
-                    offer.RespondedAt = DateTime.UtcNow;
+                    offer.RespondedAt = DateTime.Now;
                     _deliveryOfferRepo.Update(offer);
                 }
 
@@ -2056,7 +2056,7 @@ namespace Service
         {
             return await _deliveryRepo.FindWithIncludesAsync(
                 d => d.Status == DeliveryStatus.Pending &&
-                     d.Offers.Any(o => o.IsActive && o.ExpiryTime <= DateTime.UtcNow),
+                     d.Offers.Any(o => o.IsActive && o.ExpiryTime <= DateTime.Now),
                 d => d.Offers
             );
         }
@@ -2065,7 +2065,7 @@ namespace Service
         {
             if (offer == null) return;
             offer.Status = status;
-            offer.RespondedAt = DateTime.UtcNow;
+            offer.RespondedAt = DateTime.Now;
             offer.IsActive = false;
             _deliveryOfferRepo.Update(offer);
         }

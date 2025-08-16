@@ -190,7 +190,7 @@ namespace Service
                 {
                     Id = Guid.NewGuid().ToString(),
                     ServiceType = "Maintenance",
-                    UsedOn = DateTime.UtcNow,
+                    UsedOn = DateTime.Now,
                     CallCount = 1,
                     MaintenanceId = entity.Id
                 };
@@ -573,7 +573,7 @@ namespace Service
 
                 maintenance.Status = MaintenanceStatus.Completed;
                 maintenance.Notes = notes;
-                maintenance.CompletedDate = DateTime.UtcNow;
+                maintenance.CompletedDate = DateTime.Now;
                 _maintenanceRepo.Update(maintenance);
                 await _maintenanceRepo.SaveChangesAsync();
 
@@ -707,7 +707,7 @@ namespace Service
                 {
                     Id = Guid.NewGuid().ToString(),
                     ServiceType = "Maintenance",
-                    UsedOn = DateTime.UtcNow,
+                    UsedOn = DateTime.Now,
                     CallCount = 1,
                     MaintenanceId = maintenance.Id
                 };

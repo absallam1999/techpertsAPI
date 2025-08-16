@@ -177,7 +177,7 @@ namespace Service
                 var newWishList = new WishList
                 {
                     CustomerId = customerId,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     WishListItems = new List<WishListItem>()
                 };
 

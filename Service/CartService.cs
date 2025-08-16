@@ -87,7 +87,7 @@ namespace Service
                 cart = new Cart
                 {
                     CustomerId = customerId,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     CartItems = new List<CartItem>()
                 };
 
@@ -146,7 +146,7 @@ namespace Service
                     cart = new Cart
                     {
                         CustomerId = customerId,
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.Now,
                         CartItems = new List<CartItem>()
                     };
 
@@ -227,7 +227,7 @@ namespace Service
                 cart = new Cart
                 {
                     CustomerId = customerId,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     CartItems = new List<CartItem>()
                 };
                 await cartRepo.AddAsync(cart);
@@ -297,7 +297,7 @@ namespace Service
                 cart = new Cart
                 {
                     CustomerId = customerId,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     CartItems = new List<CartItem>()
                 };
                 await cartRepo.AddAsync(cart);
@@ -492,7 +492,7 @@ namespace Service
                     {
                         Id = Guid.NewGuid().ToString(),
                         CustomerId = string.Empty, // Would be set in actual implementation
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.Now,
                         SubTotal = total,
                         CartItems = new List<CartItemReadDTO>()
                     }

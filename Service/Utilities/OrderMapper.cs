@@ -58,7 +58,7 @@ namespace Service.Utilities
             {
                 Id = Guid.NewGuid().ToString(),
                 CustomerId = dto.CustomerId,
-                OrderDate = DateTime.UtcNow,
+                OrderDate = DateTime.Now,
                 Status = OrderStatus.Ordered,
                 ServiceUsageId = dto.ServiceUsageId,
                 OrderHistoryId = null,

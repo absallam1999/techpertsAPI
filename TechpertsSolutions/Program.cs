@@ -6,6 +6,7 @@ using Core.Utilities;
 using Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -38,7 +39,12 @@ namespace TechpertsSolutions
             });
             builder.Services.AddEndpointsApiExplorer();
 
-            builder.Services.AddSignalR();
+            builder.Services.AddSignalR().AddHubOptions<ChatHub>(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+
+            builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
             builder.Services.AddSwaggerGen(c =>
             {
@@ -176,6 +182,7 @@ namespace TechpertsSolutions
                 }
             }
             app.MapHub<NotificationsHub>("/notifications");
+            app.MapHub<ChatHub>("/chat");
 
             app.MapControllers();
 

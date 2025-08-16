@@ -221,7 +221,7 @@ namespace Service
                 NotificationType.SystemAlert,
                 null,
                 "User",
-                $"New login detected for your account on {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC."
+                $"New login detected for your account on {DateTime.Now:yyyy-MM-dd HH:mm}."
                 );
 
                 return new GeneralResponse<LoginResultDTO>
@@ -292,7 +292,7 @@ namespace Service
                     Country = registerDTO.Country?.Trim(),
                     EmailConfirmed = false,
                     PhoneNumberConfirmed = false,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now
                 };
 
                 if (registerDTO.ProfilePhoto != null && registerDTO.ProfilePhoto.Length > 0)
@@ -322,7 +322,7 @@ namespace Service
                         await customerRepo.AddAsync(customer);
                         await context.SaveChangesAsync();
 
-                        var cart = new Cart { CustomerId = customer.Id, CreatedAt = DateTime.UtcNow };
+                        var cart = new Cart { CustomerId = customer.Id, CreatedAt = DateTime.Now };
                         await cartRepo.AddAsync(cart);
                         await wishListService.CreateAsync(new WishListCreateDTO { CustomerId = customer.Id });
 
@@ -625,7 +625,7 @@ namespace Service
                 issuer: configuration["Jwt:Issuer"],
                 audience: configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.Add(expiry),
+                expires: DateTime.Now.Add(expiry),
                 signingCredentials: creds
             );
 

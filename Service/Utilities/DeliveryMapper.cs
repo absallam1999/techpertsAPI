@@ -18,7 +18,7 @@ namespace Service.Utilities
                 OrderId = dto.OrderId,
                 CustomerId = dto.customerId,
                 Status = DeliveryStatus.Pending,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 DropoffLatitude = dto.CustomerLatitude,
                 DropoffLongitude = dto.CustomerLongitude,
             };
@@ -93,7 +93,7 @@ namespace Service.Utilities
             if (dto.DeliveryFee.HasValue)
                 entity.DeliveryFee = dto.DeliveryFee.Value;
 
-            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedAt = DateTime.Now;
         }
     }
 }

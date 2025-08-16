@@ -227,7 +227,7 @@ namespace Service
             var previousDriverId = entity.AssignedDriverId;
 
             entity.AssignedDriverId = driverId;
-            entity.AssignmentTime = DateTime.UtcNow;
+            entity.AssignmentTime = DateTime.Now;
             _clusterRepo.Update(entity);
             await _clusterRepo.SaveChangesAsync();
 
@@ -451,7 +451,7 @@ namespace Service
                 EstimatedPrice = cluster.EstimatedPrice,
                 Status = cluster.Tracking.Status,
                 Location = cluster.Tracking?.Location,
-                LastUpdated = cluster.Tracking?.LastUpdated ?? DateTime.UtcNow,
+                LastUpdated = cluster.Tracking?.LastUpdated ?? DateTime.Now,
                 PickupConfirmed = cluster.PickupConfirmed,
                 PickupConfirmedAt = cluster.PickupConfirmedAt
             };
@@ -494,7 +494,7 @@ namespace Service
             cluster.Tracking.Status = trackingDto.Status;
             cluster.Tracking.Driver = trackingDto.DriverName ?? cluster.Tracking.Driver;
 
-            cluster.UpdatedAt = DateTime.UtcNow;
+            cluster.UpdatedAt = DateTime.Now;
 
             _clusterRepo.Update(cluster);
             await _clusterRepo.SaveChangesAsync();

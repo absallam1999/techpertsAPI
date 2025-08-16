@@ -14,6 +14,18 @@ namespace TechpertsSolutions.Repository.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            // Configure the primary key for AppUser
+            modelBuilder.Entity<PrivateMessage>()
+                .HasOne(pm => pm.SenderUser)
+                .WithMany(u => u.SentMessages)
+                .HasForeignKey(pm => pm.SenderUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PrivateMessage>()
+                .HasOne(pm => pm.ReceiverUser)
+                .WithMany(u => u.ReceivedMessages)
+                .HasForeignKey(pm => pm.ReceiverUserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
@@ -24,12 +36,12 @@ namespace TechpertsSolutions.Repository.Data
 
                     if (entityType.FindProperty("CreatedAt") != null)
                     {
-                        entity.Property("CreatedAt").HasDefaultValueSql("GETUTCDATE()");
+                        entity.Property("CreatedAt").HasDefaultValueSql("GETDATE()");
                     }
 
                     if (entityType.FindProperty("UpdatedAt") != null)
                     {
-                        entity.Property("UpdatedAt").HasDefaultValueSql("GETUTCDATE()");
+                        entity.Property("UpdatedAt").HasDefaultValueSql("GETDATE()");
                     }
                 }
             }
@@ -64,5 +76,6 @@ namespace TechpertsSolutions.Repository.Data
         public DbSet<WishList> WishLists { get; set; }
         public DbSet<WishListItem> WishListItems { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<PrivateMessage> PrivateMessages { get; set; }
     }
 }
