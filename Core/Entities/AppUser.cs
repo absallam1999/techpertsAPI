@@ -1,10 +1,11 @@
+using Core.Entities;
+using Core.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Core.Interfaces;
 
 namespace TechpertsSolutions.Core.Entities
 {
@@ -27,6 +28,8 @@ namespace TechpertsSolutions.Core.Entities
         public Admin? Admin { get; set; }
         public TechCompany? TechCompany { get; set; }
         public DeliveryPerson? DeliveryPerson { get; set; }
+        public List<PrivateMessage> SentMessages { get; set; } = new List<PrivateMessage>();
+        public List<PrivateMessage> ReceivedMessages { get; set; } = new List<PrivateMessage>();
     }
 }
 
