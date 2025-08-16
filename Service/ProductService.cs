@@ -21,8 +21,8 @@ namespace Service
         private readonly IRepository<Category> _categoryRepo;
         private readonly IRepository<SubCategory> _subCategoryRepo;
         private readonly IRepository<TechCompany> _techCompanyRepo;
-        private readonly IFileService _fileService;
         private readonly INotificationService _notificationService;
+        private readonly IFileService _fileService;
         
         public ProductService(IRepository<Product> productRepo,
             IRepository<Specification> specRepo,
@@ -30,8 +30,8 @@ namespace Service
             IRepository<Category> categoryRepo,
             IRepository<SubCategory> subCategoryRepo,
             IRepository<TechCompany> techCompanyRepo,
-            IFileService fileService,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IFileService fileService)
         {
             _productRepo = productRepo;
             _specRepo = specRepo;
@@ -39,8 +39,8 @@ namespace Service
             _categoryRepo = categoryRepo;
             _subCategoryRepo = subCategoryRepo;
             _techCompanyRepo = techCompanyRepo;
-            _fileService = fileService;
             _notificationService = notificationService;
+            _fileService = fileService;
         }
 
         public async Task<GeneralResponse<PaginatedDTO<ProductCardDTO>>> GetAllAsync(
@@ -458,8 +458,6 @@ namespace Service
                     };
                 }
 
-               
-
                 // Assign to product entity
                 var product = new Product
                 {
@@ -551,13 +549,13 @@ namespace Service
                     p => p.Specifications,
                     p => p.Warranties);
 
-                // Send notification to admin about new pending product
                 await _notificationService.SendNotificationToRoleAsync(
                     "Admin",
-                    $"New product '{product.Name}' has been added From {product.TechCompany.User.FullName} and is pending approval.",
                     NotificationType.ProductPending,
                     product.Id,
-                    "Product"
+                    "Product",
+                    product.Name,
+                    product.TechCompany.User.FullName
                 );
 
                 return new GeneralResponse<ProductDTO>
@@ -946,11 +944,11 @@ namespace Service
 
                 // Send notification to TechCompany about product approval
                 await _notificationService.SendNotificationAsync(
-                    product.TechCompany.UserId,
-                    $"Your product '{product.Name}' has been approved by admin",
-                    NotificationType.ProductApproved,
-                    product.Id,
-                    "Product"
+                product.TechCompany.UserId,
+                NotificationType.ProductApproved,
+                product.Id,
+                "Product",
+                product.Name
                 );
 
                 return new GeneralResponse<bool>
@@ -1031,13 +1029,14 @@ namespace Service
                 _productRepo.Update(product);
                 await _productRepo.SaveChangesAsync();
 
-                // Send notification to TechCompany about product rejection
+                // Send notification to TechCompany about product Rejection
                 await _notificationService.SendNotificationAsync(
                     product.TechCompany.UserId,
-                    $"Your product '{product.Name}' has been rejected. Reason: {reason}",
                     NotificationType.ProductRejected,
                     product.Id,
-                    "Product"
+                    "Product",
+                    product.Name,
+                    reason
                 );
 
                 return new GeneralResponse<bool>
@@ -1335,10 +1334,9 @@ namespace Service
                     };
                 }
 
-                // Track if we deleted anything
+                // Track if deleted anything
                 bool deletedSomething = false;
 
-                // Delete main image if exists
                 if (!string.IsNullOrEmpty(product.ImageUrl))
                 {
                     var deletedMain = await _fileService.DeleteImageAsync(product.ImageUrl);
@@ -1349,7 +1347,6 @@ namespace Service
                     }
                 }
 
-                // Delete additional images if exist
                 if (product.ImagesURLS != null && product.ImagesURLS.Any())
                 {
                     foreach (var imgPath in product.ImagesURLS)
@@ -1360,7 +1357,6 @@ namespace Service
                     deletedSomething = true;
                 }
 
-                // Save changes only if something was deleted
                 if (deletedSomething)
                 {
                     _productRepo.Update(product);

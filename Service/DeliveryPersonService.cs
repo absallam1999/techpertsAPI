@@ -232,13 +232,13 @@ namespace Service
                     o.IsActive = false;
                     _deliveryOfferRepo.Update(o);
 
-                    // Notify other drivers
                     await _notificationService.SendNotificationAsync(
                         o.DeliveryPersonId,
-                        $"Delivery offer #{o.DeliveryId} expired.",
                         NotificationType.DeliveryOfferExpired,
                         o.DeliveryId,
-                        "Delivery");
+                        "Delivery",
+                        $"Delivery offer #{o.DeliveryId} expired."
+                    );
                 }
 
                 // Assign driver to cluster/delivery
@@ -257,11 +257,13 @@ namespace Service
                 // Notify driver
                 await _notificationService.SendNotificationAsync(
                     driverId,
-                    $"You accepted delivery offer #{delivery.TrackingNumber ?? delivery.Id}",
                     NotificationType.DeliveryOfferAccepted,
                     delivery.Id,
-                    "Delivery");
-
+                    "Delivery",
+                    delivery.TrackingNumber ?? delivery.Id,
+                    "New Order Assigned"
+                    );
+                
                 scope.Complete();
 
                 return new GeneralResponse<bool> { Success = true, Message = "Offer accepted successfully.", Data = true };
@@ -291,10 +293,12 @@ namespace Service
 
                 await _notificationService.SendNotificationAsync(
                     offer.DeliveryPersonId,
-                    $"You declined delivery offer #{offer.DeliveryId}.",
                     NotificationType.DeliveryOfferDeclined,
+                    offer.DeliveryId,                      
+                    "Delivery",                            
                     offer.DeliveryId,
-                    "Delivery");
+                    "Order Have Been Declined."
+                );
 
                 return new GeneralResponse<bool> { Success = true, Message = "Offer declined successfully.", Data = true };
             }
@@ -327,13 +331,14 @@ namespace Service
 
                 await _deliveryOfferRepo.SaveChangesAsync();
                 await _deliveryRepo.SaveChangesAsync();
-
                 await _notificationService.SendNotificationAsync(
                     driverId,
-                    $"You canceled the delivery #{delivery.TrackingNumber ?? delivery.Id}.",
                     NotificationType.DeliveryOfferCanceled,
                     delivery.Id,
-                    "Delivery");
+                    "Delivery",
+                    delivery.TrackingNumber ?? delivery.Id,
+                    "Order Have Been Canceled."
+                );
 
                 return new GeneralResponse<bool> { Success = true, Message = "Offer canceled successfully.", Data = true };
             }

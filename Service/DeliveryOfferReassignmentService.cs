@@ -60,10 +60,10 @@ public class DeliveryReassignmentService : BackgroundService
                     {
                         await notificationService.SendNotificationToRoleAsync(
                             "Admin",
-                            $"Cluster #{clusterDto.Id} could not be assigned after {_settings.MaxRetries} attempts.",
                             NotificationType.SystemAlert,
                             clusterDto.Id,
-                            "DeliveryCluster"
+                            "DeliveryCluster",
+                            $"Cluster #{clusterDto.Id} could not be assigned after {_settings.MaxRetries} attempts."
                         );
                         continue;
                     }
@@ -76,10 +76,10 @@ public class DeliveryReassignmentService : BackgroundService
                     {
                         await notificationService.SendNotificationToRoleAsync(
                             "Admin",
-                            $"No available drivers for cluster #{clusterDto.Id}.",
                             NotificationType.SystemAlert,
                             clusterDto.Id,
-                            "DeliveryCluster"
+                            "DeliveryCluster",
+                            $"No available drivers for cluster #{clusterDto.Id}."
                         );
                         continue;
                     }
@@ -111,11 +111,23 @@ public class DeliveryReassignmentService : BackgroundService
                     clusterDto.LastRetryTime = DateTime.UtcNow;
                     await clusterService.UpdateClusterAsync(clusterDto.Id, clusterDto);
 
-                    // Notify driver
-                    //await notificationService.NotifyDeliveryPersonAsync(
-                    //    chosenDriver.Id,
-                    //    $"A delivery cluster #{clusterDto.Id} has been assigned to you."
-                    //);
+                    // Notify Admin
+                    await notificationService.SendNotificationToRoleAsync(
+                        "Admin",
+                        NotificationType.SystemAlert,
+                        clusterDto.Id,
+                        "DeliveryCluster",
+                        $"Cluster #{clusterDto.Id} has been assigned to driver {chosenDriver.UserFullName}."
+                    );
+
+                    // Notify chosen driver
+                    await notificationService.SendNotificationAsync(
+                        chosenDriver.Id,
+                        NotificationType.DeliveryAssigned,
+                        clusterDto.Id,
+                        "DeliveryCluster",
+                        $"You have been assigned to delivery cluster #{clusterDto.Id}."
+                    );
                 }
             }
             catch (Exception ex)

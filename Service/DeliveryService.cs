@@ -907,10 +907,12 @@ namespace Service
                     var notifyUserId = candidate.Driver.UserId ?? candidate.Driver.Id;
                     await _notificationService.SendNotificationAsync(
                         notifyUserId,
-                        $"New delivery offer: #{delivery.TrackingNumber ?? delivery.Id} — {candidate.DistanceKm:F2} km from you",
                         NotificationType.DeliveryOfferCreated,
                         delivery.Id,
-                        "Delivery");
+                        "Delivery",
+                        delivery.TrackingNumber ?? delivery.Id,
+                        $"{candidate.DistanceKm:F2} km from you"
+                    );
                 }
 
                 await _deliveryOfferRepo.SaveChangesAsync();
@@ -982,21 +984,22 @@ namespace Service
                 var notifyUserId = driverId;
                 await _notificationService.SendNotificationAsync(
                     notifyUserId,
-                    $"You accepted delivery offer #{delivery.TrackingNumber ?? delivery.Id}",
                     NotificationType.DeliveryOfferAccepted,
                     delivery.Id,
-                    "Delivery");
+                    "Delivery",
+                    delivery.TrackingNumber ?? delivery.Id
+                );
 
-                // Optional: notify other drivers their offer expired
+                // Notify other drivers their offer expired
                 foreach (var o in otherOffers)
                 {
-                    var otherUserId = o.DeliveryPersonId;
                     await _notificationService.SendNotificationAsync(
-                        otherUserId,
-                        $"Delivery offer #{delivery.TrackingNumber ?? delivery.Id} is no longer available",
+                        o.DeliveryPersonId,
                         NotificationType.DeliveryOfferExpired,
                         delivery.Id,
-                        "Delivery");
+                        "Delivery",
+                        delivery.TrackingNumber ?? delivery.Id
+                    );
                 }
 
                 scope.Complete();
@@ -1268,10 +1271,13 @@ namespace Service
                 await _clusterService.UpdateClusterAsync(cluster.Id, cluster);
 
                 await Task.WhenAll(_deliveryRepo.SaveChangesAsync(), _deliveryOfferRepo.SaveChangesAsync());
-                await _notificationService.SendNotificationAsync(driverId,
-                    $"Delivery offer accepted: #{delivery.TrackingNumber ?? delivery.Id}.",
+                await _notificationService.SendNotificationAsync(
+                    driverId,
                     NotificationType.DeliveryOfferAccepted,
-                    delivery.Id, "Delivery");
+                    delivery.Id,
+                    "Delivery",
+                    delivery.TrackingNumber ?? delivery.Id
+                );
 
                 scope.Complete();
                 return new GeneralResponse<bool> { Success = true, Message = "Delivery offer accepted.", Data = true };
@@ -1679,11 +1685,12 @@ namespace Service
                 }
 
                 await _notificationService.SendNotificationAsync(
-                    driverId,
-                    $"Delivery offer declined: #{delivery.TrackingNumber ?? delivery.Id}.",
-                    NotificationType.DeliveryOfferExpired,
-                    delivery.Id,
-                    "Delivery");
+                 driverId,
+                 NotificationType.DeliveryOfferExpired,
+                 delivery.Id,
+                 "Delivery",
+                 delivery.TrackingNumber ?? delivery.Id
+             );
 
                 scope.Complete();
                 return new GeneralResponse<bool> { Success = true, Message = "Delivery offer declined.", Data = true };
@@ -1730,10 +1737,11 @@ namespace Service
 
                 await _notificationService.SendNotificationAsync(
                     delivery.DeliveryPersonId ?? delivery.CustomerId ?? "admin",
-                    $"Delivery cancelled: #{delivery.TrackingNumber ?? delivery.Id}.",
                     NotificationType.DeliveryCompleted,
                     delivery.Id,
-                    "Delivery");
+                    "Delivery",
+                    delivery.TrackingNumber ?? delivery.Id
+                );
 
                 scope.Complete();
                 return new GeneralResponse<bool> { Success = true, Message = "Delivery cancelled successfully.", Data = true };
@@ -1784,10 +1792,11 @@ namespace Service
 
                 await _notificationService.SendNotificationAsync(
                     delivery.CustomerId ?? "admin",
-                    $"Delivery completed: #{delivery.TrackingNumber ?? delivery.Id}.",
                     NotificationType.DeliveryCompleted,
                     delivery.Id,
-                    "Delivery");
+                    "Delivery",
+                    delivery.TrackingNumber ?? delivery.Id
+                );
 
                 scope.Complete();
                 return new GeneralResponse<bool> { Success = true, Message = "Delivery completed successfully.", Data = true };
@@ -2044,7 +2053,6 @@ namespace Service
                 };
             }
         }
-
 
         public async Task<IEnumerable<Delivery>> GetDeliveriesWithExpiredOffersAsync()
         {

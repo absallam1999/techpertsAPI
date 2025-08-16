@@ -59,8 +59,11 @@ namespace Core.Enums
         [StringValue("DeliveryPickedUp")]
         DeliveryPickedUp = 36,
 
+        [StringValue("DeliveryTrackingUpdated")]
+        DeliveryTrackingUpdated = 37,
+
         [StringValue("DeliveryCompleted")]
-        DeliveryCompleted = 37,
+        DeliveryCompleted = 38,
 
         // System
         [StringValue("SystemAlert")]

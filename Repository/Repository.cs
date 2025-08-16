@@ -184,9 +184,12 @@ namespace Repository
 
         private IQueryable<T> ApplyExpressionIncludes(IQueryable<T> query, params Expression<Func<T, object>>[] includes)
         {
-            foreach (var include in includes)
+            if (includes != null)
             {
-                query = query.Include(include);
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
             }
             return query;
         }
