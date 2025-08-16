@@ -39,7 +39,10 @@ namespace TechpertsSolutions.Extensions
             services.AddScoped<ICartService, CartService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IPCAssemblyService, PCAssemblyService>();
+<<<<<<< HEAD
             services.AddScoped<IPaymentService, PaymentService>();
+=======
+>>>>>>> 249473b05d10dd27aa16bf4e6531c5c1ce069e45
 
             return services;
         }

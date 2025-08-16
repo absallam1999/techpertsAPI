@@ -80,5 +80,6 @@ namespace TechpertsSolutions.Repository.Data
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<PrivateMessage> PrivateMessages { get; set; }
         public DbSet<StripeSettings> StripeSettings { get; set; }
+
     }
 }

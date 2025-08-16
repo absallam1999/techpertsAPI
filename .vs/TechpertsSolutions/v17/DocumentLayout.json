@@ -1,12 +1,7 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\",
-  "Documents": [
-    {
-      "AbsoluteMoniker": "D:0:0:{B827C73D-5D53-4C6A-A856-2E197E4AEEC8}|TechpertsSolutions\\TechpertsSolutions.csproj|d:\\iti project\\abdelsalam\\techpertsapi\\techpertssolutions\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{B827C73D-5D53-4C6A-A856-2E197E4AEEC8}|TechpertsSolutions\\TechpertsSolutions.csproj|solutionrelative:techpertssolutions\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    }
-  ],
+  "Documents": [],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -14,7 +9,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 210,
-          "SelectedChildIndex": 49,
+          "SelectedChildIndex": -1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -211,19 +206,6 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\TechpertsSolutions\\appsettings.json",
-              "RelativeDocumentMoniker": "TechpertsSolutions\\appsettings.json",
-              "ToolTip": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\TechpertsSolutions\\appsettings.json",
-              "RelativeToolTip": "TechpertsSolutions\\appsettings.json",
-              "ViewState": "AgIAABgAAAAAAAAAAAAAACAAAAADAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-08-16T23:32:06.806Z",
-              "EditorCaption": ""
             }
           ]
         },
