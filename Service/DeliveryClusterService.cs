@@ -274,7 +274,6 @@ namespace Service
             };
         }
 
-
         public async Task AutoAssignDriverAsync(Delivery delivery, string clusterId, double? overrideLat = null, double? overrideLon = null)
         {
             if (delivery == null || string.IsNullOrWhiteSpace(clusterId))
@@ -322,7 +321,7 @@ namespace Service
 
             var candidates = availableDrivers
                 .Where(d => d.CurrentLatitude.HasValue && d.CurrentLongitude.HasValue)
-                .Select(d => new { Driver = d, DistanceKm = _locationService.CalculateDistance(locationLat, locationLon, d.CurrentLatitude.Value, d.CurrentLongitude.Value) })
+                .Select(d => new { Driver = d, DistanceKm = _locationService.CalculateDistance(locationLat, locationLon, d.Latitude.Value, d.Longitude.Value) })
                 .OrderBy(x => x.DistanceKm)
                 .ToList();
 
@@ -539,6 +538,5 @@ namespace Service
                 Data = clusterDtos
             };
         }
-
     }
 }

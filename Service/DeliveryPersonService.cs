@@ -43,7 +43,6 @@ namespace Service
         }
         private IDeliveryClusterService _clusterService => _serviceProvider.GetRequiredService<IDeliveryClusterService>();
 
-
         public async Task<GeneralResponse<DeliveryPersonReadDTO>> GetByIdAsync(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -166,6 +165,7 @@ namespace Service
             try
             {
                 var availableDeliveryPersons = await _deliveryPersonRepo.FindWithIncludesAsync(
+                    dp => dp.AccountStatus == DeliveryPersonStatus.Accepted,
                     dp => dp.IsAvailable,
                     dp => dp.User,
                     dp => dp.Role
@@ -189,6 +189,20 @@ namespace Service
                     Data = null
                 };
             }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<DeliveryOfferDTO>>> GetAllOffersAsync(string driverId)
+        {
+            if (string.IsNullOrWhiteSpace(driverId))
+                return new GeneralResponse<IEnumerable<DeliveryOfferDTO>> { Success = false, Message = "Driver ID required." };
+
+            var offers = await _deliveryOfferRepo.FindWithIncludesAsync(
+                o => o.DeliveryPersonId == driverId,
+                o => o.Delivery
+            );
+
+            var dtoList = offers.Select(DeliveryPersonMapper.ToDTO).ToList();
+            return new GeneralResponse<IEnumerable<DeliveryOfferDTO>> { Success = true, Message = "Pending offers retrieved.", Data = dtoList };
         }
 
         public async Task<GeneralResponse<IEnumerable<DeliveryOfferDTO>>> GetPendingOffersAsync(string driverId)
