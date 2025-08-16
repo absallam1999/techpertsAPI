@@ -1,31 +1,42 @@
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
+using System.Collections.Concurrent;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
-namespace TechpertsSolutions.Hubs
-{
-    public class NotificationHub : Hub
+namespace Hubs
+{ 
+    public class NotificationsHub : Hub
     {
-        private static readonly Dictionary<string, string> _userConnections = new();
+        private static readonly ConcurrentDictionary<string, HashSet<string>> _userConnections = new();
 
         public override async Task OnConnectedAsync()
         {
             var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
             if (!string.IsNullOrEmpty(userId))
             {
-                _userConnections[userId] = Context.ConnectionId;
+                var connections = _userConnections.GetOrAdd(userId, _ => new HashSet<string>());
+                lock (connections) connections.Add(Context.ConnectionId);
+
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"User_{userId}");
             }
+
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrEmpty(userId))
+
+            if (!string.IsNullOrEmpty(userId) && _userConnections.TryGetValue(userId, out var connections))
             {
-                _userConnections.Remove(userId);
+                lock (connections) connections.Remove(Context.ConnectionId);
+                if (connections.Count == 0)
+                    _userConnections.TryRemove(userId, out _);
+
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"User_{userId}");
             }
+
             await base.OnDisconnectedAsync(exception);
         }
 
@@ -39,16 +50,16 @@ namespace TechpertsSolutions.Hubs
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"User_{userId}");
         }
 
-        public static string? GetConnectionId(string userId)
+        public static List<string> GetConnectionIds(string userId)
         {
-            return _userConnections.TryGetValue(userId, out var connectionId) ? connectionId : null;
+            return _userConnections.TryGetValue(userId, out var connections)
+                ? connections.ToList()
+                : new List<string>();
         }
 
         public static List<string> GetConnectionIds(List<string> userIds)
         {
-            return userIds.Where(id => _userConnections.ContainsKey(id))
-                         .Select(id => _userConnections[id])
-                         .ToList();
+            return userIds.SelectMany(id => GetConnectionIds(id)).ToList();
         }
     }
-} 
+}

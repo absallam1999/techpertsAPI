@@ -12,7 +12,7 @@ using TechpertsSolutions.Repository.Data;
 namespace Repository.Migrations
 {
     [DbContext(typeof(TechpertsContext))]
-    [Migration("20250815023131_newMig")]
+    [Migration("20250816013229_newMig")]
     partial class newMig
     {
         /// <inheritdoc />
@@ -89,11 +89,11 @@ namespace Repository.Migrations
                     b.Property<double>("DistanceKm")
                         .HasColumnType("float");
 
-                    b.Property<double?>("DropoffLatitude")
-                        .HasColumnType("float");
+                    b.Property<decimal?>("DropoffLatitude")
+                        .HasColumnType("decimal(9,6)");
 
-                    b.Property<double?>("DropoffLongitude")
-                        .HasColumnType("float");
+                    b.Property<decimal?>("DropoffLongitude")
+                        .HasColumnType("decimal(9,6)");
 
                     b.Property<double>("EstimatedDistance")
                         .HasColumnType("float");
@@ -103,6 +103,12 @@ namespace Repository.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<bool>("PickupConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("PickupConfirmedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -181,8 +187,10 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("ResponseTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -192,6 +200,10 @@ namespace Repository.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DriverId");
+
+                    b.HasIndex("OfferTime");
+
+                    b.HasIndex("Status");
 
                     b.HasIndex("DeliveryClusterId", "DriverId")
                         .IsUnique();
@@ -258,7 +270,7 @@ namespace Repository.Migrations
                     b.Property<string>("ClusterId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
@@ -283,8 +295,8 @@ namespace Repository.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<double>("OfferedPrice")
-                        .HasColumnType("float");
+                    b.Property<decimal>("OfferedPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("RespondedAt")
                         .HasColumnType("datetime2");
@@ -306,6 +318,8 @@ namespace Repository.Migrations
                     b.HasIndex("DeliveryPersonId");
 
                     b.HasIndex("ExpiryTime");
+
+                    b.HasIndex("Status");
 
                     b.ToTable("DeliveryOffer");
                 });
@@ -858,6 +872,12 @@ namespace Repository.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<bool>("PickupConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("PickupConfirmedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("PickupDate")
                         .HasColumnType("datetime2");
 
@@ -887,6 +907,9 @@ namespace Repository.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("TrackingId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("TrackingNumber")
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
@@ -909,6 +932,8 @@ namespace Repository.Migrations
                     b.HasIndex("ParentDeliveryId");
 
                     b.HasIndex("Status");
+
+                    b.HasIndex("TrackingId");
 
                     b.ToTable("Deliveries", (string)null);
                 });
@@ -1539,9 +1564,6 @@ namespace Repository.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("MapLocation")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("RoleId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -1697,7 +1719,7 @@ namespace Repository.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("TechpertsSolutions.Core.Entities.Delivery", "Delivery")
-                        .WithMany()
+                        .WithMany("Clusters")
                         .HasForeignKey("DeliveryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1744,7 +1766,8 @@ namespace Repository.Migrations
                 {
                     b.HasOne("Core.Entities.DeliveryCluster", "Cluster")
                         .WithMany()
-                        .HasForeignKey("ClusterId");
+                        .HasForeignKey("ClusterId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("TechpertsSolutions.Core.Entities.Delivery", "Delivery")
                         .WithMany("Offers")
@@ -1947,6 +1970,10 @@ namespace Repository.Migrations
                         .HasForeignKey("ParentDeliveryId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Core.Entities.DeliveryClusterTracking", "Tracking")
+                        .WithMany()
+                        .HasForeignKey("TrackingId");
+
                     b.Navigation("Customer");
 
                     b.Navigation("DeliveryPerson");
@@ -1954,6 +1981,8 @@ namespace Repository.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("ParentDelivery");
+
+                    b.Navigation("Tracking");
                 });
 
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.DeliveryPerson", b =>
@@ -2250,6 +2279,8 @@ namespace Repository.Migrations
 
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.Delivery", b =>
                 {
+                    b.Navigation("Clusters");
+
                     b.Navigation("Offers");
 
                     b.Navigation("SubDeliveries");

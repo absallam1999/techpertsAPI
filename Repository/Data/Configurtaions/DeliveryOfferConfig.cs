@@ -20,7 +20,7 @@ namespace Repository.Data.Configurtaions
             builder.HasOne(o => o.Delivery)
                    .WithMany(d => d.Offers)
                    .HasForeignKey(o => o.DeliveryId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
 
             // Optional Cluster relationship
             builder.HasOne(o => o.Cluster)

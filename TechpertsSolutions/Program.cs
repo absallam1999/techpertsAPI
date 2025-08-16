@@ -3,6 +3,7 @@ using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Utilities;
+using Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,9 +20,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Extensions;
-using TechpertsSolutions.Hubs;
 using TechpertsSolutions.Repository.Data;
-using TechpertsSolutions.Services;
 using TechpertsSolutions.Utilities;
 
 namespace TechpertsSolutions
@@ -32,18 +31,15 @@ namespace TechpertsSolutions
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            
             builder.Services.AddControllers()
                 .AddJsonOptions(opt => {
                 opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                 opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
             builder.Services.AddEndpointsApiExplorer();
-            
-            // Add SignalR
+
             builder.Services.AddSignalR();
 
-            
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TechpertsSolutions", Version = "v1" });
@@ -179,9 +175,7 @@ namespace TechpertsSolutions
                     });
                 }
             }
-
-            app.MapHub<NotificationHub>("/notificationHub");
-            //app.MapHub<ChatHub>("/chatHub");
+            app.MapHub<NotificationsHub>("/notifications");
 
             app.MapControllers();
 

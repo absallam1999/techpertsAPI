@@ -551,7 +551,7 @@ namespace Service
             _deliveryRepo.Update(delivery);
             await _deliveryRepo.SaveChangesAsync();
 
-            await _notificationService.NotifyDeliveryPersonAsync(best.Driver.Id, $"New delivery assigned: #{delivery.TrackingNumber ?? delivery.Id}");
+            //await _notificationService.NotifyDeliveryPersonAsync(best.Driver.Id, $"New delivery assigned: #{delivery.TrackingNumber ?? delivery.Id}");
         }
 
         public async Task<GeneralResponse<DeliveryClusterDTO>> SplitClusterAsync(

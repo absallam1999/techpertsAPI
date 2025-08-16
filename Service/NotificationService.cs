@@ -1,39 +1,38 @@
 using Core.DTOs;
 using Core.DTOs.NotificationDTOs;
 using Core.Enums;
+using Core.Factories;
 using Core.Interfaces;
 using Core.Interfaces.Services;
+using Hubs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
-using Service.Utilities;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service
 {
     public class NotificationService : INotificationService
     {
-        private readonly IRepository<Notification> _notificationRepo;
         private readonly UserManager<AppUser> _userManager;
-        private readonly INotificationHub _notificationHub;
-        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IHubContext<NotificationsHub> _hubContext;
+        private readonly IRepository<Notification> _notificationRepo;
 
         public NotificationService(
             IRepository<Notification> notificationRepo,
             UserManager<AppUser> userManager,
-            INotificationHub notificationHub,
-            IHubContext<NotificationHub> hubContext)
+            IHubContext<NotificationsHub> hubContext)
         {
             _notificationRepo = notificationRepo;
             _userManager = userManager;
             _hubContext = hubContext;
-            _notificationHub = notificationHub;
         }
 
+
         public async Task<GeneralResponse<NotificationDTO>> SendNotificationAsync(
-            string receiverUserId, 
-            string message, 
-            NotificationType type, 
-            string? relatedEntityId = null, 
+            string receiverUserId,
+            string message,
+            NotificationType type,
+            string? relatedEntityId = null,
             string? relatedEntityType = null)
         {
             try
@@ -94,8 +93,8 @@ namespace Service
         }
 
         public async Task<GeneralResponse<IEnumerable<NotificationDTO>>> GetUserNotificationsAsync(
-            string userId, 
-            int pageNumber = 1, 
+            string userId,
+            int pageNumber = 1,
             int pageSize = 20)
         {
             try
@@ -155,7 +154,7 @@ namespace Service
                 }
 
                 var notification = await _notificationRepo.GetByIdWithIncludesAsync(
-                    notificationId, 
+                    notificationId,
                     n => n.Receiver);
 
                 if (notification == null)
@@ -249,7 +248,7 @@ namespace Service
                 }
 
                 var notifications = await _notificationRepo.FindAsync(n => n.ReceiverUserId == userId && !n.IsRead);
-                
+
                 foreach (var notification in notifications)
                 {
                     notification.IsRead = true;
@@ -364,10 +363,10 @@ namespace Service
         }
 
         public async Task<GeneralResponse<bool>> SendNotificationToRoleAsync(
-            string roleName, 
-            string message, 
-            NotificationType type, 
-            string? relatedEntityId = null, 
+            string roleName,
+            string message,
+            NotificationType type,
+            string? relatedEntityId = null,
             string? relatedEntityType = null)
         {
             try
@@ -399,10 +398,10 @@ namespace Service
         }
 
         public async Task<GeneralResponse<bool>> SendNotificationToMultipleUsersAsync(
-            List<string> userIds, 
-            string message, 
-            NotificationType type, 
-            string? relatedEntityId = null, 
+            List<string> userIds,
+            string message,
+            NotificationType type,
+            string? relatedEntityId = null,
             string? relatedEntityType = null)
         {
             try
@@ -461,62 +460,106 @@ namespace Service
                 };
             }
         }
-        public async Task<GeneralResponse<bool>> NotifyDeliveryPersonAsync(string deliveryPersonId, string message)
+
+        public async Task<GeneralResponse<NotificationDTO>> SendNotificationFromFactoryAsync(
+        string receiverUserId,
+        NotificationType type,
+        string? relatedEntityId = null,
+        string? relatedEntityType = null,
+        params object[] args)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(deliveryPersonId))
-                {
-                    return new GeneralResponse<bool>
-                    {
-                        Success = false,
-                        Message = "Invalid delivery person ID.",
-                        Data = false
-                    };
-                }
+                // Use factory to create notification
+                var notification = NotificationsFactory.Create(
+                    receiverUserId,
+                    type,
+                    relatedEntityId,
+                    relatedEntityType,
+                    args
+                );
 
-                if (string.IsNullOrWhiteSpace(message))
-                {
-                    return new GeneralResponse<bool>
-                    {
-                        Success = false,
-                        Message = "Notification message cannot be empty.",
-                        Data = false
-                    };
-                }
+                // Save to DB
+                await _notificationRepo.AddAsync(notification);
+                await _notificationRepo.SaveChangesAsync();
 
-                // Send notification via SignalR to a specific delivery person group
-                await _hubContext.Clients.Group(deliveryPersonId).SendAsync("ReceiveNotification", message);
+                // Send via SignalR
+                await SendRealTimeNotificationAsync(receiverUserId, notification);
+
+                var notificationDto = MapToNotificationDTO(notification);
+
+                return new GeneralResponse<NotificationDTO>
+                {
+                    Success = true,
+                    Message = "Notification sent successfully.",
+                    Data = notificationDto
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<NotificationDTO>
+                {
+                    Success = false,
+                    Message = $"Failed to send notification: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<bool>> SendNotificationsToMultipleUsersFromFactoryAsync(
+        IEnumerable<string> userIds,
+        NotificationType type,
+        string? relatedEntityId = null,
+        string? relatedEntityType = null,
+        params object[] args)
+        {
+            try
+            {
+                if (userIds == null || !userIds.Any())
+                    return new GeneralResponse<bool> { Success = false, Message = "No users provided", Data = false };
+
+                var notifications = NotificationsFactory.CreateForUsers(userIds, type, relatedEntityId, relatedEntityType, args);
+
+                foreach (var notification in notifications)
+                    await _notificationRepo.AddAsync(notification);
+
+                await _notificationRepo.SaveChangesAsync();
+
+                foreach (var notification in notifications)
+                    await SendRealTimeNotificationAsync(notification.ReceiverUserId, notification);
 
                 return new GeneralResponse<bool>
                 {
                     Success = true,
-                    Message = "Notification sent successfully.",
+                    Message = $"Notifications sent successfully to {notifications.Count} users.",
                     Data = true
                 };
             }
             catch (Exception ex)
             {
-                // Log error if necessary
                 return new GeneralResponse<bool>
                 {
                     Success = false,
-                    Message = $"An error occurred while sending the notification: {ex.Message}",
+                    Message = $"Failed to send notifications: {ex.Message}",
                     Data = false
                 };
             }
         }
+
 
         private async Task SendRealTimeNotificationAsync(string userId, Notification notification)
         {
             try
             {
                 var notificationDto = MapToNotificationDTO(notification);
-                await _notificationHub.SendNotificationAsync(userId, notificationDto);
+
+                // Consistent group name
+                await _hubContext.Clients.Group($"User_{userId}")
+                    .SendAsync("ReceiveNotification", notificationDto);
             }
             catch (Exception ex)
             {
-                // Log the error but don't fail the notification creation
+                // TODO: replace with ILogger
                 Console.WriteLine($"Error sending real-time notification: {ex.Message}");
             }
         }
@@ -537,4 +580,4 @@ namespace Service
             };
         }
     }
-} 
+}

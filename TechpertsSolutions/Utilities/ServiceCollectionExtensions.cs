@@ -3,8 +3,6 @@ using Core.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Repository;
 using Service;
-using TechpertsSolutions.Core.Entities;
-using TechpertsSolutions.Services;
 
 namespace TechpertsSolutions.Extensions
 {
@@ -34,7 +32,6 @@ namespace TechpertsSolutions.Extensions
             services.AddScoped<IAdminUserManagementService, AdminUserManagementService>();
             services.AddScoped<IPCAssemblyCompatibilityService, PCAssemblyCompatibilityService>();
             services.AddScoped<INotificationService, NotificationService>();
-            services.AddScoped<INotificationHub, NotificationHubService>();
             services.AddScoped<ILocationService, LocationService>();
 
             services.AddScoped<IAuthService, AuthService>();

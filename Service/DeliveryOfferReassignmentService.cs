@@ -112,10 +112,10 @@ public class DeliveryReassignmentService : BackgroundService
                     await clusterService.UpdateClusterAsync(clusterDto.Id, clusterDto);
 
                     // Notify driver
-                    await notificationService.NotifyDeliveryPersonAsync(
-                        chosenDriver.Id,
-                        $"A delivery cluster #{clusterDto.Id} has been assigned to you."
-                    );
+                    //await notificationService.NotifyDeliveryPersonAsync(
+                    //    chosenDriver.Id,
+                    //    $"A delivery cluster #{clusterDto.Id} has been assigned to you."
+                    //);
                 }
             }
             catch (Exception ex)

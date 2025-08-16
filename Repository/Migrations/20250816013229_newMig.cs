@@ -386,7 +386,6 @@ namespace Repository.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    MapLocation = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Website = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
@@ -782,7 +781,10 @@ namespace Repository.Migrations
                     ParentDeliveryId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     SequenceNumber = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     RouteOrder = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    PickupConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    PickupConfirmedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsFinalLeg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    TrackingId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
@@ -803,6 +805,11 @@ namespace Repository.Migrations
                         principalTable: "Deliveries",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Deliveries_DeliveryClusterTracking_TrackingId",
+                        column: x => x.TrackingId,
+                        principalTable: "DeliveryClusterTracking",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Deliveries_DeliveryPersons_DeliveryPersonId",
                         column: x => x.DeliveryPersonId,
@@ -938,11 +945,13 @@ namespace Repository.Migrations
                     AssignedDriverId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     AssignedDriverName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AssignmentTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DropoffLatitude = table.Column<double>(type: "float", nullable: true),
-                    DropoffLongitude = table.Column<double>(type: "float", nullable: true),
+                    DropoffLatitude = table.Column<decimal>(type: "decimal(9,6)", nullable: true),
+                    DropoffLongitude = table.Column<decimal>(type: "decimal(9,6)", nullable: true),
                     SequenceOrder = table.Column<int>(type: "int", nullable: false),
                     EstimatedDistance = table.Column<double>(type: "float", nullable: false),
                     EstimatedPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PickupConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    PickupConfirmedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     TrackingId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
@@ -1008,7 +1017,7 @@ namespace Repository.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     DeliveryClusterId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     DriverId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     OfferTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ResponseTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     OfferedPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -1043,9 +1052,9 @@ namespace Repository.Migrations
                     DeliveryId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ClusterId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     DeliveryPersonId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    OfferedPrice = table.Column<double>(type: "float", nullable: false),
+                    OfferedPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETUTCDATE()"),
                     RespondedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
@@ -1061,12 +1070,13 @@ namespace Repository.Migrations
                         column: x => x.DeliveryId,
                         principalTable: "Deliveries",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_DeliveryOffer_DeliveryCluster_ClusterId",
                         column: x => x.ClusterId,
                         principalTable: "DeliveryCluster",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_DeliveryOffer_DeliveryPersons_DeliveryPersonId",
                         column: x => x.DeliveryPersonId,
@@ -1193,6 +1203,11 @@ namespace Repository.Migrations
                 column: "Status");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Deliveries_TrackingId",
+                table: "Deliveries",
+                column: "TrackingId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DeliveryCluster_AssignedDriverId",
                 table: "DeliveryCluster",
                 column: "AssignedDriverId");
@@ -1229,6 +1244,16 @@ namespace Repository.Migrations
                 column: "DriverId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DeliveryClusterDriverOffer_OfferTime",
+                table: "DeliveryClusterDriverOffer",
+                column: "OfferTime");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeliveryClusterDriverOffer_Status",
+                table: "DeliveryClusterDriverOffer",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DeliveryOffer_ClusterId",
                 table: "DeliveryOffer",
                 column: "ClusterId");
@@ -1247,6 +1272,11 @@ namespace Repository.Migrations
                 name: "IX_DeliveryOffer_ExpiryTime",
                 table: "DeliveryOffer",
                 column: "ExpiryTime");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeliveryOffer_Status",
+                table: "DeliveryOffer",
+                column: "Status");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DeliveryPersons_RoleId",
