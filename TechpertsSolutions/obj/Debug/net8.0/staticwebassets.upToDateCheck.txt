@@ -30,5 +30,6 @@ wwwroot\assets\profiles\logo_20250816121633_26f82341.jpg
 wwwroot\assets\profiles\mohamed_20250810155203_2120e101.jpg
 wwwroot\assets\profiles\mohamed_20250815114216_73485bf3.jpg
 wwwroot\assets\profiles\mohamed_20250815114512_dd3e8a3f.jpg
+wwwroot\assets\profiles\mohamed_20250817034134_7d27d34d.jpg
 wwwroot\assets\profiles\pin_20250806233540_4881ca5e.png
 wwwroot\assets\subcategories\default-subcategory.png

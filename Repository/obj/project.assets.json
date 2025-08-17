@@ -4594,23 +4594,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\METRO\\.nuget\\packages\\": {},
+    "C:\\Users\\Ramy Mahana\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\METRO\\Desktop\\Final\\API\\Repository\\Repository.csproj",
+      "projectUniqueName": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Repository\\Repository.csproj",
       "projectName": "Repository",
-      "projectPath": "C:\\Users\\METRO\\Desktop\\Final\\API\\Repository\\Repository.csproj",
-      "packagesPath": "C:\\Users\\METRO\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\METRO\\Desktop\\Final\\API\\Repository\\obj\\",
+      "projectPath": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Repository\\Repository.csproj",
+      "packagesPath": "C:\\Users\\Ramy Mahana\\.nuget\\packages\\",
+      "outputPath": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Repository\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\METRO\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Ramy Mahana\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -4619,14 +4619,15 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "https://api.nuget.org/v3/index.json": {}
+        "C:\\Program Files\\dotnet\\library-packs": {},
+        "https://www.nuget.org/api/v2/": {}
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\METRO\\Desktop\\Final\\API\\Core\\Core.csproj": {
-              "projectPath": "C:\\Users\\METRO\\Desktop\\Final\\API\\Core\\Core.csproj"
+            "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Core\\Core.csproj": {
+              "projectPath": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Core\\Core.csproj"
             }
           }
         }
@@ -4694,7 +4695,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
