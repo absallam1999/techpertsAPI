@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "mIGk1N9IkiQ=",
+  "dgSpecHash": "II+WCFYZuEA=",
   "success": true,
-  "projectFilePath": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Hubs\\Hubs.csproj",
+  "projectFilePath": "D:\\ITI PROJECT\\abdelsalam Backup\\techpertsAPI\\Hubs\\Hubs.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Ramy Mahana\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\Ramy Mahana\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",
