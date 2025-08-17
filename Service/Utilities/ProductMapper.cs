@@ -52,6 +52,8 @@ namespace Service.Utilities
                 TechCompanyId = product.TechCompanyId,
                 TechCompanyName = product.TechCompany?.User?.FullName ?? string.Empty,
                 TechCompanyAddress = product.TechCompany?.User?.Address ?? string.Empty,
+                TechCompanyUserId = product.TechCompany?.User?.Id ?? string.Empty,
+                TechCompanyImage = product.TechCompany?.User?.ProfilePhotoUrl ?? string.Empty,
                 Specifications = product
                     .Specifications?.Select(s => new SpecificationDTO
                     {
@@ -130,6 +132,10 @@ namespace Service.Utilities
                 CategoryEnum = categoryEnum,
                 TechCompanyId = product.TechCompanyId,
                 TechCompanyName = product.TechCompany?.User?.FullName ?? string.Empty,
+                TechCompanyAddress = product.TechCompany?.User?.Address ?? string.Empty,
+                TechCompanyUserId = product.TechCompany?.User?.Id ?? string.Empty,
+                TechCompanyImage = product.TechCompany?.User?.ProfilePhotoUrl ?? string.Empty,
+
                 Specifications = product
                     .Specifications?.Select(s => new SpecificationDTO
                     {

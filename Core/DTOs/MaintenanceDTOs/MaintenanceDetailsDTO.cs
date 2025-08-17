@@ -14,5 +14,14 @@ namespace Core.DTOs.MaintenanceDTOs
         public MaintenanceWarrantyDTO Warranty { get; set; } = null!;
         public MaintenanceProductDTO Product { get; set; } = null!;
         public MaintenanceServiceUsageDTO ServiceUsage { get; set; } = null!;
+        //public MaintenanceDetailsDTO(MaintenanceDetailsDTO maintenanceDetails)
+        //{
+        //    Id = maintenanceDetails.Id;
+        //    Customer = maintenanceDetails.Customer;
+        //    TechCompany = maintenanceDetails.TechCompany;
+        //    Warranty = maintenanceDetails.Warranty;
+        //    Product = maintenanceDetails.Product;
+        //    ServiceUsage = maintenanceDetails.ServiceUsage;
+        //}
     }
 }

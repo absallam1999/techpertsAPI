@@ -1,4 +1,5 @@
-﻿using Core.Enums;
+﻿using Core.Entities;
+using Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,5 +24,18 @@ namespace Core.DTOs.DeliveryDTOs
         public string CustomerName { get; set; }
         public double? DeliveryLatitude { get; set; }
         public double? DeliveryLongitude { get; set; }
+        //public DeliveryOfferDTO(DeliveryOffer deliveryOffer)
+        //{
+        //    Id = string.Empty;
+        //    DeliveryId = string.Empty;
+        //    ClusterId = string.Empty;
+        //    DeliveryPersonId = string.Empty;
+        //    Status = DeliveryOfferStatus.Pending;
+        //    CreatedAt = DateTime.UtcNow;
+        //    ExpiryTime = null;
+        //    IsActive = true;
+        //    DeliveryTrackingNumber = string.Empty;
+        //    CustomerName = string.Empty;
+        //}
     }
 }

@@ -505,7 +505,7 @@ namespace Service
                         CustomerId = string.Empty, // Would be set in actual implementation
                         CreatedAt = DateTime.Now,
                         SubTotal = total,
-                        CartItems = new List<CartItemReadDTO>(),
+                        CartItems = new List<CartItemReadDTO>(),    
                     },
                 };
             }

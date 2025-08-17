@@ -5740,6 +5740,40 @@
         }
       }
     },
+    "/api/Profiles": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Profiles/{id}": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Roles/check-role": {
       "post": {
         "tags": [
@@ -9412,6 +9446,18 @@
             "nullable": true
           },
           "techCompanyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "techCompanyAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "techCompanyUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "techCompanyImage": {
             "type": "string",
             "nullable": true
           }

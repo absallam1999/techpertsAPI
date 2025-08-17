@@ -3613,6 +3613,32 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "TechpertsSolutions.Controllers.ProfilesController",
+    "Method": "GetAllProfiles",
+    "RelativePath": "api/Profiles",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TechpertsSolutions.Controllers.ProfilesController",
+    "Method": "GetProfileById",
+    "RelativePath": "api/Profiles/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "TechpertsSolutions.Controllers.RolesController",
     "Method": "GetAll",
     "RelativePath": "api/Roles/all",
