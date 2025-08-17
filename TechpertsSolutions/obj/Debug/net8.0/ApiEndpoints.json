@@ -1568,6 +1568,101 @@
   },
   {
     "ContainingType": "TechpertsSolutions.Controllers.DeliveryPersonController",
+    "Method": "AcceptOffer",
+    "RelativePath": "api/DeliveryPerson/{driverId}/offers/{offerId}/accept",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "driverId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "offerId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TechpertsSolutions.Controllers.DeliveryPersonController",
+    "Method": "CancelOffer",
+    "RelativePath": "api/DeliveryPerson/{driverId}/offers/{offerId}/cancel",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "driverId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "offerId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TechpertsSolutions.Controllers.DeliveryPersonController",
+    "Method": "DeclineOffer",
+    "RelativePath": "api/DeliveryPerson/{driverId}/offers/{offerId}/decline",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "driverId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "offerId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TechpertsSolutions.Controllers.DeliveryPersonController",
+    "Method": "GetAllOffers",
+    "RelativePath": "api/DeliveryPerson/{driverId}/offers/all",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "driverId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TechpertsSolutions.Controllers.DeliveryPersonController",
+    "Method": "GetPendingOffers",
+    "RelativePath": "api/DeliveryPerson/{driverId}/offers/pending",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "driverId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TechpertsSolutions.Controllers.DeliveryPersonController",
     "Method": "GetById",
     "RelativePath": "api/DeliveryPerson/{id}",
     "HttpMethod": "GET",

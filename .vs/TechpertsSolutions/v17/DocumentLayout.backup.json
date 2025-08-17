@@ -3,16 +3,8 @@
   "WorkspaceRootPath": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{36945610-07E1-4B9F-AECD-A99300C829DF}|Repository\\Repository.csproj|d:\\iti project\\abdelsalam\\techpertsapi\\repository\\migrations\\techpertscontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{36945610-07E1-4B9F-AECD-A99300C829DF}|Repository\\Repository.csproj|solutionrelative:repository\\migrations\\techpertscontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{36945610-07E1-4B9F-AECD-A99300C829DF}|Repository\\Repository.csproj|d:\\iti project\\abdelsalam\\techpertsapi\\repository\\data\\techpertscontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{36945610-07E1-4B9F-AECD-A99300C829DF}|Repository\\Repository.csproj|solutionrelative:repository\\data\\techpertscontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B827C73D-5D53-4C6A-A856-2E197E4AEEC8}|TechpertsSolutions\\TechpertsSolutions.csproj|d:\\iti project\\abdelsalam\\techpertsapi\\techpertssolutions\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{B827C73D-5D53-4C6A-A856-2E197E4AEEC8}|TechpertsSolutions\\TechpertsSolutions.csproj|solutionrelative:techpertssolutions\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{36945610-07E1-4B9F-AECD-A99300C829DF}|Repository\\Repository.csproj|d:\\iti project\\abdelsalam\\techpertsapi\\repository\\data\\configurtaions\\adminconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{36945610-07E1-4B9F-AECD-A99300C829DF}|Repository\\Repository.csproj|solutionrelative:repository\\data\\configurtaions\\adminconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -223,39 +215,15 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "TechpertsContextModelSnapshot.cs",
-              "DocumentMoniker": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Repository\\Migrations\\TechpertsContextModelSnapshot.cs",
-              "RelativeDocumentMoniker": "Repository\\Migrations\\TechpertsContextModelSnapshot.cs",
-              "ToolTip": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Repository\\Migrations\\TechpertsContextModelSnapshot.cs",
-              "RelativeToolTip": "Repository\\Migrations\\TechpertsContextModelSnapshot.cs",
-              "ViewState": "AgIAANsAAAAAAAAAAAAnwHgAAAA4AAAAAAAAAA==",
+              "Title": "AdminConfiguration.cs",
+              "DocumentMoniker": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Repository\\Data\\Configurtaions\\AdminConfiguration.cs",
+              "RelativeDocumentMoniker": "Repository\\Data\\Configurtaions\\AdminConfiguration.cs",
+              "ToolTip": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Repository\\Data\\Configurtaions\\AdminConfiguration.cs",
+              "RelativeToolTip": "Repository\\Data\\Configurtaions\\AdminConfiguration.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-16T23:43:11.16Z",
+              "WhenOpened": "2025-08-17T00:14:21.96Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "TechpertsContext.cs",
-              "DocumentMoniker": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Repository\\Data\\TechpertsContext.cs",
-              "RelativeDocumentMoniker": "Repository\\Data\\TechpertsContext.cs",
-              "ToolTip": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Repository\\Data\\TechpertsContext.cs",
-              "RelativeToolTip": "Repository\\Data\\TechpertsContext.cs",
-              "ViewState": "AgIAAEkAAAAAAAAAAIAxwFAAAABCAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-16T23:42:05.99Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\TechpertsSolutions\\appsettings.json",
-              "RelativeDocumentMoniker": "TechpertsSolutions\\appsettings.json",
-              "ToolTip": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\TechpertsSolutions\\appsettings.json",
-              "RelativeToolTip": "TechpertsSolutions\\appsettings.json",
-              "ViewState": "AgIAAAwAAAAAAAAAAAAAACAAAAADAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-08-16T23:32:06.806Z"
             }
           ]
         },

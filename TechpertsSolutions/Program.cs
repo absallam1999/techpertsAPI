@@ -104,12 +104,9 @@ namespace TechpertsSolutions
             });
 
             builder.Services.Configure<DeliveryAssignmentSettings>(builder.Configuration.GetSection("DeliveryAssignmentSettings"));
-<<<<<<< HEAD
             builder.Services.Configure<StripeSettings>(
             builder.Configuration.GetSection("Stripe"));
 
-=======
->>>>>>> 249473b05d10dd27aa16bf4e6531c5c1ce069e45
 
             builder.Services.AddCors(options =>
             {

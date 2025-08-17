@@ -291,7 +291,6 @@ D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\obj\Debug\net8.0\stati
 D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\obj\Debug\net8.0\staticwebassets.build.json.cache
 D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\obj\Debug\net8.0\staticwebassets.development.json
 D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\obj\Debug\net8.0\Techpert.55639A1E.Up2Date
 D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\obj\Debug\net8.0\TechpertsSolutions.dll
 D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\obj\Debug\net8.0\refint\TechpertsSolutions.dll
@@ -301,3 +300,4 @@ D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\obj\Debug\net8.0\Techp
 D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\obj\Debug\net8.0\ref\TechpertsSolutions.dll
 D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\bin\Debug\net8.0\Microsoft.AspNetCore.SignalR.Client.Core.dll
 D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\bin\Debug\net8.0\Stripe.net.dll
+D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

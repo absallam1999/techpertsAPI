@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class newMig : Migration
+    public partial class NewInitMig : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -133,6 +133,17 @@ namespace Repository.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_OrderHistory", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StripeSettings",
+                columns: table => new
+                {
+                    SecretKey = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PublishableKey = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
                 });
 
             migrationBuilder.CreateTable(
@@ -1519,6 +1530,9 @@ namespace Repository.Migrations
 
             migrationBuilder.DropTable(
                 name: "Specifications");
+
+            migrationBuilder.DropTable(
+                name: "StripeSettings");
 
             migrationBuilder.DropTable(
                 name: "WishListItems");
