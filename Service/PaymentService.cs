@@ -2,11 +2,6 @@
 using Core.Interfaces.Services;
 using Microsoft.Extensions.Options;
 using Stripe;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Service
 {
@@ -27,12 +22,12 @@ namespace Service
                     Currency = currency,
                     AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
                     {
-                        Enabled = true
+                        Enabled = true,
                     },
                 };
 
                 var service = new PaymentIntentService();
-                var paymentIntent =await service.CreateAsync(options);
+                var paymentIntent = await service.CreateAsync(options);
 
                 return paymentIntent.ClientSecret;
             }
@@ -41,7 +36,5 @@ namespace Service
                 throw new ApplicationException($"Stripe error: {ex.Message}", ex);
             }
         }
-
     }
 }
-

@@ -1,15 +1,10 @@
-using Core.DTOs.MaintenanceDTOs;
 using Core.DTOs;
+using Core.DTOs.MaintenanceDTOs;
+using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
-using Core.Enums;
 
 namespace Service
 {
@@ -23,8 +18,13 @@ namespace Service
         private readonly INotificationService _notificationService;
 
         public MaintenanceService(
-            IRepository<Maintenance> maintenanceRepo, IRepository<Customer> customerRepo, IRepository<TechCompany> techCompanyRepo, 
-            IRepository<Warranty> warrantyRepo, IRepository<ServiceUsage> serviceUsageRepo, INotificationService notificationService)
+            IRepository<Maintenance> maintenanceRepo,
+            IRepository<Customer> customerRepo,
+            IRepository<TechCompany> techCompanyRepo,
+            IRepository<Warranty> warrantyRepo,
+            IRepository<ServiceUsage> serviceUsageRepo,
+            INotificationService notificationService
+        )
         {
             _maintenanceRepo = maintenanceRepo;
             _customerRepo = customerRepo;
@@ -44,15 +44,18 @@ namespace Service
                     m => m.Customer.User,
                     m => m.TechCompany,
                     m => m.TechCompany.User,
-                    m => m.Warranty);
+                    m => m.Warranty
+                );
 
-                var maintenanceDtos = maintenances.Select(MaintenanceMapper.MapToMaintenanceDTO).ToList();
+                var maintenanceDtos = maintenances
+                    .Select(MaintenanceMapper.MapToMaintenanceDTO)
+                    .ToList();
 
                 return new GeneralResponse<IEnumerable<MaintenanceDTO>>
                 {
                     Success = true,
                     Message = "Maintenance requests retrieved successfully.",
-                    Data = maintenanceDtos
+                    Data = maintenanceDtos,
                 };
             }
             catch (Exception ex)
@@ -61,21 +64,20 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving maintenance requests.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
         public async Task<GeneralResponse<MaintenanceDetailsDTO>> GetByIdAsync(string id)
         {
-            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<MaintenanceDetailsDTO>
                 {
                     Success = false,
                     Message = "Maintenance ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -85,20 +87,22 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Maintenance ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
             try
             {
                 // Comprehensive includes for detailed maintenance view
-                var maintenance = await _maintenanceRepo.GetByIdWithIncludesAsync(id,
+                var maintenance = await _maintenanceRepo.GetByIdWithIncludesAsync(
+                    id,
                     m => m.Customer,
                     m => m.Customer.User,
                     m => m.TechCompany,
                     m => m.TechCompany.User,
                     m => m.Warranty,
-                    m => m.ServiceUsages);
+                    m => m.ServiceUsages
+                );
 
                 if (maintenance == null)
                 {
@@ -106,7 +110,7 @@ namespace Service
                     {
                         Success = false,
                         Message = $"Maintenance request with ID '{id}' not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -114,7 +118,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Maintenance request retrieved successfully.",
-                    Data = MaintenanceMapper.MapToMaintenanceDetailsDTO(maintenance)
+                    Data = MaintenanceMapper.MapToMaintenanceDetailsDTO(maintenance),
                 };
             }
             catch (Exception ex)
@@ -122,22 +126,22 @@ namespace Service
                 return new GeneralResponse<MaintenanceDetailsDTO>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while retrieving the maintenance request.",
-                    Data = null
+                    Message =
+                        "An unexpected error occurred while retrieving the maintenance request.",
+                    Data = null,
                 };
             }
         }
 
         public async Task<GeneralResponse<MaintenanceDTO>> AddAsync(MaintenanceCreateDTO dto)
         {
-            
             if (dto == null)
             {
                 return new GeneralResponse<MaintenanceDTO>
                 {
                     Success = false,
                     Message = "Maintenance data cannot be null.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -147,7 +151,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Customer ID is required.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -157,7 +161,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Customer ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -167,7 +171,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Tech Company ID is required.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -177,7 +181,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Tech Company ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -192,7 +196,7 @@ namespace Service
                     ServiceType = "Maintenance",
                     UsedOn = DateTime.Now,
                     CallCount = 1,
-                    MaintenanceId = entity.Id
+                    MaintenanceId = entity.Id,
                 };
 
                 entity.ServiceUsages = new List<ServiceUsage> { serviceUsage };
@@ -223,7 +227,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Maintenance created successfully.",
-                    Data = maintenanceDto
+                    Data = maintenanceDto,
                 };
             }
             catch (Exception ex)
@@ -232,21 +236,20 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while creating the maintenance.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
         public async Task<GeneralResponse<bool>> UpdateAsync(string id, MaintenanceUpdateDTO dto)
         {
-            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<bool>
                 {
                     Success = false,
                     Message = "Maintenance ID cannot be null or empty.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -256,7 +259,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Maintenance ID format. Expected GUID format.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -266,7 +269,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Update data cannot be null.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -276,7 +279,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Customer ID is required.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -286,7 +289,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Customer ID format. Expected GUID format.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -296,7 +299,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Tech Company ID is required.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -306,7 +309,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Tech Company ID format. Expected GUID format.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -319,7 +322,7 @@ namespace Service
                     {
                         Success = false,
                         Message = $"Maintenance with ID '{id}' not found.",
-                        Data = false
+                        Data = false,
                     };
                 }
 
@@ -329,14 +332,18 @@ namespace Service
 
                 await Task.WhenAll(customerTask, techCompanyTask, warrantyTask);
 
-                if (customerTask.Result == null || techCompanyTask.Result == null ||
-                    warrantyTask.Result == null)
+                if (
+                    customerTask.Result == null
+                    || techCompanyTask.Result == null
+                    || warrantyTask.Result == null
+                )
                 {
                     return new GeneralResponse<bool>
                     {
                         Success = false,
-                        Message = "One or more related entities (Customer, TechCompany, Warranty, ServiceUsage) not found.",
-                        Data = false
+                        Message =
+                            "One or more related entities (Customer, TechCompany, Warranty, ServiceUsage) not found.",
+                        Data = false,
                     };
                 }
 
@@ -349,7 +356,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Maintenance updated successfully.",
-                    Data = true
+                    Data = true,
                 };
             }
             catch (Exception ex)
@@ -358,21 +365,20 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while updating the maintenance.",
-                    Data = false
+                    Data = false,
                 };
             }
         }
 
         public async Task<GeneralResponse<bool>> DeleteAsync(string id)
         {
-            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<bool>
                 {
                     Success = false,
                     Message = "Maintenance ID cannot be null or empty.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -382,7 +388,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Maintenance ID format. Expected GUID format.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -395,18 +401,18 @@ namespace Service
                     {
                         Success = false,
                         Message = $"Maintenance with ID '{id}' not found.",
-                        Data = false
+                        Data = false,
                     };
                 }
 
                 _maintenanceRepo.Remove(entity);
                 await _maintenanceRepo.SaveChangesAsync();
-                
+
                 return new GeneralResponse<bool>
                 {
                     Success = true,
                     Message = "Maintenance deleted successfully.",
-                    Data = true
+                    Data = true,
                 };
             }
             catch (Exception ex)
@@ -415,12 +421,14 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while deleting the maintenance.",
-                    Data = false
+                    Data = false,
                 };
             }
         }
 
-        public async Task<GeneralResponse<IEnumerable<MaintenanceDTO>>> GetByTechCompanyIdAsync(string techCompanyId)
+        public async Task<GeneralResponse<IEnumerable<MaintenanceDTO>>> GetByTechCompanyIdAsync(
+            string techCompanyId
+        )
         {
             if (string.IsNullOrWhiteSpace(techCompanyId))
             {
@@ -428,7 +436,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Tech Company ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -443,7 +451,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Maintenances for tech company retrieved successfully.",
-                    Data = maintenances.Select(MaintenanceMapper.MapToMaintenanceDTO)
+                    Data = maintenances.Select(MaintenanceMapper.MapToMaintenanceDTO),
                 };
             }
             catch (Exception ex)
@@ -451,21 +459,27 @@ namespace Service
                 return new GeneralResponse<IEnumerable<MaintenanceDTO>>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while retrieving maintenances for tech company.",
-                    Data = null
+                    Message =
+                        "An unexpected error occurred while retrieving maintenances for tech company.",
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<MaintenanceDTO>> AcceptMaintenanceRequestAsync(string maintenanceId, string techCompanyId)
+        public async Task<GeneralResponse<MaintenanceDTO>> AcceptMaintenanceRequestAsync(
+            string maintenanceId,
+            string techCompanyId
+        )
         {
-            if (string.IsNullOrWhiteSpace(maintenanceId) || string.IsNullOrWhiteSpace(techCompanyId))
+            if (
+                string.IsNullOrWhiteSpace(maintenanceId) || string.IsNullOrWhiteSpace(techCompanyId)
+            )
             {
                 return new GeneralResponse<MaintenanceDTO>
                 {
                     Success = false,
                     Message = "Maintenance ID and Tech Company ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -481,7 +495,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Maintenance request not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -490,8 +504,9 @@ namespace Service
                     return new GeneralResponse<MaintenanceDTO>
                     {
                         Success = false,
-                        Message = "This maintenance request has already been assigned to a tech company.",
-                        Data = null
+                        Message =
+                            "This maintenance request has already been assigned to a tech company.",
+                        Data = null,
                     };
                 }
 
@@ -504,19 +519,19 @@ namespace Service
                 await _maintenanceRepo.SaveChangesAsync();
 
                 await _notificationService.SendNotificationAsync(
-                   maintenance.CustomerId,
-                   NotificationType.MaintenanceRequestAccepted,
-                   maintenance.Id,
-                   "Maintenance",
-                   maintenance.Id,
-                   maintenance.TechCompanyId
-               );
+                    maintenance.CustomerId,
+                    NotificationType.MaintenanceRequestAccepted,
+                    maintenance.Id,
+                    "Maintenance",
+                    maintenance.Id,
+                    maintenance.TechCompanyId
+                );
 
                 return new GeneralResponse<MaintenanceDTO>
                 {
                     Success = true,
                     Message = "Maintenance request accepted successfully.",
-                    Data = MaintenanceMapper.MapToMaintenanceDTO(maintenance)
+                    Data = MaintenanceMapper.MapToMaintenanceDTO(maintenance),
                 };
             }
             catch (Exception ex)
@@ -525,20 +540,26 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while accepting maintenance request.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<MaintenanceDTO>> CompleteMaintenanceAsync(string maintenanceId, string techCompanyId, string notes)
+        public async Task<GeneralResponse<MaintenanceDTO>> CompleteMaintenanceAsync(
+            string maintenanceId,
+            string techCompanyId,
+            string notes
+        )
         {
-            if (string.IsNullOrWhiteSpace(maintenanceId) || string.IsNullOrWhiteSpace(techCompanyId))
+            if (
+                string.IsNullOrWhiteSpace(maintenanceId) || string.IsNullOrWhiteSpace(techCompanyId)
+            )
             {
                 return new GeneralResponse<MaintenanceDTO>
                 {
                     Success = false,
                     Message = "Maintenance ID and Tech Company ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -554,7 +575,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Maintenance request not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -563,8 +584,9 @@ namespace Service
                     return new GeneralResponse<MaintenanceDTO>
                     {
                         Success = false,
-                        Message = "This maintenance request is not assigned to the specified tech company.",
-                        Data = null
+                        Message =
+                            "This maintenance request is not assigned to the specified tech company.",
+                        Data = null,
                     };
                 }
 
@@ -579,19 +601,19 @@ namespace Service
 
                 // Send notification to customer about maintenance completion
                 await _notificationService.SendNotificationAsync(
-                maintenance.CustomerId,
-                NotificationType.MaintenanceRequestCompleted,
-                maintenance.Id,
-                "Maintenance",
-                maintenance.Id,
-                maintenance.TechCompanyId
+                    maintenance.CustomerId,
+                    NotificationType.MaintenanceRequestCompleted,
+                    maintenance.Id,
+                    "Maintenance",
+                    maintenance.Id,
+                    maintenance.TechCompanyId
                 );
 
                 return new GeneralResponse<MaintenanceDTO>
                 {
                     Success = true,
                     Message = "Maintenance completed successfully.",
-                    Data = MaintenanceMapper.MapToMaintenanceDTO(maintenance)
+                    Data = MaintenanceMapper.MapToMaintenanceDTO(maintenance),
                 };
             }
             catch (Exception ex)
@@ -600,12 +622,14 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while completing maintenance.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<IEnumerable<MaintenanceDTO>>> GetAvailableMaintenanceRequestsAsync()
+        public async Task<
+            GeneralResponse<IEnumerable<MaintenanceDTO>>
+        > GetAvailableMaintenanceRequestsAsync()
         {
             try
             {
@@ -618,7 +642,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Available maintenance requests retrieved successfully.",
-                    Data = maintenances.Select(MaintenanceMapper.MapToMaintenanceDTO)
+                    Data = maintenances.Select(MaintenanceMapper.MapToMaintenanceDTO),
                 };
             }
             catch (Exception ex)
@@ -626,13 +650,17 @@ namespace Service
                 return new GeneralResponse<IEnumerable<MaintenanceDTO>>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while retrieving available maintenance requests.",
-                    Data = null
+                    Message =
+                        "An unexpected error occurred while retrieving available maintenance requests.",
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<MaintenanceDTO>> UpdateMaintenanceStatusAsync(string maintenanceId, string newStatus)
+        public async Task<GeneralResponse<MaintenanceDTO>> UpdateMaintenanceStatusAsync(
+            string maintenanceId,
+            string newStatus
+        )
         {
             if (string.IsNullOrWhiteSpace(maintenanceId) || string.IsNullOrWhiteSpace(newStatus))
             {
@@ -640,7 +668,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Maintenance ID and new status cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -656,7 +684,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Maintenance request not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -674,7 +702,7 @@ namespace Service
                     {
                         Success = false,
                         Message = $"Invalid status: {newStatus}",
-                        Data = null
+                        Data = null,
                     };
                 }
                 _maintenanceRepo.Update(maintenance);
@@ -684,7 +712,7 @@ namespace Service
                 {
                     Success = true,
                     Message = $"Maintenance status updated to '{newStatus}' successfully.",
-                    Data = MaintenanceMapper.MapToMaintenanceDTO(maintenance)
+                    Data = MaintenanceMapper.MapToMaintenanceDTO(maintenance),
                 };
             }
             catch (Exception ex)
@@ -693,7 +721,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while updating maintenance status.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -709,7 +737,7 @@ namespace Service
                     ServiceType = "Maintenance",
                     UsedOn = DateTime.Now,
                     CallCount = 1,
-                    MaintenanceId = maintenance.Id
+                    MaintenanceId = maintenance.Id,
                 };
 
                 await _serviceUsageRepo.AddAsync(serviceUsage);
@@ -717,7 +745,9 @@ namespace Service
             }
         }
 
-        public async Task<GeneralResponse<MaintenanceNearestDTO>> GetNearestMaintenanceAsync(string customerId)
+        public async Task<GeneralResponse<MaintenanceNearestDTO>> GetNearestMaintenanceAsync(
+            string customerId
+        )
         {
             try
             {
@@ -731,7 +761,7 @@ namespace Service
                     return new GeneralResponse<MaintenanceNearestDTO>
                     {
                         Success = false,
-                        Message = "Customer not found."
+                        Message = "Customer not found.",
                     };
                 }
 
@@ -744,7 +774,7 @@ namespace Service
                     return new GeneralResponse<MaintenanceNearestDTO>
                     {
                         Success = false,
-                        Message = "No maintenance centers found."
+                        Message = "No maintenance centers found.",
                     };
                 }
 
@@ -758,7 +788,12 @@ namespace Service
                     .Select(tc => new
                     {
                         TechCompany = tc,
-                        Distance = CalculateDistance(customerAddress, customerRegion, customerPostalCode, tc.User?.Address ?? "")
+                        Distance = CalculateDistance(
+                            customerAddress,
+                            customerRegion,
+                            customerPostalCode,
+                            tc.User?.Address ?? ""
+                        ),
                     })
                     .OrderBy(x => x.Distance)
                     .First();
@@ -770,17 +805,22 @@ namespace Service
                     Address = nearestMaintenance.TechCompany.User?.Address ?? "Unknown",
                     TechCompanyName = nearestMaintenance.TechCompany.User?.FullName ?? "Unknown",
                     TechCompanyAddress = nearestMaintenance.TechCompany.User?.Address ?? "Unknown",
-                    TechCompanyPhone = nearestMaintenance.TechCompany.User?.PhoneNumber ?? "Unknown",
+                    TechCompanyPhone =
+                        nearestMaintenance.TechCompany.User?.PhoneNumber ?? "Unknown",
                     Distance = nearestMaintenance.Distance,
-                    Region = ExtractRegionFromAddress(nearestMaintenance.TechCompany.User?.Address ?? ""),
-                    PostalCode = ExtractPostalCodeFromAddress(nearestMaintenance.TechCompany.User?.Address ?? "")
+                    Region = ExtractRegionFromAddress(
+                        nearestMaintenance.TechCompany.User?.Address ?? ""
+                    ),
+                    PostalCode = ExtractPostalCodeFromAddress(
+                        nearestMaintenance.TechCompany.User?.Address ?? ""
+                    ),
                 };
 
                 return new GeneralResponse<MaintenanceNearestDTO>
                 {
                     Success = true,
                     Message = "Nearest maintenance center found successfully.",
-                    Data = result
+                    Data = result,
                 };
             }
             catch (Exception ex)
@@ -789,7 +829,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while finding nearest maintenance center.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -808,11 +848,16 @@ namespace Service
             return parts.Length > 2 ? parts[2].Trim() : "";
         }
 
-        private double CalculateDistance(string customerAddress, string customerRegion, string customerPostalCode, string techCompanyAddress)
+        private double CalculateDistance(
+            string customerAddress,
+            string customerRegion,
+            string customerPostalCode,
+            string techCompanyAddress
+        )
         {
             // Simple distance calculation based on address matching
             // In a real implementation, you would use geocoding APIs and calculate actual distances
-            
+
             var techCompanyRegion = ExtractRegionFromAddress(techCompanyAddress);
             var techCompanyPostalCode = ExtractPostalCodeFromAddress(techCompanyAddress);
 
@@ -823,7 +868,9 @@ namespace Service
             }
 
             // If same postal code, give very low distance
-            if (customerPostalCode.Equals(techCompanyPostalCode, StringComparison.OrdinalIgnoreCase))
+            if (
+                customerPostalCode.Equals(techCompanyPostalCode, StringComparison.OrdinalIgnoreCase)
+            )
             {
                 return 1.0; // 1 km
             }

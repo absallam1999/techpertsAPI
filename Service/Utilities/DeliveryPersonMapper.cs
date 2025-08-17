@@ -1,4 +1,3 @@
-using System;
 using Core.DTOs.DeliveryDTOs;
 using Core.DTOs.DeliveryPersonDTOs;
 using Core.Entities;
@@ -10,7 +9,8 @@ namespace Service.Utilities
     {
         public static DeliveryPersonReadDTO ToReadDTO(DeliveryPerson entity)
         {
-            if (entity == null) return null;
+            if (entity == null)
+                return null;
 
             var user = entity.User;
             var role = entity.Role;
@@ -36,7 +36,7 @@ namespace Service.Utilities
                 UserName = user?.UserName ?? "Unknown",
                 UserFullName = user?.FullName ?? "Unknown",
 
-                RoleName = role?.Name ?? "Unknown"
+                RoleName = role?.Name ?? "Unknown",
             };
         }
 
@@ -47,7 +47,8 @@ namespace Service.Utilities
 
         public static DeliveryPerson ToEntity(DeliveryPersonCreateDTO dto)
         {
-            if (dto == null) return null;
+            if (dto == null)
+                return null;
 
             return new DeliveryPerson
             {
@@ -56,13 +57,14 @@ namespace Service.Utilities
                 RoleId = dto.RoleId,
                 VehicleNumber = dto.VehicleNumber,
                 VehicleType = dto.VehicleType,
-                IsAvailable = true
+                IsAvailable = true,
             };
         }
 
         public static void UpdateEntity(DeliveryPerson entity, DeliveryPersonUpdateDTO dto)
         {
-            if (entity == null || dto == null) return;
+            if (entity == null || dto == null)
+                return;
 
             if (!string.IsNullOrWhiteSpace(dto.VehicleNumber))
                 entity.VehicleNumber = dto.VehicleNumber;
@@ -90,7 +92,8 @@ namespace Service.Utilities
 
         public static DeliveryOfferDTO ToDTO(DeliveryOffer offer)
         {
-            if (offer == null) return null;
+            if (offer == null)
+                return null;
 
             return new DeliveryOfferDTO
             {
@@ -105,13 +108,14 @@ namespace Service.Utilities
                 DeliveryTrackingNumber = offer.Delivery?.TrackingNumber,
                 DeliveryLatitude = offer.Delivery?.DropoffLatitude,
                 DeliveryLongitude = offer.Delivery?.DropoffLongitude,
-                CustomerName = offer.Delivery?.CustomerName
+                CustomerName = offer.Delivery?.CustomerName,
             };
         }
 
         public static DeliveryOffer ToEntity(DeliveryOfferDTO dto)
         {
-            if (dto == null) return null;
+            if (dto == null)
+                return null;
 
             return new DeliveryOffer
             {
@@ -122,7 +126,7 @@ namespace Service.Utilities
                 Status = dto.Status,
                 CreatedAt = dto.CreatedAt,
                 ExpiryTime = dto.ExpiryTime,
-                IsActive = dto.IsActive
+                IsActive = dto.IsActive,
             };
         }
     }

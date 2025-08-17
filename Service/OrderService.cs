@@ -9,11 +9,6 @@ using Core.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Service.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
 
@@ -41,7 +36,7 @@ namespace Service
             IDeliveryService deliveryService,
             ILogger<OrderService> logger,
             TechpertsContext dbContext
-            )
+        )
         {
             _orderRepo = orderRepo;
             _orderHistoryRepo = orderHistoryRepo;
@@ -61,7 +56,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Order data cannot be null.",
-                    Data = null
+                    Data = null,
                 };
 
             if (string.IsNullOrWhiteSpace(dto.CustomerId))
@@ -69,7 +64,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Customer ID is required.",
-                    Data = null
+                    Data = null,
                 };
 
             if (!Guid.TryParse(dto.CustomerId, out _))
@@ -77,7 +72,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Customer ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
 
             if (dto.OrderItems == null || !dto.OrderItems.Any())
@@ -85,7 +80,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Order must contain at least one item.",
-                    Data = null
+                    Data = null,
                 };
 
             try
@@ -108,29 +103,37 @@ namespace Service
                     {
                         OrderId = order.Id,
                         CustomerLatitude = dto.DeliveryLatitude.Value,
-                        CustomerLongitude = dto.DeliveryLongitude.Value
+                        CustomerLongitude = dto.DeliveryLongitude.Value,
                     };
 
                     deliveryResponse = await _deliveryService.CreateAsync(deliveryDto);
 
                     if (!deliveryResponse.Success)
-                        _logger.LogWarning("CreateOrderAsync: Delivery creation failed for order {OrderId}: {Message}", order.Id, deliveryResponse.Message);
+                        _logger.LogWarning(
+                            "CreateOrderAsync: Delivery creation failed for order {OrderId}: {Message}",
+                            order.Id,
+                            deliveryResponse.Message
+                        );
                     else
-                        _logger.LogInformation("CreateOrderAsync: Delivery created successfully for order {OrderId}.", order.Id);
+                        _logger.LogInformation(
+                            "CreateOrderAsync: Delivery created successfully for order {OrderId}.",
+                            order.Id
+                        );
                 }
 
                 var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
                     o => o.Id == order.Id,
-                    query => query
-                        .Include(o => o.OrderItems)
+                    query =>
+                        query
+                            .Include(o => o.OrderItems)
                             .ThenInclude(oi => oi.Product)
-                                .ThenInclude(p => p.TechCompany)
-                        .Include(o => o.Customer)
+                            .ThenInclude(p => p.TechCompany)
+                            .Include(o => o.Customer)
                             .ThenInclude(c => c.User)
-                        .Include(o => o.OrderHistory)
-                        .Include(o => o.Deliveries)
+                            .Include(o => o.OrderHistory)
+                            .Include(o => o.Deliveries)
                             .ThenInclude(d => d.DeliveryPerson)
-                                .ThenInclude(dp => dp.User)
+                            .ThenInclude(dp => dp.User)
                 );
 
                 // --- Notifications ---
@@ -153,8 +156,8 @@ namespace Service
                 );
 
                 // 3. Notify TechCompanies
-                var techCompanyIds = createdOrder.OrderItems
-                    .Select(oi => oi.Product.TechCompany.UserId)
+                var techCompanyIds = createdOrder
+                    .OrderItems.Select(oi => oi.Product.TechCompany.UserId)
                     .Distinct()
                     .ToList();
 
@@ -169,8 +172,9 @@ namespace Service
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = true,
-                    Message = "Order created successfully, notifications sent, and delivery offers sent to nearby drivers.",
-                    Data = OrderMapper.ToReadDTO(createdOrder)
+                    Message =
+                        "Order created successfully, notifications sent, and delivery offers sent to nearby drivers.",
+                    Data = OrderMapper.ToReadDTO(createdOrder),
                 };
             }
             catch (Exception ex)
@@ -179,22 +183,22 @@ namespace Service
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
-                    Message = $"An unexpected error occurred while creating the order. {ex.Message}",
-                    Data = null
+                    Message =
+                        $"An unexpected error occurred while creating the order. {ex.Message}",
+                    Data = null,
                 };
             }
         }
 
         public async Task<GeneralResponse<OrderReadDTO>> GetOrderByIdAsync(string id)
         {
-            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
                     Message = "Order ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -204,19 +208,21 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Order ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
             try
             {
                 // Comprehensive includes for detailed order view
-                var order = await _orderRepo.GetByIdWithIncludesAsync(id,
+                var order = await _orderRepo.GetByIdWithIncludesAsync(
+                    id,
                     o => o.OrderItems,
                     o => o.Customer,
                     o => o.OrderHistory,
                     o => o.Deliveries,
-                    o => o.ServiceUsage);
+                    o => o.ServiceUsage
+                );
 
                 if (order == null)
                 {
@@ -224,14 +230,15 @@ namespace Service
                     {
                         Success = false,
                         Message = $"Order with ID '{id}' not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
                 // Get order items with their products using string includes for nested properties
                 var orderWithItems = await _orderRepo.FindWithStringIncludesAsync(
                     o => o.Id == id,
-                    includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Delivery,ServiceUsage");
+                    includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Delivery,ServiceUsage"
+                );
 
                 var orderEntity = orderWithItems.FirstOrDefault();
                 if (orderEntity == null)
@@ -240,7 +247,7 @@ namespace Service
                     {
                         Success = false,
                         Message = $"Order with ID '{id}' not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -248,7 +255,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Order retrieved successfully.",
-                    Data = OrderMapper.ToReadDTO(orderEntity)
+                    Data = OrderMapper.ToReadDTO(orderEntity),
                 };
             }
             catch (Exception ex)
@@ -257,7 +264,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving the order.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -269,15 +276,19 @@ namespace Service
                 // Optimized includes for order listing with all necessary related data
                 var allOrders = await _orderRepo.FindWithStringIncludesAsync(
                     o => true, // This will match all orders
-                    includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Delivery,ServiceUsage");
-                
-                var orderDtos = allOrders.Where(o => o != null).Select(OrderMapper.ToReadDTO).Where(dto => dto != null);
-                
+                    includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Delivery,ServiceUsage"
+                );
+
+                var orderDtos = allOrders
+                    .Where(o => o != null)
+                    .Select(OrderMapper.ToReadDTO)
+                    .Where(dto => dto != null);
+
                 return new GeneralResponse<IEnumerable<OrderReadDTO>>
                 {
                     Success = true,
                     Message = "Orders retrieved successfully.",
-                    Data = orderDtos
+                    Data = orderDtos,
                 };
             }
             catch (Exception ex)
@@ -286,21 +297,22 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving orders.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetOrdersByCustomerIdAsync(string customerId)
+        public async Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetOrdersByCustomerIdAsync(
+            string customerId
+        )
         {
-            
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return new GeneralResponse<IEnumerable<OrderReadDTO>>
                 {
                     Success = false,
                     Message = "Customer ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -310,7 +322,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Customer ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -318,16 +330,20 @@ namespace Service
             {
                 // Optimized includes for customer orders with all necessary related data
                 var orders = await _orderRepo.FindWithStringIncludesAsync(
-                    o => o.CustomerId == customerId, 
-                    includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Delivery,ServiceUsage");
-                
-                var orderDtos = orders.Where(o => o != null).Select(OrderMapper.ToReadDTO).Where(dto => dto != null);
-                
+                    o => o.CustomerId == customerId,
+                    includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Delivery,ServiceUsage"
+                );
+
+                var orderDtos = orders
+                    .Where(o => o != null)
+                    .Select(OrderMapper.ToReadDTO)
+                    .Where(dto => dto != null);
+
                 return new GeneralResponse<IEnumerable<OrderReadDTO>>
                 {
                     Success = true,
                     Message = "Customer orders retrieved successfully.",
-                    Data = orderDtos
+                    Data = orderDtos,
                 };
             }
             catch (Exception ex)
@@ -336,7 +352,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving customer orders.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -345,7 +361,8 @@ namespace Service
         {
             var existingHistory = await _orderHistoryRepo.GetFirstOrDefaultAsync(
                 oh => oh.Orders.Any(o => o.CustomerId == customerId),
-                includeProperties: "Orders");
+                includeProperties: "Orders"
+            );
 
             if (existingHistory != null)
             {
@@ -355,7 +372,7 @@ namespace Service
             var newHistory = new OrderHistory
             {
                 Id = Guid.NewGuid().ToString(),
-                Orders = new List<Order>()
+                Orders = new List<Order>(),
             };
 
             await _orderHistoryRepo.AddAsync(newHistory);
@@ -364,16 +381,17 @@ namespace Service
             return newHistory;
         }
 
-        public async Task<GeneralResponse<IEnumerable<OrderHistoryReadDTO>>> GetOrderHistoryByCustomerIdAsync(string customerId)
+        public async Task<
+            GeneralResponse<IEnumerable<OrderHistoryReadDTO>>
+        > GetOrderHistoryByCustomerIdAsync(string customerId)
         {
-            
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return new GeneralResponse<IEnumerable<OrderHistoryReadDTO>>
                 {
                     Success = false,
                     Message = "Customer ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -383,7 +401,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Customer ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -391,7 +409,8 @@ namespace Service
             {
                 var orderHistories = await _orderHistoryRepo.FindWithStringIncludesAsync(
                     oh => oh.Orders.Any(o => o.CustomerId == customerId),
-                    includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer,Orders.Customer.User");
+                    includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer,Orders.Customer.User"
+                );
 
                 var orderHistoryDtos = orderHistories
                     .Where(oh => oh != null)
@@ -402,7 +421,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Customer order history retrieved successfully.",
-                    Data = orderHistoryDtos
+                    Data = orderHistoryDtos,
                 };
             }
             catch (Exception ex)
@@ -410,22 +429,25 @@ namespace Service
                 return new GeneralResponse<IEnumerable<OrderHistoryReadDTO>>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while retrieving customer order history.",
-                    Data = null
+                    Message =
+                        "An unexpected error occurred while retrieving customer order history.",
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<bool>> UpdateOrderStatusAsync(string orderId, OrderStatus newStatus)
+        public async Task<GeneralResponse<bool>> UpdateOrderStatusAsync(
+            string orderId,
+            OrderStatus newStatus
+        )
         {
-            
             if (string.IsNullOrWhiteSpace(orderId))
             {
                 return new GeneralResponse<bool>
                 {
                     Success = false,
                     Message = "Order ID cannot be null or empty.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -435,7 +457,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Order ID format. Expected GUID format.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -448,7 +470,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Order not found.",
-                        Data = false
+                        Data = false,
                     };
                 }
 
@@ -457,19 +479,20 @@ namespace Service
                 await _orderRepo.SaveChangesAsync();
 
                 await _notificationService.SendNotificationAsync(
-                order.CustomerId,
-                NotificationType.OrderStatusChanged,
-                order.Id,
-                "Order",
-                order.Id,
-                newStatus.GetStringValue()
+                    order.CustomerId,
+                    NotificationType.OrderStatusChanged,
+                    order.Id,
+                    "Order",
+                    order.Id,
+                    newStatus.GetStringValue()
                 );
 
                 return new GeneralResponse<bool>
                 {
                     Success = true,
-                    Message = $"Order status updated successfully to '{newStatus.GetStringValue()}'.",
-                    Data = true
+                    Message =
+                        $"Order status updated successfully to '{newStatus.GetStringValue()}'.",
+                    Data = true,
                 };
             }
             catch (Exception ex)
@@ -478,18 +501,21 @@ namespace Service
                 {
                     Success = false,
                     Message = $"An unexpected error occurred while updating order status. {ex}",
-                    Data = false
+                    Data = false,
                 };
             }
         }
 
-        public async Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetOrdersByStatusAsync(OrderStatus status)
+        public async Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetOrdersByStatusAsync(
+            OrderStatus status
+        )
         {
             try
             {
                 var orders = await _orderRepo.FindWithStringIncludesAsync(
                     o => o.Status == status,
-                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
+                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory"
+                );
 
                 var orderDtos = orders
                     .Where(o => o != null)
@@ -499,8 +525,9 @@ namespace Service
                 return new GeneralResponse<IEnumerable<OrderReadDTO>>
                 {
                     Success = true,
-                    Message = $"Orders with status '{status.GetStringValue()}' retrieved successfully.",
-                    Data = orderDtos
+                    Message =
+                        $"Orders with status '{status.GetStringValue()}' retrieved successfully.",
+                    Data = orderDtos,
                 };
             }
             catch (Exception ex)
@@ -509,7 +536,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving orders by status.",
-                    Data = null
+                    Data = null,
                 };
             }
         }

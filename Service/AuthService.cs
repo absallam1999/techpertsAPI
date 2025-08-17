@@ -15,7 +15,6 @@ using TechpertsSolutions.Core.DTOs.LoginDTOs;
 using TechpertsSolutions.Core.DTOs.RegisterDTOs;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Service
 {
@@ -45,14 +44,15 @@ namespace Service
             IRepository<Cart> cartRepo,
             IRepository<TechCompany> techCompanyRepo,
             IRepository<DeliveryPerson> deliveryPersonRepo,
-             INotificationService notificationService,
+            INotificationService notificationService,
             ICustomerService customerService,
             IWishListService wishListService,
             IPCAssemblyService pcAssemblyService,
             IEmailService emailService,
             IConfiguration configuration,
             TechpertsContext context,
-            IFileService fileService)
+            IFileService fileService
+        )
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
@@ -73,14 +73,13 @@ namespace Service
 
         public async Task<GeneralResponse<LoginResultDTO>> LoginAsync(LoginDTO loginDTO)
         {
-            
             if (loginDTO == null)
             {
                 return new GeneralResponse<LoginResultDTO>
                 {
                     Success = false,
                     Message = "Login data is required.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -90,7 +89,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Email is required.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -100,13 +99,12 @@ namespace Service
                 {
                     Success = false,
                     Message = "Password is required.",
-                    Data = null
+                    Data = null,
                 };
             }
 
             try
             {
-                
                 var normalizedEmail = loginDTO.Email.Trim().ToLowerInvariant();
 
                 var user = await userManager.FindByEmailAsync(normalizedEmail);
@@ -116,36 +114,33 @@ namespace Service
                     {
                         Success = false,
                         Message = "Invalid email or password.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
-                
                 if (await userManager.IsLockedOutAsync(user))
                 {
                     return new GeneralResponse<LoginResultDTO>
                     {
                         Success = false,
                         Message = "Account is temporarily locked. Please try again later.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
                 var isPasswordValid = await userManager.CheckPasswordAsync(user, loginDTO.Password);
                 if (!isPasswordValid)
                 {
-                    
                     await userManager.AccessFailedAsync(user);
-                    
+
                     return new GeneralResponse<LoginResultDTO>
                     {
                         Success = false,
                         Message = "Invalid email or password.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
-                
                 await userManager.ResetAccessFailedCountAsync(user);
 
                 var roles = await userManager.GetRolesAsync(user);
@@ -155,7 +150,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "User has no assigned roles. Please contact administrator.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -168,9 +163,9 @@ namespace Service
                     UserName = user.UserName,
                     RoleName = roles,
                     PCAssemblyId = null,
-                    ProfilePhotoUrl = !string.IsNullOrEmpty(user.ProfilePhotoUrl) 
-                        ? user.ProfilePhotoUrl 
-                        : "/assets/profiles/default-profile.jpg"
+                    ProfilePhotoUrl = !string.IsNullOrEmpty(user.ProfilePhotoUrl)
+                        ? user.ProfilePhotoUrl
+                        : "/assets/profiles/default-profile.jpg",
                 };
 
                 foreach (var role in roles)
@@ -178,57 +173,77 @@ namespace Service
                     switch (role)
                     {
                         case "Customer":
-                            var customer = await customerRepo.GetFirstOrDefaultAsync(c => c.UserId == user.Id);
-                            if (customer == null) return FailRoleWarning("Customer", user.Id);
+                            var customer = await customerRepo.GetFirstOrDefaultAsync(c =>
+                                c.UserId == user.Id
+                            );
+                            if (customer == null)
+                                return FailRoleWarning("Customer", user.Id);
                             loginResultDTO.CustomerId = customer.Id;
-                            
-                            var cart = await cartRepo.GetFirstOrDefaultAsync(c => c.CustomerId == customer.Id);
+
+                            var cart = await cartRepo.GetFirstOrDefaultAsync(c =>
+                                c.CustomerId == customer.Id
+                            );
                             if (cart != null)
                                 loginResultDTO.CartId = cart.Id;
-                            
-                            var wishListsResponse = await wishListService.GetByCustomerIdAsync(customer.Id);
+
+                            var wishListsResponse = await wishListService.GetByCustomerIdAsync(
+                                customer.Id
+                            );
                             var wishList = wishListsResponse.Data?.FirstOrDefault();
                             if (wishList != null)
                                 loginResultDTO.WishListId = wishList.Id;
-                            
-                            var pcAssembliesResponse = await pcAssemblyService.GetByCustomerIdAsync(customer.Id);
-                            var latestPCAssembly = pcAssembliesResponse.Data?.OrderByDescending(pc => pc.CreatedAt).FirstOrDefault();
+
+                            var pcAssembliesResponse = await pcAssemblyService.GetByCustomerIdAsync(
+                                customer.Id
+                            );
+                            var latestPCAssembly = pcAssembliesResponse
+                                .Data?.OrderByDescending(pc => pc.CreatedAt)
+                                .FirstOrDefault();
                             if (latestPCAssembly != null)
                                 loginResultDTO.PCAssemblyId = latestPCAssembly.Id;
                             break;
 
                         case "Admin":
-                            var admin = await adminRepo.GetFirstOrDefaultAsync(a => a.UserId == user.Id);
-                            if (admin == null) return FailRoleWarning("Admin", user.Id);
+                            var admin = await adminRepo.GetFirstOrDefaultAsync(a =>
+                                a.UserId == user.Id
+                            );
+                            if (admin == null)
+                                return FailRoleWarning("Admin", user.Id);
                             loginResultDTO.AdminId = admin.Id;
                             break;
 
                         case "TechCompany":
-                            var techCompany = await techCompanyRepo.GetFirstOrDefaultAsync(tc => tc.UserId == user.Id);
-                            if (techCompany == null) return FailRoleWarning("TechCompany", user.Id);
+                            var techCompany = await techCompanyRepo.GetFirstOrDefaultAsync(tc =>
+                                tc.UserId == user.Id
+                            );
+                            if (techCompany == null)
+                                return FailRoleWarning("TechCompany", user.Id);
                             loginResultDTO.TechCompanyId = techCompany.Id;
                             break;
 
                         case "DeliveryPerson":
-                            var deliveryPerson = await deliveryPersonRepo.GetFirstOrDefaultAsync(dp => dp.UserId == user.Id);
-                            if (deliveryPerson == null) return FailRoleWarning("DeliveryPerson", user.Id);
+                            var deliveryPerson = await deliveryPersonRepo.GetFirstOrDefaultAsync(
+                                dp => dp.UserId == user.Id
+                            );
+                            if (deliveryPerson == null)
+                                return FailRoleWarning("DeliveryPerson", user.Id);
                             loginResultDTO.DeliveryPersonId = deliveryPerson.Id;
                             break;
                     }
                 }
                 await notificationService.SendNotificationAsync(
-                user.Id,
-                NotificationType.SystemAlert,
-                null,
-                "User",
-                $"New login detected for your account on {DateTime.Now:yyyy-MM-dd HH:mm}."
+                    user.Id,
+                    NotificationType.SystemAlert,
+                    null,
+                    "User",
+                    $"New login detected for your account on {DateTime.Now:yyyy-MM-dd HH:mm}."
                 );
 
                 return new GeneralResponse<LoginResultDTO>
                 {
                     Success = true,
                     Message = "Login successful.",
-                    Data = loginResultDTO
+                    Data = loginResultDTO,
                 };
             }
             catch (Exception ex)
@@ -237,49 +252,107 @@ namespace Service
                 {
                     Success = false,
                     Message = $"An error occurred during login. Please try again.{ex}",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<string>> RegisterAsync(RegisterDTO registerDTO, RoleType roleName)
+        public async Task<GeneralResponse<string>> RegisterAsync(
+            RegisterDTO registerDTO,
+            RoleType roleName
+        )
         {
             if (registerDTO == null)
-                return new GeneralResponse<string> { Success = false, Message = "Registration data is required.", Data = null };
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Registration data is required.",
+                    Data = null,
+                };
 
             if (string.IsNullOrWhiteSpace(registerDTO.Email))
-                return new GeneralResponse<string> { Success = false, Message = "Email is required.", Data = null };
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Email is required.",
+                    Data = null,
+                };
 
             if (string.IsNullOrWhiteSpace(registerDTO.Password))
-                return new GeneralResponse<string> { Success = false, Message = "Password is required.", Data = null };
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Password is required.",
+                    Data = null,
+                };
 
             if (string.IsNullOrWhiteSpace(registerDTO.ConfirmPassword))
-                return new GeneralResponse<string> { Success = false, Message = "Password confirmation is required.", Data = null };
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Password confirmation is required.",
+                    Data = null,
+                };
 
             if (registerDTO.Password != registerDTO.ConfirmPassword)
-                return new GeneralResponse<string> { Success = false, Message = "Passwords do not match.", Data = null };
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Passwords do not match.",
+                    Data = null,
+                };
 
             if (string.IsNullOrWhiteSpace(registerDTO.FullName))
-                return new GeneralResponse<string> { Success = false, Message = "Full name is required.", Data = null };
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Full name is required.",
+                    Data = null,
+                };
 
             if (string.IsNullOrWhiteSpace(registerDTO.UserName))
-                return new GeneralResponse<string> { Success = false, Message = "Username is required.", Data = null };
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Username is required.",
+                    Data = null,
+                };
 
             if (string.IsNullOrWhiteSpace(registerDTO.Address))
-                return new GeneralResponse<string> { Success = false, Message = "Address is required.", Data = null };
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Address is required.",
+                    Data = null,
+                };
 
             if (string.IsNullOrWhiteSpace(registerDTO.PhoneNumber))
-                return new GeneralResponse<string> { Success = false, Message = "Phone number is required.", Data = null };
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Phone number is required.",
+                    Data = null,
+                };
 
             try
             {
                 var normalizedEmail = registerDTO.Email.Trim().ToLowerInvariant();
 
                 if (await userManager.FindByEmailAsync(normalizedEmail) != null)
-                    return new GeneralResponse<string> { Success = false, Message = "Email is already registered.", Data = null };
+                    return new GeneralResponse<string>
+                    {
+                        Success = false,
+                        Message = "Email is already registered.",
+                        Data = null,
+                    };
 
                 if (await userManager.FindByNameAsync(registerDTO.UserName.Trim()) != null)
-                    return new GeneralResponse<string> { Success = false, Message = "Username is already taken.", Data = null };
+                    return new GeneralResponse<string>
+                    {
+                        Success = false,
+                        Message = "Username is already taken.",
+                        Data = null,
+                    };
 
                 var user = new AppUser
                 {
@@ -292,25 +365,46 @@ namespace Service
                     Country = registerDTO.Country?.Trim(),
                     EmailConfirmed = false,
                     PhoneNumberConfirmed = false,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.Now,
                 };
 
                 if (registerDTO.ProfilePhoto != null && registerDTO.ProfilePhoto.Length > 0)
                 {
-                    var photoUrl = await fileService.UploadImageAsync(registerDTO.ProfilePhoto, "profiles");
+                    var photoUrl = await fileService.UploadImageAsync(
+                        registerDTO.ProfilePhoto,
+                        "profiles"
+                    );
                     user.ProfilePhotoUrl = photoUrl;
                 }
 
                 var result = await userManager.CreateAsync(user, registerDTO.Password);
                 if (!result.Succeeded)
-                    return new GeneralResponse<string> { Success = false, Message = $"Registration failed: {string.Join(", ", result.Errors.Select(e => e.Description))}", Data = null };
+                    return new GeneralResponse<string>
+                    {
+                        Success = false,
+                        Message =
+                            $"Registration failed: {string.Join(", ", result.Errors.Select(e => e.Description))}",
+                        Data = null,
+                    };
 
                 var role = await roleManager.FindByNameAsync(roleName.GetStringValue());
-                if (role == null) return new GeneralResponse<string> { Success = false, Message = $"Role '{roleName}' not found.", Data = null };
+                if (role == null)
+                    return new GeneralResponse<string>
+                    {
+                        Success = false,
+                        Message = $"Role '{roleName}' not found.",
+                        Data = null,
+                    };
 
                 var roleResult = await userManager.AddToRoleAsync(user, roleName.GetStringValue());
                 if (!roleResult.Succeeded)
-                    return new GeneralResponse<string> { Success = false, Message = $"Failed to assign role: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}", Data = null };
+                    return new GeneralResponse<string>
+                    {
+                        Success = false,
+                        Message =
+                            $"Failed to assign role: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}",
+                        Data = null,
+                    };
 
                 string? entityId = null;
                 string? cartId = null;
@@ -324,7 +418,9 @@ namespace Service
 
                         var cart = new Cart { CustomerId = customer.Id, CreatedAt = DateTime.Now };
                         await cartRepo.AddAsync(cart);
-                        await wishListService.CreateAsync(new WishListCreateDTO { CustomerId = customer.Id });
+                        await wishListService.CreateAsync(
+                            new WishListCreateDTO { CustomerId = customer.Id }
+                        );
 
                         entityId = customer.Id;
                         cartId = cart.Id;
@@ -343,7 +439,11 @@ namespace Service
                         break;
 
                     case RoleType.DeliveryPerson:
-                        var deliveryPerson = new DeliveryPerson { UserId = user.Id, RoleId = role.Id };
+                        var deliveryPerson = new DeliveryPerson
+                        {
+                            UserId = user.Id,
+                            RoleId = role.Id,
+                        };
                         await deliveryPersonRepo.AddAsync(deliveryPerson);
                         entityId = deliveryPerson.Id;
                         break;
@@ -377,7 +477,7 @@ namespace Service
                 {
                     Success = true,
                     Message = $"Registration successful. User registered as {roleName}.",
-                    Data = $"Registration successful. User registered as {roleName}."
+                    Data = $"Registration successful. User registered as {roleName}.",
                 };
             }
             catch (Exception ex)
@@ -386,7 +486,7 @@ namespace Service
                 {
                     Success = false,
                     Message = $"An error occurred during registration. Please try again.{ex}",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -400,29 +500,34 @@ namespace Service
                 {
                     Success = false,
                     Message = "User not found",
-                    Data = null
+                    Data = null,
                 };
             }
 
             // Generate JWT with claims
             var claims = new[]
             {
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim("purpose", "reset-password")
-        };
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim("purpose", "reset-password"),
+            };
 
             var jwtToken = GenerateJwtToken(claims, TimeSpan.FromMinutes(15)); // using your private method
             var angularAppUrl = configuration["AppSettings:FrontendUrl"]?.TrimEnd('/');
-            var resetLink = $"{angularAppUrl}/reset-password?token={HttpUtility.UrlEncode(jwtToken)}";
+            var resetLink =
+                $"{angularAppUrl}/reset-password?token={HttpUtility.UrlEncode(jwtToken)}";
 
-            var emailSent = await emailService.SendPasswordResetEmailAsync(user.Email, jwtToken, resetLink);
+            var emailSent = await emailService.SendPasswordResetEmailAsync(
+                user.Email,
+                jwtToken,
+                resetLink
+            );
             if (!emailSent)
             {
                 return new GeneralResponse<string>
                 {
                     Success = false,
                     Message = "Failed to send reset email.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -430,7 +535,7 @@ namespace Service
             {
                 Success = true,
                 Message = "Password reset email sent successfully.",
-                Data = jwtToken
+                Data = jwtToken,
             };
         }
 
@@ -443,7 +548,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid or expired token.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -456,7 +561,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid token purpose.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -467,7 +572,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "User not found.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -481,7 +586,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Password reset failed.",
-                    Data = string.Join(", ", result.Errors.Select(e => e.Description))
+                    Data = string.Join(", ", result.Errors.Select(e => e.Description)),
                 };
             }
 
@@ -489,20 +594,22 @@ namespace Service
             {
                 Success = true,
                 Message = "Password reset successfully.",
-                Data = user.Id
+                Data = user.Id,
             };
         }
 
-        public async Task<GeneralResponse<string>> DeleteAccountAsync(DeleteAccountDTO dto, string userId)
+        public async Task<GeneralResponse<string>> DeleteAccountAsync(
+            DeleteAccountDTO dto,
+            string userId
+        )
         {
-            
             if (dto == null)
             {
                 return new GeneralResponse<string>
                 {
                     Success = false,
                     Message = "Password is required to delete account.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -512,7 +619,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Password is required to delete account.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -522,7 +629,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "User ID is required.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -535,11 +642,10 @@ namespace Service
                     {
                         Success = false,
                         Message = "User not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
-                
                 var isPasswordValid = await userManager.CheckPasswordAsync(user, dto.Password);
                 if (!isPasswordValid)
                 {
@@ -547,11 +653,10 @@ namespace Service
                     {
                         Success = false,
                         Message = "Invalid password. Account deletion failed.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
-                
                 var result = await userManager.DeleteAsync(user);
                 if (!result.Succeeded)
                 {
@@ -560,20 +665,20 @@ namespace Service
                     {
                         Success = false,
                         Message = $"Account deletion failed: {errors}",
-                        Data = null
+                        Data = null,
                     };
                 }
                 await notificationService.SendNotificationToRoleAsync(
-                 "Admin",
-                 NotificationType.SystemAlert,
-                 $"Account Have Been Deleted."
-             );
+                    "Admin",
+                    NotificationType.SystemAlert,
+                    $"Account Have Been Deleted."
+                );
 
                 return new GeneralResponse<string>
                 {
                     Success = true,
                     Message = "Your account has been deleted successfully.",
-                    Data = user.Email
+                    Data = user.Email,
                 };
             }
             catch (Exception ex)
@@ -582,7 +687,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while deleting your account. Please try again.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -593,7 +698,7 @@ namespace Service
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Email, user.Email),
             };
 
             foreach (var role in roles)
@@ -638,16 +743,22 @@ namespace Service
             var tokenHandler = new JwtSecurityTokenHandler();
             try
             {
-                var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = configuration["Jwt:Issuer"],
-                    ValidAudience = configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]))
-                }, out _);
+                var principal = tokenHandler.ValidateToken(
+                    token,
+                    new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = configuration["Jwt:Issuer"],
+                        ValidAudience = configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(configuration["Jwt:Key"])
+                        ),
+                    },
+                    out _
+                );
 
                 return principal;
             }
@@ -662,8 +773,9 @@ namespace Service
             return new GeneralResponse<LoginResultDTO>
             {
                 Success = false,
-                Message = $"User has '{roleName}' role but no corresponding entity found. UserId: {userId}",
-                Data = null
+                Message =
+                    $"User has '{roleName}' role but no corresponding entity found. UserId: {userId}",
+                Data = null,
             };
         }
     }

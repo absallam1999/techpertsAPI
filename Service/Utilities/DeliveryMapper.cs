@@ -1,7 +1,6 @@
 using Core.DTOs.DeliveryDTOs;
 using Core.DTOs.DeliveryPersonDTOs;
 using Core.Enums;
-using Core.Interfaces;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities
@@ -10,7 +9,8 @@ namespace Service.Utilities
     {
         public static Delivery ToEntity(DeliveryCreateDTO dto)
         {
-            if (dto == null) return null;
+            if (dto == null)
+                return null;
 
             return new Delivery
             {
@@ -24,9 +24,13 @@ namespace Service.Utilities
             };
         }
 
-        public static DeliveryReadDTO ToReadDTO(Delivery entity, IEnumerable<DeliveryClusterDTO>? clusters = null)
+        public static DeliveryReadDTO ToReadDTO(
+            Delivery entity,
+            IEnumerable<DeliveryClusterDTO>? clusters = null
+        )
         {
-            if (entity == null) return null;
+            if (entity == null)
+                return null;
 
             return new DeliveryReadDTO
             {
@@ -34,26 +38,34 @@ namespace Service.Utilities
                 Status = entity.Status,
                 DeliveryFee = entity.DeliveryFee,
                 CreatedAt = entity.CreatedAt,
-                Clusters = clusters?.ToList() ?? new List<DeliveryClusterDTO>()
+                Clusters = clusters?.ToList() ?? new List<DeliveryClusterDTO>(),
             };
         }
 
-        public static DeliveryDTO ToDTO(Delivery entity, IEnumerable<DeliveryClusterDTO>? clusters = null)
+        public static DeliveryDTO ToDTO(
+            Delivery entity,
+            IEnumerable<DeliveryClusterDTO>? clusters = null
+        )
         {
-            if (entity == null) return null;
+            if (entity == null)
+                return null;
 
             return new DeliveryDTO
             {
                 Id = entity.Id,
                 Status = entity.Status,
                 DeliveryFee = entity.DeliveryFee,
-                Clusters = clusters?.ToList() ?? new List<DeliveryClusterDTO>()
+                Clusters = clusters?.ToList() ?? new List<DeliveryClusterDTO>(),
             };
         }
 
-        public static DeliveryDetailsDTO ToDetailsDTO(Delivery entity, IEnumerable<DeliveryClusterDTO>? clusters = null)
+        public static DeliveryDetailsDTO ToDetailsDTO(
+            Delivery entity,
+            IEnumerable<DeliveryClusterDTO>? clusters = null
+        )
         {
-            if (entity == null) return null;
+            if (entity == null)
+                return null;
 
             return new DeliveryDetailsDTO
             {
@@ -67,26 +79,30 @@ namespace Service.Utilities
                 DeliveryStatus = entity.Status,
                 Notes = entity.Notes,
                 DeliveryFee = entity.DeliveryFee,
-                DeliveryPerson = entity.DeliveryPerson == null ? null : new DeliveryPersonDTO
-                {
-                    Id = entity.DeliveryPerson.Id,
-                    UserFullName = entity?.DeliveryPerson?.User?.FullName,
-                    VehicleNumber = entity.DeliveryPerson.VehicleNumber,
-                    VehicleType = entity.DeliveryPerson.VehicleType,
-                    PhoneNumber = entity.DeliveryPerson.User?.PhoneNumber,
-                    City = entity.DeliveryPerson.User?.City,
-                    Country = entity.DeliveryPerson.User?.Country,
-                    IsAvailable = entity.DeliveryPerson.IsAvailable
-                },
+                DeliveryPerson =
+                    entity.DeliveryPerson == null
+                        ? null
+                        : new DeliveryPersonDTO
+                        {
+                            Id = entity.DeliveryPerson.Id,
+                            UserFullName = entity?.DeliveryPerson?.User?.FullName,
+                            VehicleNumber = entity.DeliveryPerson.VehicleNumber,
+                            VehicleType = entity.DeliveryPerson.VehicleType,
+                            PhoneNumber = entity.DeliveryPerson.User?.PhoneNumber,
+                            City = entity.DeliveryPerson.User?.City,
+                            Country = entity.DeliveryPerson.User?.Country,
+                            IsAvailable = entity.DeliveryPerson.IsAvailable,
+                        },
                 Order = null,
                 TechCompanies = null,
-                Clusters = clusters?.ToList() ?? new List<DeliveryClusterDTO>()
+                Clusters = clusters?.ToList() ?? new List<DeliveryClusterDTO>(),
             };
         }
 
         public static void UpdateEntity(Delivery entity, DeliveryUpdateDTO dto)
         {
-            if (entity == null || dto == null) return;
+            if (entity == null || dto == null)
+                return;
 
             entity.Status = dto.Status;
 
