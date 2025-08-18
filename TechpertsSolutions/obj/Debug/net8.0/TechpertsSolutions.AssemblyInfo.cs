@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TechpertsSolutions")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+11de1b6fa2cbf3094c941a50097e834f3207466d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d451e8a46327a420708b5a23c468354acc6e7d74")]
 [assembly: System.Reflection.AssemblyProductAttribute("TechpertsSolutions")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TechpertsSolutions")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
