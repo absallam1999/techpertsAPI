@@ -454,8 +454,6 @@ namespace Service
                 var roles = await userManager.GetRolesAsync(user);
                 var token = GenerateJwtToken(user, roles);
 
-                // --- Notifications ---
-                // Notify Admin role about new user
                 await notificationService.SendNotificationToRoleAsync(
                     "Admin",
                     NotificationType.SystemAlert,
@@ -464,7 +462,6 @@ namespace Service
                     $"New user '{user.FullName}' has registered with role '{roleName}'."
                 );
 
-                // Send welcome notification to the user
                 await notificationService.SendNotificationAsync(
                     user.Id,
                     NotificationType.SystemAlert,
@@ -511,7 +508,7 @@ namespace Service
                 new Claim("purpose", "reset-password"),
             };
 
-            var jwtToken = GenerateJwtToken(claims, TimeSpan.FromMinutes(15)); // using your private method
+            var jwtToken = GenerateJwtToken(claims, TimeSpan.FromMinutes(15));
             var angularAppUrl = configuration["AppSettings:FrontendUrl"]?.TrimEnd('/');
             var resetLink =
                 $"{angularAppUrl}/reset-password?token={HttpUtility.UrlEncode(jwtToken)}";

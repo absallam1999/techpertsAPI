@@ -46,6 +46,30 @@ namespace Service.Utilities
             return ToReadDTO(entity);
         }
 
+        public static DeliveryOfferDTO ToOfferDTO(DeliveryOffer offer)
+        {
+            if (offer == null) return null;
+
+            return new DeliveryOfferDTO
+            {
+                Id = offer.Id,
+                DeliveryId = offer.DeliveryId,
+                ClusterId = offer.ClusterId,
+                DeliveryPersonId = offer.DeliveryPersonId,
+                Status = offer.Status,
+                CreatedAt = offer.CreatedAt,
+                ExpiryTime = offer.ExpiryTime,
+                IsActive = offer.IsActive,
+
+                TechCompanies = offer.Delivery?.TechCompanies?.ToList() ?? new List<TechCompany>(),
+
+                DeliveryTrackingNumber = offer.Delivery?.TrackingNumber,
+                CustomerName = offer.Delivery?.CustomerName,
+                DeliveryLatitude = offer.Delivery?.DropoffLatitude,
+                DeliveryLongitude = offer.Delivery?.DropoffLongitude
+            };
+        }
+
         public static DeliveryPerson ToEntity(DeliveryPersonCreateDTO dto)
         {
             if (dto == null)

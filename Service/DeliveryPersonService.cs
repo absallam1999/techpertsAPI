@@ -226,9 +226,11 @@ namespace Service
                 };
 
             var offers = await _deliveryOfferRepo.FindWithIncludesAsync(
-                o => o.DeliveryPersonId == driverId,
-                o => o.Delivery
-            );
+               o => o.DeliveryPersonId == driverId,
+               o => o.Delivery,
+               o => o.Delivery.TechCompanies
+           );
+
 
             var dtoList = offers.Select(DeliveryPersonMapper.ToDTO).ToList();
             return new GeneralResponse<IEnumerable<DeliveryOfferDTO>>
@@ -256,10 +258,11 @@ namespace Service
                     && o.Status == DeliveryOfferStatus.Pending
                     && o.IsActive,
                 o => o.Delivery,
-                o => o.DeliveryPerson.User
+                o => o.DeliveryPerson.User,
+                o => o.Delivery.TechCompanies 
             );
 
-            var dtoList = offers.Select(DeliveryPersonMapper.ToDTO).ToList();
+            var dtoList = offers.Select(DeliveryPersonMapper.ToOfferDTO).ToList();
             return new GeneralResponse<IEnumerable<DeliveryOfferDTO>>
             {
                 Success = true,
@@ -297,24 +300,29 @@ namespace Service
                 offer.IsActive = false;
                 _deliveryOfferRepo.Update(offer);
 
-                var otherOffers = await _deliveryOfferRepo.FindAsync(o =>
-                    o.ClusterId == offer.ClusterId && o.Id != offer.Id && o.Status == DeliveryOfferStatus.Pending,
-                    o => o.DeliveryPerson
+                var otherOffers = await _deliveryOfferRepo.FindWithIncludesAsync(
+                    o => o.ClusterId == offer.ClusterId && o.Id != offer.Id && o.Status == DeliveryOfferStatus.Pending,
+                    o => o.DeliveryPerson, o => o.Delivery.TechCompanies
                 );
+
                 foreach (var o in otherOffers)
                 {
                     o.Status = DeliveryOfferStatus.Expired;
                     o.IsActive = false;
                     _deliveryOfferRepo.Update(o);
 
-                    await _notificationService.SendNotificationAsync(
-                        o.DeliveryPerson.UserId,
-                        NotificationType.DeliveryOfferExpired,
-                        o.DeliveryId,
-                        "Delivery",
-                        $"Delivery offer #{o.DeliveryId} expired."
-                    );
+                    if (o.DeliveryPerson != null)
+                    {
+                        await _notificationService.SendNotificationAsync(
+                            o.DeliveryPerson.UserId,
+                            NotificationType.DeliveryOfferExpired,
+                            o.DeliveryId,
+                            "Delivery",
+                            $"Delivery offer #{o.DeliveryId} expired."
+                        );
+                    }
                 }
+
 
                 var assignResult = await _clusterService.AssignDriverAsync(
                     offer.ClusterId,
@@ -328,23 +336,28 @@ namespace Service
                     };
 
                 var delivery = await _deliveryRepo.GetByIdWithIncludesAsync(
-                    offer.DeliveryId,
-                    d => d.DeliveryPerson,
-                    d => d.DeliveryPerson.User);
-                delivery.DeliveryPersonId = driverId;
-                delivery.Status = DeliveryStatus.Assigned;
-                _deliveryRepo.Update(delivery);
+                    offer.DeliveryId);
 
-                await _deliveryOfferRepo.SaveChangesAsync();
+                var driver = await _deliveryPersonRepo.GetByIdWithIncludesAsync(driverId, d => d.User);
+
+                delivery.DeliveryPerson = driver;
+                delivery.DeliveryPersonId = driver.Id;
+                delivery.Status = DeliveryStatus.Assigned;
+
+                _deliveryRepo.Update(delivery);
                 await _deliveryRepo.SaveChangesAsync();
 
-                //await _notificationService.SendNotificationAsync(
-                //    delivery.DeliveryPerson.UserId,
-                //    NotificationType.DeliveryOfferAccepted,
-                //    "Delivery",
-                //    delivery.TrackingNumber ?? delivery.Id,
-                //    "New Order Assigned"
-                //);
+                // Safe notification
+                if (delivery.DeliveryPerson?.User != null)
+                {
+                    await _notificationService.SendNotificationAsync(
+                        delivery.DeliveryPerson.UserId,
+                        NotificationType.DeliveryOfferAccepted,
+                        "Delivery",
+                        delivery.TrackingNumber ?? delivery.Id,
+                        "New Order Assigned"
+                    );
+                }
 
                 scope.Complete();
 
@@ -377,7 +390,7 @@ namespace Service
 
             try
             {
-                var offer = await _deliveryOfferRepo.GetByIdAsync(offerId);
+                var offer = await _deliveryOfferRepo.GetByIdWithIncludesAsync(offerId, o => o.DeliveryPerson, o => o.Delivery.TechCompanies);
                 if (
                     offer == null
                     || offer.DeliveryPersonId != driverId
@@ -431,7 +444,7 @@ namespace Service
 
             try
             {
-                var offer = await _deliveryOfferRepo.GetByIdAsync(offerId);
+                var offer = await _deliveryOfferRepo.GetByIdWithIncludesAsync(offerId, o => o.DeliveryPerson, o => o.Delivery.TechCompanies);
                 if (
                     offer == null
                     || offer.DeliveryPersonId != driverId
@@ -447,13 +460,14 @@ namespace Service
                 offer.IsActive = false;
                 _deliveryOfferRepo.Update(offer);
 
-                var delivery = await _deliveryRepo.GetByIdAsync(offer.DeliveryId);
+                var delivery = await _deliveryRepo.GetByIdWithIncludesAsync(offer.DeliveryId, o => o.DeliveryPerson);
                 delivery.Status = DeliveryStatus.Pending;
                 delivery.DeliveryPersonId = null;
                 _deliveryRepo.Update(delivery);
 
                 await _deliveryOfferRepo.SaveChangesAsync();
                 await _deliveryRepo.SaveChangesAsync();
+
                 await _notificationService.SendNotificationAsync(
                     delivery.DeliveryPerson.UserId,
                     NotificationType.DeliveryOfferCanceled,

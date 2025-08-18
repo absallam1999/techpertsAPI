@@ -16,6 +16,7 @@ namespace Service
         private readonly IRepository<DeliveryCluster> _clusterRepo;
         private readonly IRepository<Delivery> _deliveryRepo;
         private readonly IRepository<TechCompany> _techCompanyRepo;
+        private readonly IRepository<DeliveryPerson> _deliveryPersonRepo;
         private readonly IDeliveryService _deliveryService;
         private readonly ILocationService _locationService;
         private readonly DeliveryAssignmentSettings _settings;
@@ -25,21 +26,27 @@ namespace Service
             IRepository<DeliveryCluster> clusterRepo,
             IRepository<Delivery> deliveryRepo,
             IRepository<TechCompany> techCompanyRepo,
+            IRepository<DeliveryPerson> deliveryPersonRepo,
             IDeliveryService deliveryService,
             ILocationService locationService,
             IOptions<DeliveryAssignmentSettings> settings,
             INotificationService notificationService
         )
         {
-            _clusterRepo = clusterRepo ?? throw new ArgumentNullException(nameof(clusterRepo));
-            _deliveryRepo = deliveryRepo ?? throw new ArgumentNullException(nameof(deliveryRepo));
+            _clusterRepo = 
+                clusterRepo ?? throw new ArgumentNullException(nameof(clusterRepo));
+            _deliveryRepo = 
+                deliveryRepo ?? throw new ArgumentNullException(nameof(deliveryRepo));
             _techCompanyRepo =
                 techCompanyRepo ?? throw new ArgumentNullException(nameof(techCompanyRepo));
             _deliveryService =
                 deliveryService ?? throw new ArgumentNullException(nameof(deliveryService));
+            _deliveryPersonRepo = 
+                deliveryPersonRepo ?? throw new ArgumentNullException(nameof(deliveryPersonRepo));
             _locationService =
                 locationService ?? throw new ArgumentNullException(nameof(locationService));
-            _settings = settings?.Value ?? throw new ArgumentNullException(nameof(settings));
+            _settings = 
+                settings?.Value ?? throw new ArgumentNullException(nameof(settings));
             _notificationService =
                 notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         }
@@ -74,14 +81,25 @@ namespace Service
 
             if (!string.IsNullOrWhiteSpace(dto.AssignedDriverId))
             {
-                await _notificationService.SendNotificationAsync(
+                var driver = await _deliveryPersonRepo.GetByIdWithIncludesAsync(
                     dto.AssignedDriverId,
-                    NotificationType.DeliveryAssigned,
-                    entity.Id,
-                    "DeliveryCluster",
-                    $"You have been assigned to delivery cluster #{entity.Id} for delivery #{deliveryId}."
+                    d => d.User
                 );
+
+                var userId = driver?.User?.Id;
+
+                if (!string.IsNullOrWhiteSpace(userId))
+                {
+                    await _notificationService.SendNotificationAsync(
+                        userId,
+                        NotificationType.DeliveryAssigned,
+                        entity.Id,
+                        "DeliveryCluster",
+                        $"You have been assigned to delivery cluster #{entity.Id} for delivery #{deliveryId}."
+                    );
+                }
             }
+
 
             return new GeneralResponse<DeliveryClusterDTO>
             {
@@ -176,37 +194,44 @@ namespace Service
             );
 
             // Notify newly assigned driver if changed
-            if (
-                !string.IsNullOrWhiteSpace(entity.AssignedDriverId)
-                && entity.AssignedDriverId != previousDriverId
-            )
+            if (!string.IsNullOrWhiteSpace(dto.AssignedDriverId))
             {
-                await _notificationService.SendNotificationAsync(
-                    entity.AssignedDriverId,
-                    NotificationType.DeliveryAssigned,
-                    entity.Id,
-                    "DeliveryCluster",
-                    $"You have been assigned to delivery cluster #{entity.Id}."
+                var driver = await _deliveryPersonRepo.GetByIdWithIncludesAsync(
+                    dto.AssignedDriverId,
+                    d => d.User
                 );
+
+                var userId = driver?.User?.Id;
+
+                if (!string.IsNullOrWhiteSpace(userId))
+                {
+                    await _notificationService.SendNotificationAsync(
+                        userId,
+                        NotificationType.DeliveryAssigned,
+                        entity.Id,
+                        "DeliveryCluster",
+                        $"You have been assigned to delivery cluster #{entity.Id} for delivery."
+                    );
+                }
             }
 
-            // Optionally notify TechCompany
+
             if (entity.TechCompany?.UserId != null)
             {
-                await _notificationService.SendNotificationAsync(
-                    entity.TechCompany.UserId,
-                    NotificationType.SystemAlert,
-                    $"Delivery cluster #{entity.Id} has been updated.",
-                    entity.Id,
-                    "DeliveryCluster"
-                );
+                 await _notificationService.SendNotificationAsync(
+                      entity.TechCompany.UserId,
+                      NotificationType.SystemAlert,
+                      $"Delivery cluster #{entity.Id} has been updated.",
+                      entity.Id,
+                      "DeliveryCluster"
+                 );
             }
 
             return new GeneralResponse<DeliveryClusterDTO>
             {
-                Success = true,
-                Message = "Cluster updated successfully.",
-                Data = dtoResult,
+                 Success = true,
+                 Message = "Cluster updated successfully.",
+                 Data = dtoResult,
             };
         }
 
@@ -260,7 +285,6 @@ namespace Service
 
             var dtoResult = DeliveryClusterMapper.ToDTO(entity);
 
-            // Notify Admin
             await _notificationService.SendNotificationToRoleAsync(
                 "Admin",
                 NotificationType.DeliveryAssigned,
@@ -269,19 +293,27 @@ namespace Service
                 $"Driver assigned to delivery cluster #{entity.Id}."
             );
 
-            // Notify newly assigned driver
             if (!string.IsNullOrWhiteSpace(driverId) && driverId != previousDriverId)
             {
-                await _notificationService.SendNotificationAsync(
+                var driver = await _deliveryPersonRepo.GetByIdWithIncludesAsync(
                     driverId,
-                    NotificationType.DeliveryAssigned,
-                    entity.Id,
-                    "DeliveryCluster",
-                    $"You have been assigned to delivery cluster #{entity.Id}."
+                    d => d.User
                 );
+
+                var userId = driver?.User?.Id;
+
+                if (!string.IsNullOrWhiteSpace(userId))
+                {
+                    await _notificationService.SendNotificationAsync(
+                        userId,
+                        NotificationType.DeliveryAssigned,
+                        entity.Id,
+                        "DeliveryCluster",
+                        $"You have been assigned to delivery cluster #{entity.Id}."
+                    );
+                }
             }
 
-            // Optionally notify TechCompany
             if (entity.TechCompany?.UserId != null)
             {
                 await _notificationService.SendNotificationAsync(
@@ -394,9 +426,16 @@ namespace Service
             _deliveryRepo.Update(delivery);
             await _deliveryRepo.SaveChangesAsync();
 
-            // Send notification to the assigned driver
+            await _notificationService.SendNotificationToRoleAsync(
+                "Admin",
+                NotificationType.DeliveryAssigned,
+                delivery.Id,
+                "Delivery",
+                $"New delivery assigned: #{delivery.TrackingNumber ?? delivery.Id}"
+            );
+
             await _notificationService.SendNotificationAsync(
-                best.Driver.Id,
+                best.Driver.UserId,
                 NotificationType.DeliveryAssigned,
                 delivery.Id,
                 "Delivery",

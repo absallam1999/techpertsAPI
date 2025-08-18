@@ -8835,6 +8835,13 @@
           "isActive": {
             "type": "boolean"
           },
+          "techCompanies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.TechCompany"
+            },
+            "nullable": true
+          },
           "deliveryTrackingNumber": {
             "type": "string",
             "nullable": true
@@ -10238,6 +10245,179 @@
         },
         "additionalProperties": false
       },
+      "Core.Entities.DeliveryCluster": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deliveryId": {
+            "type": "string",
+            "nullable": true
+          },
+          "delivery": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Delivery"
+          },
+          "techCompanyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "techCompanyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "techCompany": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.TechCompany"
+          },
+          "distanceKm": {
+            "type": "number",
+            "format": "double"
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Core.Enums.DeliveryClusterStatus"
+          },
+          "assignedDriverId": {
+            "type": "string",
+            "nullable": true
+          },
+          "assignedDriverName": {
+            "type": "string",
+            "nullable": true
+          },
+          "assignedDriver": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.DeliveryPerson"
+          },
+          "assignmentTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dropoffLatitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "dropoffLongitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "sequenceOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "estimatedDistance": {
+            "type": "number",
+            "format": "double"
+          },
+          "estimatedPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "pickupConfirmed": {
+            "type": "boolean"
+          },
+          "pickupConfirmedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "tracking": {
+            "$ref": "#/components/schemas/Core.Entities.DeliveryClusterTracking"
+          },
+          "driverOffers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Core.Entities.DeliveryClusterDriverOffer"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Core.Entities.DeliveryClusterDriverOffer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deliveryClusterId": {
+            "type": "string",
+            "nullable": true
+          },
+          "deliveryCluster": {
+            "$ref": "#/components/schemas/Core.Entities.DeliveryCluster"
+          },
+          "driverId": {
+            "type": "string",
+            "nullable": true
+          },
+          "driver": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.DeliveryPerson"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Core.Enums.DeliveryOfferStatus"
+          },
+          "offerTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "responseTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "offeredPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Core.Entities.DeliveryClusterTracking": {
         "type": "object",
         "properties": {
@@ -10289,6 +10469,135 @@
         },
         "additionalProperties": false
       },
+      "Core.Entities.DeliveryOffer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deliveryId": {
+            "type": "string",
+            "nullable": true
+          },
+          "clusterId": {
+            "type": "string",
+            "nullable": true
+          },
+          "deliveryPersonId": {
+            "type": "string",
+            "nullable": true
+          },
+          "offeredPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Core.Enums.DeliveryOfferStatus"
+          },
+          "respondedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "expiryTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "delivery": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Delivery"
+          },
+          "cluster": {
+            "$ref": "#/components/schemas/Core.Entities.DeliveryCluster"
+          },
+          "deliveryPerson": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.DeliveryPerson"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Core.Entities.PrivateMessage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "senderUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "receiverUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "messageText": {
+            "type": "string",
+            "nullable": true
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isRead": {
+            "type": "boolean"
+          },
+          "senderUser": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.AppUser"
+          },
+          "receiverUser": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.AppUser"
+          },
+          "senderRole": {
+            "type": "string",
+            "nullable": true
+          },
+          "receiverRole": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Core.Enums.DeliveryClusterStatus": {
         "enum": [
           "Pending",
@@ -10314,6 +10623,17 @@
           "Pending",
           "Accepted",
           "Rejected"
+        ],
+        "type": "string"
+      },
+      "Core.Enums.DeliveryStatus": {
+        "enum": [
+          "Pending",
+          "Assigned",
+          "PickedUp",
+          "Delivered",
+          "Cancelled",
+          "Failed"
         ],
         "type": "string"
       },
@@ -10498,6 +10818,1620 @@
           "address": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.Admin": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true
+          },
+          "user": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.AppUser"
+          },
+          "roleId": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.AppRole"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.AppRole": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "normalizedName": {
+            "type": "string",
+            "nullable": true
+          },
+          "concurrencyStamp": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.AppUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "normalizedUserName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "normalizedEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailConfirmed": {
+            "type": "boolean"
+          },
+          "passwordHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "securityStamp": {
+            "type": "string",
+            "nullable": true
+          },
+          "concurrencyStamp": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumberConfirmed": {
+            "type": "boolean"
+          },
+          "twoFactorEnabled": {
+            "type": "boolean"
+          },
+          "lockoutEnd": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lockoutEnabled": {
+            "type": "boolean"
+          },
+          "accessFailedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "postalCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "profilePhotoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastLoginDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "customer": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Customer"
+          },
+          "admin": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Admin"
+          },
+          "techCompany": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.TechCompany"
+          },
+          "deliveryPerson": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.DeliveryPerson"
+          },
+          "sentMessages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Core.Entities.PrivateMessage"
+            },
+            "nullable": true
+          },
+          "receivedMessages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Core.Entities.PrivateMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.Cart": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "customerId": {
+            "type": "string",
+            "nullable": true
+          },
+          "customer": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Customer"
+          },
+          "cartItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.CartItem"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.CartItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "productId": {
+            "type": "string",
+            "nullable": true
+          },
+          "pcAssemblyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "isCustomBuild": {
+            "type": "boolean"
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "product": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Product"
+          },
+          "productTotal": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "assemblyFee": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cartId": {
+            "type": "string",
+            "nullable": true
+          },
+          "cart": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Cart"
+          },
+          "pcAssembly": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.PCAssembly"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "image": {
+            "type": "string",
+            "nullable": true
+          },
+          "subCategories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.CategorySubCategory"
+            },
+            "nullable": true
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Product"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.CategorySubCategory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "categoryId": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Category"
+          },
+          "subCategoryId": {
+            "type": "string",
+            "nullable": true
+          },
+          "subCategory": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.SubCategory"
+          },
+          "assignedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.Customer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true
+          },
+          "user": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.AppUser"
+          },
+          "roleId": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.AppRole"
+          },
+          "cart": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Cart"
+          },
+          "wishList": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.WishList"
+          },
+          "pcAssembly": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.PCAssembly"
+            },
+            "nullable": true
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Order"
+            },
+            "nullable": true
+          },
+          "deliveries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Delivery"
+            },
+            "nullable": true
+          },
+          "maintenances": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Maintenance"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.Delivery": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "trackingNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "customerPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "customerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "estimatedDeliveryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "actualDeliveryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/Core.Enums.DeliveryStatus"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "deliveryFee": {
+            "type": "number",
+            "format": "double"
+          },
+          "retryCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pickupAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "pickupDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "pickupLatitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "pickupLongitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "dropoffLatitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "dropoffLongitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "deliveryPersonId": {
+            "type": "string",
+            "nullable": true
+          },
+          "customerId": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderId": {
+            "type": "string",
+            "nullable": true
+          },
+          "parentDeliveryId": {
+            "type": "string",
+            "nullable": true
+          },
+          "sequenceNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "routeOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pickupConfirmed": {
+            "type": "boolean"
+          },
+          "pickupConfirmedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isFinalLeg": {
+            "type": "boolean"
+          },
+          "order": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Order"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Customer"
+          },
+          "parentDelivery": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Delivery"
+          },
+          "deliveryPerson": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.DeliveryPerson"
+          },
+          "tracking": {
+            "$ref": "#/components/schemas/Core.Entities.DeliveryClusterTracking"
+          },
+          "subDeliveries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Delivery"
+            },
+            "nullable": true
+          },
+          "offers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Core.Entities.DeliveryOffer"
+            },
+            "nullable": true
+          },
+          "techCompanies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.TechCompany"
+            },
+            "nullable": true
+          },
+          "clusters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Core.Entities.DeliveryCluster"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.DeliveryPerson": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "vehicleNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "vehicleType": {
+            "type": "string",
+            "nullable": true
+          },
+          "vehicleImage": {
+            "type": "string",
+            "nullable": true
+          },
+          "license": {
+            "type": "string",
+            "nullable": true
+          },
+          "accountStatus": {
+            "$ref": "#/components/schemas/Core.Enums.DeliveryPersonStatus"
+          },
+          "isAvailable": {
+            "type": "boolean"
+          },
+          "lastOnline": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "currentLatitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "currentLongitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true
+          },
+          "user": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.AppUser"
+          },
+          "roleId": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.AppRole"
+          },
+          "deliveries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Delivery"
+            },
+            "nullable": true
+          },
+          "offers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Core.Entities.DeliveryOffer"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.Maintenance": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "warrantyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "warranty": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Warranty"
+          },
+          "techCompanyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "techCompany": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.TechCompany"
+          },
+          "customerId": {
+            "type": "string",
+            "nullable": true
+          },
+          "customer": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Customer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Core.Enums.MaintenanceStatus"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "completedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deviceType": {
+            "type": "string",
+            "nullable": true
+          },
+          "issue": {
+            "type": "string",
+            "nullable": true
+          },
+          "priority": {
+            "type": "string",
+            "nullable": true
+          },
+          "serviceFee": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "deviceImages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "serviceUsages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.ServiceUsage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.Order": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "orderDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "totalAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Core.Enums.OrderStatus"
+          },
+          "customerId": {
+            "type": "string",
+            "nullable": true
+          },
+          "customer": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Customer"
+          },
+          "serviceUsageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderHistoryId": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderHistory": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.OrderHistory"
+          },
+          "serviceUsage": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.ServiceUsage"
+          },
+          "orderItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.OrderItem"
+            },
+            "nullable": true
+          },
+          "deliveries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Delivery"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.OrderHistory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Order"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.OrderItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "productId": {
+            "type": "string",
+            "nullable": true
+          },
+          "product": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Product"
+          },
+          "orderId": {
+            "type": "string",
+            "nullable": true
+          },
+          "order": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Order"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "itemTotal": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.PCAssembly": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "customerId": {
+            "type": "string",
+            "nullable": true
+          },
+          "customer": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Customer"
+          },
+          "techCompanyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "techCompany": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.TechCompany"
+          },
+          "serviceUsageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "serviceUsage": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.ServiceUsage"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Core.Enums.PCAssemblyStatus"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "budget": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "assemblyFee": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "completedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "pcAssemblyItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.PCAssemblyItem"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.PCAssemblyItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "productId": {
+            "type": "string",
+            "nullable": true
+          },
+          "product": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Product"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "total": {
+            "type": "number",
+            "format": "double"
+          },
+          "pcAssemblyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "pcAssembly": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.PCAssembly"
+          },
+          "isAssembled": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "discountPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "stock": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "imagesURLS": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "categoryId": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Category"
+          },
+          "subCategoryId": {
+            "type": "string",
+            "nullable": true
+          },
+          "subCategory": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.SubCategory"
+          },
+          "techCompanyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "techCompany": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.TechCompany"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Core.Enums.ProductPendingStatus"
+          },
+          "specifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Specification"
+            },
+            "nullable": true
+          },
+          "warranties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Warranty"
+            },
+            "nullable": true
+          },
+          "cartItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.CartItem"
+            },
+            "nullable": true
+          },
+          "wishListItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.WishListItem"
+            },
+            "nullable": true
+          },
+          "pcAssemblyItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.PCAssemblyItem"
+            },
+            "nullable": true
+          },
+          "orderItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.OrderItem"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.ServiceUsage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "serviceType": {
+            "type": "string",
+            "nullable": true
+          },
+          "usedOn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "callCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maintenanceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "maintenance": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Maintenance"
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Order"
+            },
+            "nullable": true
+          },
+          "pcAssemblies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.PCAssembly"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.Specification": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "productId": {
+            "type": "string",
+            "nullable": true
+          },
+          "product": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Product"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.SubCategory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "image": {
+            "type": "string",
+            "nullable": true
+          },
+          "categorySubCategories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.CategorySubCategory"
+            },
+            "nullable": true
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Product"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.TechCompany": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "rating": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true
+          },
+          "user": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.AppUser"
+          },
+          "roleId": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.AppRole"
+          },
+          "maintenances": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Maintenance"
+            },
+            "nullable": true
+          },
+          "deliveries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Delivery"
+            },
+            "nullable": true
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Product"
+            },
+            "nullable": true
+          },
+          "pcAssemblies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.PCAssembly"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.Warranty": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "productId": {
+            "type": "string",
+            "nullable": true
+          },
+          "product": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Product"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.WishList": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "customerId": {
+            "type": "string",
+            "nullable": true
+          },
+          "customer": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Customer"
+          },
+          "wishListItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.WishListItem"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TechpertsSolutions.Core.Entities.WishListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "productId": {
+            "type": "string",
+            "nullable": true
+          },
+          "product": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.Product"
+          },
+          "wishListId": {
+            "type": "string",
+            "nullable": true
+          },
+          "wishList": {
+            "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.WishList"
           }
         },
         "additionalProperties": false

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Core.Entities;
 
 namespace Core.DTOs.DeliveryDTOs
 {
@@ -18,24 +19,12 @@ namespace Core.DTOs.DeliveryDTOs
         public DateTime? CreatedAt { get; set; }
         public DateTime? ExpiryTime { get; set; }
         public bool IsActive { get; set; }
+        public List<TechCompany> TechCompanies { get; set; } = new List<TechCompany>();
 
         // Optional related info
         public string DeliveryTrackingNumber { get; set; }
         public string CustomerName { get; set; }
         public double? DeliveryLatitude { get; set; }
         public double? DeliveryLongitude { get; set; }
-        //public DeliveryOfferDTO(DeliveryOffer deliveryOffer)
-        //{
-        //    Id = string.Empty;
-        //    DeliveryId = string.Empty;
-        //    ClusterId = string.Empty;
-        //    DeliveryPersonId = string.Empty;
-        //    Status = DeliveryOfferStatus.Pending;
-        //    CreatedAt = DateTime.UtcNow;
-        //    ExpiryTime = null;
-        //    IsActive = true;
-        //    DeliveryTrackingNumber = string.Empty;
-        //    CustomerName = string.Empty;
-        //}
     }
 }

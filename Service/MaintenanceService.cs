@@ -16,6 +16,7 @@ namespace Service
         private readonly IRepository<Warranty> _warrantyRepo;
         private readonly IRepository<ServiceUsage> _serviceUsageRepo;
         private readonly INotificationService _notificationService;
+        private readonly ILocationService _LocationService;
 
         public MaintenanceService(
             IRepository<Maintenance> maintenanceRepo,
@@ -23,7 +24,8 @@ namespace Service
             IRepository<TechCompany> techCompanyRepo,
             IRepository<Warranty> warrantyRepo,
             IRepository<ServiceUsage> serviceUsageRepo,
-            INotificationService notificationService
+            INotificationService notificationService,
+            ILocationService locationService
         )
         {
             _maintenanceRepo = maintenanceRepo;
@@ -31,6 +33,7 @@ namespace Service
             _techCompanyRepo = techCompanyRepo;
             _warrantyRepo = warrantyRepo;
             _serviceUsageRepo = serviceUsageRepo;
+            _LocationService = locationService;
             _notificationService = notificationService;
         }
 
@@ -38,7 +41,6 @@ namespace Service
         {
             try
             {
-                // Optimized includes for maintenance listing with essential related data
                 var maintenances = await _maintenanceRepo.GetAllWithIncludesAsync(
                     m => m.Customer,
                     m => m.Customer.User,
@@ -93,7 +95,6 @@ namespace Service
 
             try
             {
-                // Comprehensive includes for detailed maintenance view
                 var maintenance = await _maintenanceRepo.GetByIdWithIncludesAsync(
                     id,
                     m => m.Customer,
@@ -189,10 +190,8 @@ namespace Service
             {
                 var entity = MaintenanceMapper.MapToMaintenance(dto);
 
-                // Create a ServiceUsage record for this maintenance
                 var serviceUsage = new ServiceUsage
                 {
-                    Id = Guid.NewGuid().ToString(),
                     ServiceType = "Maintenance",
                     UsedOn = DateTime.Now,
                     CallCount = 1,
@@ -205,21 +204,30 @@ namespace Service
                 await _serviceUsageRepo.AddAsync(serviceUsage);
                 await _maintenanceRepo.SaveChangesAsync();
 
-                // Send notification to TechCompany about new maintenance request
-                await _notificationService.SendNotificationAsync(
-                    entity.TechCompanyId,
-                    NotificationType.MaintenanceRequestCreated,
-                    entity.Id,
-                    "Maintenance",
-                    entity.Id,
-                    entity.CustomerId
-                );
 
-                // Get the created maintenance with all includes to return proper names
                 var createdMaintenance = await _maintenanceRepo.GetFirstOrDefaultAsync(
                     m => m.Id == entity.Id,
                     includeProperties: "Customer,Customer.User,TechCompany,TechCompany.User,Warranty,Warranty.Product,ServiceUsages"
                 );
+
+                // Send notification to TechCompany about new maintenance request
+                await _notificationService.SendNotificationAsync(
+                    createdMaintenance.TechCompany.UserId,
+                    NotificationType.MaintenanceRequestCreated,
+                    entity.Id,
+                    "Maintenance",
+                    entity.Id,
+                    entity.Customer.UserId
+                );
+
+                await _notificationService.SendNotificationAsync(
+                   createdMaintenance.Customer.UserId,
+                   NotificationType.MaintenanceRequestCreated,
+                   entity.Id,
+                   "Maintenance",
+                   entity.Id,
+                   entity.TechCompany.UserId
+               );
 
                 var maintenanceDto = MaintenanceMapper.MapToMaintenanceDTO(createdMaintenance);
 
@@ -519,7 +527,7 @@ namespace Service
                 await _maintenanceRepo.SaveChangesAsync();
 
                 await _notificationService.SendNotificationAsync(
-                    maintenance.CustomerId,
+                    maintenance.Customer.UserId,
                     NotificationType.MaintenanceRequestAccepted,
                     maintenance.Id,
                     "Maintenance",
@@ -590,7 +598,6 @@ namespace Service
                     };
                 }
 
-                // Ensure the maintenance has a ServiceUsage record
                 await EnsureMaintenanceHasServiceUsage(maintenance);
 
                 maintenance.Status = MaintenanceStatus.Completed;
@@ -599,9 +606,8 @@ namespace Service
                 _maintenanceRepo.Update(maintenance);
                 await _maintenanceRepo.SaveChangesAsync();
 
-                // Send notification to customer about maintenance completion
                 await _notificationService.SendNotificationAsync(
-                    maintenance.CustomerId,
+                    maintenance.Customer.UserId,
                     NotificationType.MaintenanceRequestCompleted,
                     maintenance.Id,
                     "Maintenance",
@@ -688,10 +694,8 @@ namespace Service
                     };
                 }
 
-                // Ensure the maintenance has a ServiceUsage record
                 await EnsureMaintenanceHasServiceUsage(maintenance);
 
-                // Parse the string status to enum
                 if (Enum.TryParse<MaintenanceStatus>(newStatus, out var status))
                 {
                     maintenance.Status = status;
@@ -708,6 +712,15 @@ namespace Service
                 _maintenanceRepo.Update(maintenance);
                 await _maintenanceRepo.SaveChangesAsync();
 
+                await _notificationService.SendNotificationAsync(
+                maintenance.Customer.UserId,
+                NotificationType.MaintenanceRequestCompleted,
+                maintenance.Id,
+                "Maintenance",
+                maintenance.Id,
+                maintenance.Customer.UserId
+            );
+
                 return new GeneralResponse<MaintenanceDTO>
                 {
                     Success = true,
@@ -723,25 +736,6 @@ namespace Service
                     Message = "An unexpected error occurred while updating maintenance status.",
                     Data = null,
                 };
-            }
-        }
-
-        private async Task EnsureMaintenanceHasServiceUsage(Maintenance maintenance)
-        {
-            // If maintenance doesn't have any ServiceUsage records, create one
-            if (maintenance.ServiceUsages == null || !maintenance.ServiceUsages.Any())
-            {
-                var serviceUsage = new ServiceUsage
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    ServiceType = "Maintenance",
-                    UsedOn = DateTime.Now,
-                    CallCount = 1,
-                    MaintenanceId = maintenance.Id,
-                };
-
-                await _serviceUsageRepo.AddAsync(serviceUsage);
-                maintenance.ServiceUsages = new List<ServiceUsage> { serviceUsage };
             }
         }
 
@@ -778,25 +772,21 @@ namespace Service
                     };
                 }
 
-                // Simple distance calculation based on address matching
-                // In a real implementation, you would use geocoding and distance calculation
-                var customerAddress = customer.User?.Address?.ToLower() ?? "";
-                var customerRegion = ExtractRegionFromAddress(customerAddress);
-                var customerPostalCode = ExtractPostalCodeFromAddress(customerAddress);
-
                 var nearestMaintenance = maintenanceTechCompanies
+                    .Where(tc => tc.User?.Latitude.HasValue == true && tc.User?.Longitude.HasValue == true)
                     .Select(tc => new
                     {
                         TechCompany = tc,
-                        Distance = CalculateDistance(
-                            customerAddress,
-                            customerRegion,
-                            customerPostalCode,
-                            tc.User?.Address ?? ""
+                        Distance = _LocationService.CalculateDistance(
+                            customer.User.Latitude ?? 0,
+                            customer.User.Longitude ?? 0,
+                            tc.User.Latitude.Value,
+                            tc.User.Longitude.Value
                         ),
                     })
                     .OrderBy(x => x.Distance)
                     .First();
+
 
                 var result = new MaintenanceNearestDTO
                 {
@@ -807,13 +797,7 @@ namespace Service
                     TechCompanyAddress = nearestMaintenance.TechCompany.User?.Address ?? "Unknown",
                     TechCompanyPhone =
                         nearestMaintenance.TechCompany.User?.PhoneNumber ?? "Unknown",
-                    Distance = nearestMaintenance.Distance,
-                    Region = ExtractRegionFromAddress(
-                        nearestMaintenance.TechCompany.User?.Address ?? ""
-                    ),
-                    PostalCode = ExtractPostalCodeFromAddress(
-                        nearestMaintenance.TechCompany.User?.Address ?? ""
-                    ),
+                    Distance = nearestMaintenance.Distance
                 };
 
                 return new GeneralResponse<MaintenanceNearestDTO>
@@ -834,49 +818,24 @@ namespace Service
             }
         }
 
-        private string ExtractRegionFromAddress(string address)
+        private async Task EnsureMaintenanceHasServiceUsage(Maintenance maintenance)
         {
-            // Simple region extraction - can be enhanced with more sophisticated logic
-            var parts = address.Split(',', StringSplitOptions.RemoveEmptyEntries);
-            return parts.Length > 1 ? parts[1].Trim() : "";
-        }
-
-        private string ExtractPostalCodeFromAddress(string address)
-        {
-            // Simple postal code extraction - can be enhanced with regex patterns
-            var parts = address.Split(',', StringSplitOptions.RemoveEmptyEntries);
-            return parts.Length > 2 ? parts[2].Trim() : "";
-        }
-
-        private double CalculateDistance(
-            string customerAddress,
-            string customerRegion,
-            string customerPostalCode,
-            string techCompanyAddress
-        )
-        {
-            // Simple distance calculation based on address matching
-            // In a real implementation, you would use geocoding APIs and calculate actual distances
-
-            var techCompanyRegion = ExtractRegionFromAddress(techCompanyAddress);
-            var techCompanyPostalCode = ExtractPostalCodeFromAddress(techCompanyAddress);
-
-            // If same region, give lower distance
-            if (customerRegion.Equals(techCompanyRegion, StringComparison.OrdinalIgnoreCase))
+            // If maintenance doesn't have any ServiceUsage records, create one
+            if (maintenance.ServiceUsages == null || !maintenance.ServiceUsages.Any())
             {
-                return 5.0; // 5 km
-            }
+                var serviceUsage = new ServiceUsage
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    ServiceType = "Maintenance",
+                    UsedOn = DateTime.Now,
+                    CallCount = 1,
+                    MaintenanceId = maintenance.Id,
+                };
 
-            // If same postal code, give very low distance
-            if (
-                customerPostalCode.Equals(techCompanyPostalCode, StringComparison.OrdinalIgnoreCase)
-            )
-            {
-                return 1.0; // 1 km
+                await _serviceUsageRepo.AddAsync(serviceUsage);
+                maintenance.ServiceUsages = new List<ServiceUsage> { serviceUsage };
             }
-
-            // Default distance
-            return 50.0; // 50 km
         }
+
     }
 }

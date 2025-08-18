@@ -145,8 +145,6 @@ namespace Service
                                         .ThenInclude(dp => dp.User)
                     );
 
-                // --- Notifications ---
-                // 1. Notify Admins
                 await _notificationService.SendNotificationToRoleAsync(
                     "Admin",
                     NotificationType.OrderCreated,
@@ -155,7 +153,6 @@ namespace Service
                     order.Id
                 );
 
-                // 2. Notify Customer
                 await _notificationService.SendNotificationAsync(
                     createdOrder.Customer.UserId,
                     NotificationType.OrderCreated,
@@ -164,7 +161,6 @@ namespace Service
                     order.Id
                 );
 
-                // 3. Notify TechCompanies
                 var techCompanyIds = createdOrder
                     .OrderItems.Select(oi => oi.Product.TechCompany.UserId)
                     .Distinct()
@@ -223,7 +219,6 @@ namespace Service
 
             try
             {
-                // Comprehensive includes for detailed order view
                 var order = await _orderRepo.GetByIdWithIncludesAsync(
                     id,
                     o => o.OrderItems,
@@ -243,7 +238,6 @@ namespace Service
                     };
                 }
 
-                // Get order items with their products using string includes for nested properties
                 var orderWithItems = await _orderRepo.FindWithStringIncludesAsync(
                     o => o.Id == id,
                     includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Delivery,ServiceUsage"
@@ -282,7 +276,6 @@ namespace Service
         {
             try
             {
-                // Optimized includes for order listing with all necessary related data
                 var allOrders = await _orderRepo.FindWithStringIncludesAsync(
                     o => true,
                     includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,ServiceUsage,Deliveries"
@@ -337,7 +330,6 @@ namespace Service
 
             try
             {
-                // Optimized includes for customer orders with all necessary related data
                 var orders = await _orderRepo.FindWithStringIncludesAsync(
                     o => o.CustomerId == customerId,
                     includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Delivery,ServiceUsage"
