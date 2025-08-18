@@ -11,7 +11,7 @@ namespace Core.DTOs.ProfileDTOs
     {
         public string UserId { get; set; }
         public string FullName { get; set; }
-
+        public string UserName { get; set; }
         public string? VehicleNumber { get; set; }
         public string? VehicleType { get; set; }
         public string? VehicleImage { get; set; }
@@ -20,7 +20,7 @@ namespace Core.DTOs.ProfileDTOs
         public DateTime? LastOnline { get; set; }
 
         // Show full lists
-        public List<DeliveryDTO>? Deliveries { get; set; }
-        public List<DeliveryOfferDTO>? Offers { get; set; }
+        public int DeliveriesCount { get; set; }
+        public int OffersCount { get; set; }
     }
 }

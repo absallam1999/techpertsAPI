@@ -7,9 +7,9 @@ namespace Core.Interfaces.Services
     {
         Task<GeneralResponse<IEnumerable<GeneralProfileReadDTO>>> GetAllProfilesAsync();
         Task<GeneralResponse<GeneralProfileReadDTO>> GetProfileByIdAsync(string userId);
-        //Task<GeneralResponse<CustomerProfileDTO>> GetCustomerRelatedInfoAsync(string userId);
-        //Task<GeneralResponse<TechCompanyProfileDTO>> GetTechCompanyRelatedInfoAsync(string userId);
-        //Task<GeneralResponse<DeliveryPersonProfileDTO>> GetDeliveryPersonRelatedInfoAsync(string userId);
+        Task<GeneralResponse<CustomerProfileDTO>> GetCustomerRelatedInfoAsync(string userId);
+        Task<GeneralResponse<TechCompanyProfileDTO>> GetTechCompanyRelatedInfoAsync(string userId);
+        Task<GeneralResponse<DeliveryPersonProfileDTO>> GetDeliveryPersonRelatedInfoAsync(string userId);
 
     }
 }
