@@ -31,7 +31,7 @@ namespace Hubs
                 ReceiverUserId = receiverUserId,
                 SenderRole = senderRole,
                 MessageText = message,
-                SentAt = DateTime.UtcNow
+                SentAt = DateTime.Now
             };
 
             await _messageRepo.AddAsync(privateMessage);

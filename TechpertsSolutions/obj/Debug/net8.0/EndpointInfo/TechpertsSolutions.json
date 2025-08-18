@@ -172,6 +172,18 @@
             }
           },
           {
+            "name": "AccountStatus",
+            "in": "query",
+            "schema": {
+              "enum": [
+                "Pending",
+                "Accepted",
+                "Rejected"
+              ],
+              "type": "string"
+            }
+          },
+          {
             "name": "deliveryPersonid",
             "in": "path",
             "required": true,
@@ -2338,6 +2350,18 @@
             "in": "path",
             "required": true,
             "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "AccountStatus",
+            "in": "query",
+            "schema": {
+              "enum": [
+                "Pending",
+                "Accepted",
+                "Rejected"
+              ],
               "type": "string"
             }
           }
@@ -5774,6 +5798,72 @@
         }
       }
     },
+    "/api/Profiles/customer/{userId}": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Profiles/techcompany/{userId}": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Profiles/deliveryperson/{userId}": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Roles/check-role": {
       "post": {
         "tags": [
@@ -7493,6 +7583,50 @@
         }
       }
     },
+    "/api/TechCompany/{id}/rating": {
+      "patch": {
+        "tags": [
+          "TechCompany"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "number",
+                "format": "double"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "number",
+                "format": "double"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "number",
+                "format": "double"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/users/{id}/profile": {
       "put": {
         "tags": [
@@ -8752,9 +8886,6 @@
           "isAvailable": {
             "type": "boolean",
             "nullable": true
-          },
-          "accountStatus": {
-            "$ref": "#/components/schemas/Core.Enums.DeliveryPersonStatus"
           }
         },
         "additionalProperties": false
@@ -9460,6 +9591,23 @@
           "techCompanyImage": {
             "type": "string",
             "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "stock": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -9990,10 +10138,6 @@
       "Core.DTOs.TechCompanyDTOs.TechCompanyUpdateDTO": {
         "type": "object",
         "properties": {
-          "website": {
-            "type": "string",
-            "nullable": true
-          },
           "description": {
             "type": "string",
             "nullable": true

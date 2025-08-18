@@ -15,14 +15,12 @@ namespace Core.DTOs.ProfileDTOs
     public class CustomerProfileDTO
     {
         public string UserId { get; set; }
-        public string FullName { get; set; }
-
-        // Show actual entities instead of counts
-        public CartReadDTO Cart { get; set; }
-        public WishListReadDTO? WishList { get; set; }
-        public List<PCAssemblyReadDTO>? PCAssemblies { get; set; }
-        public List<OrderReadDTO>? Orders { get; set; }
-        public List<DeliveryReadDTO>? Deliveries { get; set; }
-        public List<MaintenanceDetailsDTO>? Maintenances { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public int OrdersCount { get; set; } = 0;
+        public int DeliveriesCount { get; set; } = 0;
+        public int PCAssembliesCount { get; set; } = 0;
+        public int MaintenancesCount { get; set; } = 0;
     }
 }

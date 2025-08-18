@@ -13,7 +13,7 @@ namespace Service.Utilities
             return new TechCompanyReadDTO
             {
                 Id = entity.Id,
-                Website = entity.Website,
+                Rating = entity.Rating,
                 Description = entity.Description,
                 Longitude = entity.User?.Longitude,
                 Latitude = entity.User?.Latitude,
@@ -50,9 +50,6 @@ namespace Service.Utilities
         {
             if (entity == null || dto == null)
                 return;
-
-            if (!string.IsNullOrWhiteSpace(dto.Website))
-                entity.Website = dto.Website;
             if (!string.IsNullOrWhiteSpace(dto.Description))
                 entity.Description = dto.Description;
         }

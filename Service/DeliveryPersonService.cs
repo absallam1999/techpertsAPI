@@ -133,6 +133,7 @@ namespace Service
 
         public async Task<GeneralResponse<DeliveryPersonReadDTO>> UpdateAsync(
             string id,
+            DeliveryPersonStatus AccountStatus,
             DeliveryPersonUpdateDTO dto
         )
         {
@@ -162,7 +163,7 @@ namespace Service
                 };
             }
 
-            DeliveryPersonMapper.UpdateEntity(deliveryPerson, dto);
+            DeliveryPersonMapper.UpdateEntity(deliveryPerson, AccountStatus, dto);
 
             _deliveryPersonRepo.Update(deliveryPerson);
             await _deliveryPersonRepo.SaveChangesAsync();

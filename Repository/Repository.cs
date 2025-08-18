@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
-using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
 
 namespace Repository

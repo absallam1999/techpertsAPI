@@ -284,7 +284,7 @@ namespace Service
             {
                 // Optimized includes for order listing with all necessary related data
                 var allOrders = await _orderRepo.FindWithStringIncludesAsync(
-                    o => true, // This will match all orders
+                    o => true,
                     includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,ServiceUsage,Deliveries"
                 );
 
@@ -305,7 +305,7 @@ namespace Service
                 return new GeneralResponse<IEnumerable<OrderReadDTO>>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while retrieving orders.",
+                    Message = $"An unexpected error occurred while retrieving orders.{ex}",
                     Data = null,
                 };
             }

@@ -1,12 +1,6 @@
 ﻿using Core.DTOs;
-using Core.DTOs.CartDTOs;
-using Core.DTOs.DeliveryDTOs;
-using Core.DTOs.MaintenanceDTOs;
-using Core.DTOs.OrderDTOs;
-using Core.DTOs.PCAssemblyDTOs;
 using Core.DTOs.ProductDTOs;
 using Core.DTOs.ProfileDTOs;
-using Core.DTOs.WishListDTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
@@ -106,163 +100,179 @@ namespace Service
             }
         }
 
-        //public async Task<GeneralResponse<CustomerProfileDTO>> GetCustomerRelatedInfoAsync(string userId)
-        //{
-        //    try
-        //    {
-        //        var customer = await _customerRepo.GetFirstOrDefaultAsync(
-        //            c => c.UserId == userId,
-        //                 query => query
-        //                .Include(c => c.Cart)
-        //                .Include(c => c.WishList)
-        //                .Include(c => c.PCAssembly)
-        //                .Include(c => c.Orders)
-        //                .Include(c => c.Deliveries)
-        //                .Include(c => c.Maintenances)
-        //                .Include(c => c.User)
-        //        );
+        public async Task<GeneralResponse<CustomerProfileDTO?>> GetCustomerRelatedInfoAsync(
+            string userId
+        )
+        {
+            var cst = await _customerRepo.GetFirstOrDefaultWithIncludesAsync(
+                c => c.UserId == userId,
+                c => c.Orders,
+                c => c.PCAssembly,
+                c => c.Deliveries,
+                c => c.Maintenances,
+                c => c.User
+            );
 
-        //        if (customer == null)
-        //        {
-        //            return new GeneralResponse<CustomerProfileDTO>
-        //            {
-        //                Success = false,
-        //                Message = "Customer not found"
-        //            };
-        //        }
+            if (cst == null)
+            {
+                return new GeneralResponse<CustomerProfileDTO?>
+                {
+                    Success = false,
+                    Message = "Customer not found",
+                    Data = null,
+                };
+            }
 
-        //        var dto = new CustomerProfileDTO
-        //        {
-        //            UserId = customer.UserId,
-        //            FullName = customer.User?.FullName,
-        //            Cart = customer.Cart != null ? new CartReadDTO(customer.Cart) : null,
-        //            WishList = customer.WishList != null ? new WishListReadDTO(customer.WishList) : null,
-        //            PCAssemblies = customer.PCAssembly?.Select(x => new PCAssemblyReadDTO(x)).ToList(),
-        //            Orders = customer.Orders?.Select(x => new OrderReadDTO(x)).ToList(),
-        //            Deliveries = customer.Deliveries?.Select(x => new DeliveryReadDTO(x)).ToList(),
-        //            //Maintenances = customer.Maintenances?.Select(x => new MaintenanceDetailsDTO(x)).ToList()
-        //        };
+            return new GeneralResponse<CustomerProfileDTO?>
+            {
+                Success = true,
+                Message = "Customer profile retrieved successfully",
+                Data = new CustomerProfileDTO
+                {
+                    UserId = cst.UserId,
+                    FullName = cst.User?.FullName,
+                    UserName = cst.User?.UserName,
+                    Email = cst.User?.Email,
+                    OrdersCount = cst.Orders?.Count ?? 0,
+                    PCAssembliesCount = cst.PCAssembly?.Count ?? 0,
+                    DeliveriesCount = cst.Deliveries?.Count ?? 0,
+                    MaintenancesCount = cst.Maintenances?.Count ?? 0,
+                },
+            };
+        }
 
-        //        return new GeneralResponse<CustomerProfileDTO>
-        //        {
-        //            Success = true,
-        //            Message = "Customer profile retrieved successfully",
-        //            Data = dto
-        //        };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new GeneralResponse<CustomerProfileDTO>
-        //        {
-        //            Success = false,
-        //            Message = $"Error while retrieving customer profile: {ex.Message}"
-        //        };
-        //    }
-        //}
+        public async Task<GeneralResponse<TechCompanyProfileDTO?>> GetTechCompanyRelatedInfoAsync(
+            string userId
+        )
+        {
+            var comp = await _techCompanyRepo.GetFirstOrDefaultAsync(
+                c => c.UserId == userId,
+                q =>
+                    q.Include(t => t.Products)
+                        .ThenInclude(p => p.Category)
+                        .Include(t => t.Products)
+                        .ThenInclude(p => p.SubCategory)
+                        .Include(t => t.Products)
+                        .ThenInclude(p => p.Specifications)
+                        .Include(t => t.Products)
+                        .ThenInclude(p => p.Warranties)
+                        .Include(t => t.Maintenances)
+                        .Include(t => t.Deliveries)
+                        .Include(t => t.PCAssemblies)
+                        .Include(t => t.User)
+            );
 
-        //public async Task<GeneralResponse<TechCompanyProfileDTO>> GetTechCompanyRelatedInfoAsync(string userId)
-        //{
-        //    try
-        //    {
-        //        var company = await _techCompanyRepo.GetFirstOrDefaultAsync(
-        //            c => c.UserId == userId,
-        //                 query => query
-        //                .Include(c => c.Products)
-        //                .Include(c => c.Maintenances)
-        //                .Include(c => c.Deliveries)
-        //                .Include(c => c.PCAssemblies)
-        //                .Include(c => c.User)
-        //        );
+            if (comp == null)
+            {
+                return new GeneralResponse<TechCompanyProfileDTO?>
+                {
+                    Success = false,
+                    Message = "Tech company not found",
+                    Data = null,
+                };
+            }
 
-        //        if (company == null)
-        //        {
-        //            return new GeneralResponse<TechCompanyProfileDTO>
-        //            {
-        //                Success = false,
-        //                Message = "Tech company not found"
-        //            };
-        //        }
+            return new GeneralResponse<TechCompanyProfileDTO?>
+            {
+                Success = true,
+                Message = "Tech company profile retrieved successfully",
+                Data = new TechCompanyProfileDTO
+                {
+                    UserId = comp.UserId,
+                    FullName = comp.User?.FullName,
+                    UserName = comp.User?.UserName,
+                    Rating = comp.Rating,
+                    Description = comp.Description,
+                    Products =
+                        comp.Products?.Select(p => new ProductCardDTO
+                            {
+                                Id = p.Id,
+                                Name = p.Name,
+                                Description = p.Description,
+                                Price = p.Price,
+                                DiscountPrice = p.DiscountPrice,
+                                ImageUrl = p.ImageUrl ?? "assets/products/default-product.png",
+                                Stock = p.Stock,
+                                CreatedAt = p.CreatedAt,
+                                UpdatedAt = p.UpdatedAt,
+                                CategoryId = p.CategoryId,
+                                CategoryName = p.Category?.Name,
+                                SubCategoryId = p.SubCategoryId,
+                                SubCategoryName = p.SubCategory?.Name,
+                                TechCompanyId = p.TechCompanyId,
+                                TechCompanyName = comp.User?.FullName,
+                                TechCompanyAddress = comp.User?.Address ?? string.Empty,
+                                TechCompanyUserId = comp.UserId,
+                                TechCompanyImage = comp.User?.ProfilePhotoUrl ?? string.Empty,
 
-        //        var dto = new TechCompanyProfileDTO
-        //        {
-        //            UserId = company.UserId,
-        //            FullName = company.User?.FullName,
-        //            Website = company.Website,
-        //            Description = company.Description,
-        //            Products = company.Products?.Select(x => new ProductCardDTO(x)).ToList(),
-        //            //Maintenances = company.Maintenances?.Select(x => new MaintenanceDetailsDTO(x)).ToList(),
-        //            Deliveries = company.Deliveries?.Select(x => new DeliveryReadDTO(x)).ToList(),
-        //            PCAssemblies = company.PCAssemblies?.Select(x => new PCAssemblyReadDTO(x)).ToList()
-        //        };
 
-        //        return new GeneralResponse<TechCompanyProfileDTO>
-        //        {
-        //            Success = true,
-        //            Message = "Tech company profile retrieved successfully",
-        //            Data = dto
-        //        };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new GeneralResponse<TechCompanyProfileDTO>
-        //        {
-        //            Success = false,
-        //            Message = $"Error while retrieving tech company profile: {ex.Message}"
-        //        };
-        //    }
-        //}
+                                Specifications = p.Specifications?.Select(s => new SpecificationDTO
+                                    {
+                                        Id = s.Id,
+                                        Key = s.Key,
+                                        Value = s.Value,
+                                    })
+                                    .ToList(),
+                                Warranties = p.Warranties?.Select(w => new WarrantyDTO
+                                    {
+                                        Id = w.Id,
+                                        Type = w.Type,
+                                        Duration = w.Duration,
+                                        Description = w.Description,
+                                        StartDate = w.StartDate,
+                                        EndDate = w.EndDate,
+                                    })
+                                    .ToList(),
+                            })
+                            .ToList() ?? new List<ProductCardDTO>(),
+                    MaintenancesCount = comp.Maintenances?.Count ?? 0,
+                    DeliveriesCount = comp.Deliveries?.Count ?? 0,
+                    PCAssembliesCount = comp.PCAssemblies?.Count ?? 0,
+                },
+            };
+        }
 
-        //public async Task<GeneralResponse<DeliveryPersonProfileDTO>> GetDeliveryPersonRelatedInfoAsync(string userId)
-        //{
-        //    try
-        //    {
-        //        var deliveryPerson = await _deliveryPersonRepo.GetFirstOrDefaultAsync(
-        //            d => d.UserId == userId,
-        //                 query => query
-        //                .Include(d => d.Deliveries)
-        //                .Include(d => d.Offers)
-        //                .Include(d => d.User)
-        //        );
+        public async Task<
+            GeneralResponse<DeliveryPersonProfileDTO?>
+        > GetDeliveryPersonRelatedInfoAsync(string userId)
+        {
+            var dp = await _deliveryPersonRepo.GetFirstOrDefaultWithIncludesAsync(
+                d => d.UserId == userId,
+                d => d.User,
+                d => d.Deliveries,
+                d => d.Offers
+            );
 
-        //        if (deliveryPerson == null)
-        //        {
-        //            return new GeneralResponse<DeliveryPersonProfileDTO>
-        //            {
-        //                Success = false,
-        //                Message = "Delivery person not found"
-        //            };
-        //        }
+            if (dp == null)
+            {
+                return new GeneralResponse<DeliveryPersonProfileDTO?>
+                {
+                    Success = false,
+                    Message = "Delivery person not found",
+                    Data = null,
+                };
+            }
 
-        //        var dto = new DeliveryPersonProfileDTO
-        //        {
-        //            UserId = deliveryPerson.UserId,
-        //            FullName = deliveryPerson.User?.FullName,
-        //            VehicleNumber = deliveryPerson.VehicleNumber,
-        //            VehicleType = deliveryPerson.VehicleType,
-        //            VehicleImage = deliveryPerson.VehicleImage,
-        //            License = deliveryPerson.License,
-        //            IsAvailable = deliveryPerson.IsAvailable,
-        //            LastOnline = deliveryPerson.LastOnline,
-        //            Deliveries = deliveryPerson.Deliveries?.Select(x => new DeliveryDTO(x)).ToList(),
-        //            Offers = deliveryPerson.Offers?.Select(x => new DeliveryOfferDTO(x)).ToList()
-        //        };
-
-        //        return new GeneralResponse<DeliveryPersonProfileDTO>
-        //        {
-        //            Success = true,
-        //            Message = "Delivery person profile retrieved successfully",
-        //            Data = dto
-        //        };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new GeneralResponse<DeliveryPersonProfileDTO>
-        //        {
-        //            Success = false,
-        //            Message = $"Error while retrieving delivery person profile: {ex.Message}"
-        //        };
-        //    }
-        //}
+            return new GeneralResponse<DeliveryPersonProfileDTO?>
+            {
+                Success = true,
+                Message = "Delivery person profile retrieved successfully",
+                Data = new DeliveryPersonProfileDTO
+                {
+                    UserId = dp.UserId,
+                    UserName = dp.User?.UserName,
+                    VehicleNumber = dp.VehicleNumber,
+                    VehicleType = dp.VehicleType,
+                    License = dp.License,
+                    IsAvailable = dp.IsAvailable,
+                    LastOnline = dp.LastOnline,
+                    FullName = dp.User?.FullName,
+                    VehicleImage = dp.VehicleImage,
+                    DeliveriesCount = dp.Deliveries?.Count ?? 0,
+                    OffersCount = dp.Offers?.Count ?? 0,
+                },
+            };
+        }
 
         private GeneralProfileReadDTO MapToProfileDTO(AppUser u, IList<string> roles)
         {
@@ -272,7 +282,6 @@ namespace Service
                 UserName = u.UserName ?? string.Empty,
                 Email = u.Email,
                 PhoneNumber = u.PhoneNumber,
-
                 FullName = u.FullName,
                 Address = u.Address,
                 City = u.City,
@@ -282,9 +291,7 @@ namespace Service
                 Longitude = u.Longitude,
                 ProfilePhotoUrl = u.ProfilePhotoUrl,
                 IsActive = u.IsActive,
-
                 RoleNames = roles,
-
                 // only if AppUser actually has these props
                 CreatedAt = u.CreatedAt,
                 LastLogin = u.LastLoginDate,

@@ -156,6 +156,50 @@ namespace Service
             }
         }
 
+        public async Task<GeneralResponse<TechCompanyReadDTO>> UpdateRatingAsync(string id, decimal rating)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return new GeneralResponse<TechCompanyReadDTO>
+                {
+                    Success = false,
+                    Message = "Invalid ID.",
+                    Data = null,
+                };
+            }
+
+            var entity = await _techCompanyRepo.GetByIdAsync(id);
+            if (entity == null)
+            {
+                return new GeneralResponse<TechCompanyReadDTO>
+                {
+                    Success = false,
+                    Message = "TechCompany not found.",
+                    Data = null,
+                };
+            }
+
+            // Update rating only
+            entity.Rating = rating;
+
+            _techCompanyRepo.Update(entity);
+            await _techCompanyRepo.SaveChangesAsync();
+
+            // Reload with includes
+            var updatedEntity = await _techCompanyRepo.GetByIdWithIncludesAsync(
+                id,
+                t => t.User,
+                t => t.Role
+            );
+
+            return new GeneralResponse<TechCompanyReadDTO>
+            {
+                Success = true,
+                Message = "Rating updated successfully.",
+                Data = TechCompanyMapper.ToReadDTO(updatedEntity),
+            };
+        }
+
         public async Task CleanupTechCompanyDataAsync(string userId)
         {
             await using var transaction = await context.Database.BeginTransactionAsync();

@@ -1,6 +1,7 @@
 using Core.DTOs.DeliveryDTOs;
 using Core.DTOs.DeliveryPersonDTOs;
 using Core.Entities;
+using Core.Enums;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities
@@ -61,7 +62,7 @@ namespace Service.Utilities
             };
         }
 
-        public static void UpdateEntity(DeliveryPerson entity, DeliveryPersonUpdateDTO dto)
+        public static void UpdateEntity(DeliveryPerson entity, DeliveryPersonStatus AccountStatus, DeliveryPersonUpdateDTO dto)
         {
             if (entity == null || dto == null)
                 return;
@@ -87,7 +88,7 @@ namespace Service.Utilities
             if (dto.IsAvailable.HasValue)
                 entity.IsAvailable = dto.IsAvailable.Value;
 
-            entity.AccountStatus = dto.AccountStatus;
+            entity.AccountStatus = AccountStatus;
         }
 
         public static DeliveryOfferDTO ToDTO(DeliveryOffer offer)

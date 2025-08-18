@@ -33,35 +33,35 @@ namespace TechpertsSolutions.Controllers
                 return NotFound(response);
             return Ok(response);
         }
-        //[HttpGet("customer/{userId}")]
-        //public async Task<IActionResult> GetCustomerProfile(string userId)
-        //{
-        //    var result = await _profileService.GetCustomerRelatedInfoAsync(userId);
+        [HttpGet("customer/{userId}")]
+        public async Task<IActionResult> GetCustomerProfile(string userId)
+        {
+            var result = await _profileService.GetCustomerRelatedInfoAsync(userId);
 
-        //    if (!result.Success)
-        //        return NotFound(new { result.Message });
+            if (!result.Success)
+                return NotFound(new { result.Message });
 
-        //    return Ok(result);
-        //}
-        //[HttpGet("techcompany/{userId}")]
-        //public async Task<IActionResult> GetTechCompanyProfile(string userId)
-        //{
-        //    var result = await _profileService.GetTechCompanyRelatedInfoAsync(userId);
+            return Ok(result);
+        }
+        [HttpGet("techcompany/{userId}")]
+        public async Task<IActionResult> GetTechCompanyProfile(string userId)
+        {
+            var result = await _profileService.GetTechCompanyRelatedInfoAsync(userId);
 
-        //    if (!result.Success)
-        //        return NotFound(new { result.Message });
+            if (!result.Success)
+                return NotFound(new { result.Message });
 
-        //    return Ok(result);
-        //}
-        //[HttpGet("deliveryperson/{userId}")]
-        //public async Task<IActionResult> GetDeliveryPersonProfile(string userId)
-        //{
-        //    var result = await _profileService.GetDeliveryPersonRelatedInfoAsync(userId);
+            return Ok(result);
+        }
+        [HttpGet("deliveryperson/{userId}")]
+        public async Task<IActionResult> GetDeliveryPersonProfile(string userId)
+        {
+            var result = await _profileService.GetDeliveryPersonRelatedInfoAsync(userId);
 
-        //    if (!result.Success)
-        //        return NotFound(new { result.Message });
+            if (!result.Success)
+                return NotFound(new { result.Message });
 
-        //    return Ok(result);
-        //}
+            return Ok(result);
+        }
     }
 }

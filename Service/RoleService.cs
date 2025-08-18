@@ -201,8 +201,12 @@ namespace Service
                     break;
 
                 case RoleType.Admin:
+                    // Check if admin already exists
                     if (!await adminRepo.AnyAsync(a => a.UserId == userId))
-                        await adminRepo.AddAsync(new Admin { UserId = userId, RoleId = roleId });
+                    {
+                        var admin = new Admin { UserId = userId, RoleId = roleId };
+                        await adminRepo.AddAsync(admin);
+                    }
                     break;
 
                 case RoleType.TechCompany:
