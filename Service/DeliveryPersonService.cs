@@ -6,6 +6,7 @@ using Core.Entities;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
+using Core.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -21,17 +22,13 @@ namespace Service
         private readonly IRepository<Delivery> _deliveryRepo;
         private readonly IServiceProvider _serviceProvider;
         private readonly INotificationService _notificationService;
-        private readonly ILogger<DeliveryPersonService> _logger;
-        private readonly DeliveryAssignmentSettings _settings;
 
         public DeliveryPersonService(
             IRepository<DeliveryPerson> deliveryPersonRepo,
             IRepository<DeliveryOffer> deliveryOfferRepo,
             IRepository<Delivery> deliveryRepo,
             IServiceProvider serviceProvider,
-            INotificationService notificationService,
-            ILogger<DeliveryPersonService> logger,
-            IOptions<DeliveryAssignmentSettings> settings
+            INotificationService notificationService
         )
         {
             _deliveryPersonRepo = deliveryPersonRepo;
@@ -39,8 +36,6 @@ namespace Service
             _deliveryRepo = deliveryRepo;
             _serviceProvider = serviceProvider;
             _notificationService = notificationService;
-            _logger = logger;
-            _settings = settings.Value;
         }
 
         private IDeliveryClusterService _clusterService =>
@@ -187,8 +182,10 @@ namespace Service
             try
             {
                 var availableDeliveryPersons = await _deliveryPersonRepo.FindWithIncludesAsync(
-                    dp => dp.AccountStatus == DeliveryPersonStatus.Accepted,
-                    dp => dp.IsAvailable,
+                    dp => dp.AccountStatus == DeliveryPersonStatus.Accepted
+                       && dp.IsAvailable == true
+                       && dp.User.Latitude != null
+                       && dp.User.Longitude != null,
                     dp => dp.User,
                     dp => dp.Role
                 );
@@ -236,7 +233,7 @@ namespace Service
             return new GeneralResponse<IEnumerable<DeliveryOfferDTO>>
             {
                 Success = true,
-                Message = "Pending offers retrieved.",
+                Message = "All offers retrieved.",
                 Data = dtoList,
             };
         }
@@ -257,7 +254,8 @@ namespace Service
                     o.DeliveryPersonId == driverId
                     && o.Status == DeliveryOfferStatus.Pending
                     && o.IsActive,
-                o => o.Delivery
+                o => o.Delivery,
+                o => o.DeliveryPerson.User
             );
 
             var dtoList = offers.Select(DeliveryPersonMapper.ToDTO).ToList();
@@ -294,16 +292,13 @@ namespace Service
                         Message = "Offer not valid or already handled.",
                     };
 
-                // Mark offer as accepted
                 offer.Status = DeliveryOfferStatus.Accepted;
                 offer.IsActive = false;
                 _deliveryOfferRepo.Update(offer);
 
-                // Expire other offers for the same delivery/cluster
                 var otherOffers = await _deliveryOfferRepo.FindAsync(o =>
-                    o.ClusterId == offer.ClusterId
-                    && o.Id != offer.Id
-                    && o.Status == DeliveryOfferStatus.Pending
+                    o.ClusterId == offer.ClusterId && o.Id != offer.Id && o.Status == DeliveryOfferStatus.Pending,
+                    o => o.DeliveryPerson
                 );
                 foreach (var o in otherOffers)
                 {
@@ -312,7 +307,7 @@ namespace Service
                     _deliveryOfferRepo.Update(o);
 
                     await _notificationService.SendNotificationAsync(
-                        o.DeliveryPersonId,
+                        o.DeliveryPerson.UserId,
                         NotificationType.DeliveryOfferExpired,
                         o.DeliveryId,
                         "Delivery",
@@ -320,7 +315,6 @@ namespace Service
                     );
                 }
 
-                // Assign driver to cluster/delivery
                 var assignResult = await _clusterService.AssignDriverAsync(
                     offer.ClusterId,
                     driverId
@@ -332,7 +326,10 @@ namespace Service
                         Message = assignResult.Message,
                     };
 
-                var delivery = await _deliveryRepo.GetByIdAsync(offer.DeliveryId);
+                var delivery = await _deliveryRepo.GetByIdWithIncludesAsync(
+                    offer.DeliveryId,
+                    d => d.DeliveryPerson,
+                    d => d.DeliveryPerson.User);
                 delivery.DeliveryPersonId = driverId;
                 delivery.Status = DeliveryStatus.Assigned;
                 _deliveryRepo.Update(delivery);
@@ -340,15 +337,13 @@ namespace Service
                 await _deliveryOfferRepo.SaveChangesAsync();
                 await _deliveryRepo.SaveChangesAsync();
 
-                // Notify driver
-                await _notificationService.SendNotificationAsync(
-                    driverId,
-                    NotificationType.DeliveryOfferAccepted,
-                    delivery.Id,
-                    "Delivery",
-                    delivery.TrackingNumber ?? delivery.Id,
-                    "New Order Assigned"
-                );
+                //await _notificationService.SendNotificationAsync(
+                //    delivery.DeliveryPerson.UserId,
+                //    NotificationType.DeliveryOfferAccepted,
+                //    "Delivery",
+                //    delivery.TrackingNumber ?? delivery.Id,
+                //    "New Order Assigned"
+                //);
 
                 scope.Complete();
 
@@ -361,16 +356,10 @@ namespace Service
             }
             catch (Exception ex)
             {
-                _logger.LogError(
-                    ex,
-                    "AcceptOfferAsync failed for driver {DriverId} and offer {OfferId}",
-                    driverId,
-                    offerId
-                );
                 return new GeneralResponse<bool>
                 {
                     Success = false,
-                    Message = $"Error: {ex.Message}",
+                    Message = $"Error: {ex.Message}.",
                     Data = false,
                 };
             }
@@ -405,9 +394,8 @@ namespace Service
                 await _deliveryOfferRepo.SaveChangesAsync();
 
                 await _notificationService.SendNotificationAsync(
-                    offer.DeliveryPersonId,
+                    offer.DeliveryPerson.UserId,
                     NotificationType.DeliveryOfferDeclined,
-                    offer.DeliveryId,
                     "Delivery",
                     offer.DeliveryId,
                     "Order Have Been Declined."
@@ -422,12 +410,6 @@ namespace Service
             }
             catch (Exception ex)
             {
-                _logger.LogError(
-                    ex,
-                    "DeclineOfferAsync failed for driver {DriverId} and offer {OfferId}",
-                    driverId,
-                    offerId
-                );
                 return new GeneralResponse<bool>
                 {
                     Success = false,
@@ -472,9 +454,8 @@ namespace Service
                 await _deliveryOfferRepo.SaveChangesAsync();
                 await _deliveryRepo.SaveChangesAsync();
                 await _notificationService.SendNotificationAsync(
-                    driverId,
+                    delivery.DeliveryPerson.UserId,
                     NotificationType.DeliveryOfferCanceled,
-                    delivery.Id,
                     "Delivery",
                     delivery.TrackingNumber ?? delivery.Id,
                     "Order Have Been Canceled."
@@ -489,12 +470,6 @@ namespace Service
             }
             catch (Exception ex)
             {
-                _logger.LogError(
-                    ex,
-                    "CancelOfferAsync failed for driver {DriverId} and offer {OfferId}",
-                    driverId,
-                    offerId
-                );
                 return new GeneralResponse<bool>
                 {
                     Success = false,

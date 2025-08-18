@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace TechpertsSolutions.Controllers
 {
-    [Authorize(Roles = "Admin,DeliveryPerson")]
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
+    //[Authorize(Roles = "Admin,DeliveryPerson")]
     public class DeliveryPersonController : ControllerBase
     {
         private readonly IDeliveryPersonService _deliveryPersonService;
@@ -17,8 +17,6 @@ namespace TechpertsSolutions.Controllers
         {
             _deliveryPersonService = deliveryPersonService;
         }
-
-        // --- CRUD / Info ---
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
@@ -63,8 +61,6 @@ namespace TechpertsSolutions.Controllers
             var result = await _deliveryPersonService.UpdateAsync(id, dto);
             return result.Success ? Ok(result) : NotFound(result);
         }
-
-        // --- Offers Management ---
 
         [HttpGet("{driverId}/offers/all")]
         public async Task<IActionResult> GetAllOffers(string driverId)

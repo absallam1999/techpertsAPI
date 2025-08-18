@@ -598,7 +598,6 @@ namespace Service
             _clusterRepo.Update(cluster);
             await _clusterRepo.SaveChangesAsync();
 
-            // Push notification to assigned driver if status changed
             if (
                 !string.IsNullOrWhiteSpace(cluster.AssignedDriverId)
                 && previousStatus != trackingDto.Status

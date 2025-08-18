@@ -113,7 +113,7 @@ namespace Service
                     return new GeneralResponse<LoginResultDTO>
                     {
                         Success = false,
-                        Message = "Invalid email or password.",
+                        Message = $"No Email Found.",
                         Data = null,
                     };
                 }
@@ -136,7 +136,7 @@ namespace Service
                     return new GeneralResponse<LoginResultDTO>
                     {
                         Success = false,
-                        Message = "Invalid email or password.",
+                        Message = "Incorrect password.",
                         Data = null,
                     };
                 }

@@ -35,7 +35,7 @@ namespace Service.Utilities
                 Country = user?.Country ?? "Unknown",
                 UserName = user?.UserName ?? "Unknown",
                 UserFullName = user?.FullName ?? "Unknown",
-
+                UserImage = user?.ProfilePhotoUrl ?? "Unknown",
                 RoleName = role?.Name ?? "Unknown",
             };
         }

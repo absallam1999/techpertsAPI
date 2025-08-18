@@ -46,16 +46,5 @@ namespace Core.DTOs.DeliveryDTOs
 
         public DeliveryClusterTrackingDTO? Tracking { get; set; }
         public List<DeliveryOfferDTO>? Offers { get; set; } = new List<DeliveryOfferDTO>();
-        //public DeliveryClusterDTO(DeliveryCluster deliveryCluster)
-        //{
-        //    Id = deliveryCluster.Id;
-        //    DeliveryId = deliveryCluster.DeliveryId;
-        //    TechCompanyId = deliveryCluster.TechCompanyId;
-        //    TechCompanyName = deliveryCluster.TechCompanyName;
-        //    Status = deliveryCluster.Status;
-        //    //RetryCount = deliveryCluster.RetryCount;
-        //    SequenceOrder = deliveryCluster.SequenceOrder;
-        //    //DriverOfferCount = deliveryCluster.DriverOfferCount;
-        //}
     }
 }

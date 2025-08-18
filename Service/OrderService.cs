@@ -9,6 +9,8 @@ using Core.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Service.Utilities;
+using Stripe;
+using Stripe.TestHelpers;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
 
@@ -22,6 +24,7 @@ namespace Service
         private readonly IRepository<DeliveryOffer> _deliveryOfferRepo;
         private readonly IRepository<OrderHistory> _orderHistoryRepo;
         private readonly TechpertsContext _dbContext;
+        private readonly ICustomerService _customerService;
         private readonly IDeliveryService _deliveryService;
         private readonly INotificationService _notificationService;
         private readonly ILogger<OrderService> _logger;
@@ -34,10 +37,12 @@ namespace Service
             IRepository<DeliveryOffer> deliveryOfferRepo,
             INotificationService notificationService,
             IDeliveryService deliveryService,
+            ICustomerService customerService,
             ILogger<OrderService> logger,
             TechpertsContext dbContext
         )
         {
+            _customerService = customerService;
             _orderRepo = orderRepo;
             _orderHistoryRepo = orderHistoryRepo;
             _deliveryRepo = deliveryRepo;
@@ -97,44 +102,48 @@ namespace Service
                 DeliveryCreateDTO? deliveryDto = null;
                 GeneralResponse<DeliveryReadDTO>? deliveryResponse = null;
 
-                if (dto.DeliveryLatitude.HasValue && dto.DeliveryLongitude.HasValue)
+                double? latitude = dto.DeliveryLatitude;
+                double? longitude = dto.DeliveryLongitude;
+
+                if (!latitude.HasValue || !longitude.HasValue)
+                {
+                    var customer = await _customerService.GetCustomerByIdAsync(dto.CustomerId);
+                    if (customer != null)
+                    {
+                        latitude = customer.Data.Latitude;
+                        longitude = customer.Data.Longitude;
+                    }
+                }
+
+                if (latitude.HasValue && longitude.HasValue)
                 {
                     deliveryDto = new DeliveryCreateDTO
                     {
                         OrderId = order.Id,
-                        CustomerLatitude = dto.DeliveryLatitude.Value,
-                        CustomerLongitude = dto.DeliveryLongitude.Value,
+                        CustomerLatitude = latitude.Value,
+                        CustomerLongitude = longitude.Value,
                     };
 
                     deliveryResponse = await _deliveryService.CreateAsync(deliveryDto);
-
-                    if (!deliveryResponse.Success)
-                        _logger.LogWarning(
-                            "CreateOrderAsync: Delivery creation failed for order {OrderId}: {Message}",
-                            order.Id,
-                            deliveryResponse.Message
-                        );
-                    else
-                        _logger.LogInformation(
-                            "CreateOrderAsync: Delivery created successfully for order {OrderId}.",
-                            order.Id
-                        );
+                }
+                else
+                {
+                    _logger.LogWarning("No delivery coordinates provided for order {OrderId}. Delivery creation skipped.", order.Id);
                 }
 
+
                 var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
-                    o => o.Id == order.Id,
-                    query =>
-                        query
-                            .Include(o => o.OrderItems)
-                            .ThenInclude(oi => oi.Product)
-                            .ThenInclude(p => p.TechCompany)
-                            .Include(o => o.Customer)
-                            .ThenInclude(c => c.User)
-                            .Include(o => o.OrderHistory)
-                            .Include(o => o.Deliveries)
-                            .ThenInclude(d => d.DeliveryPerson)
-                            .ThenInclude(dp => dp.User)
-                );
+                        o => o.Id == order.Id,
+                        query => query.Include(o => o.OrderItems)
+                                    .ThenInclude(oi => oi.Product)
+                                        .ThenInclude(p => p.TechCompany)
+                                .Include(o => o.Customer)
+                                    .ThenInclude(c => c.User)
+                                .Include(o => o.OrderHistory)
+                                .Include(o => o.Deliveries)
+                                    .ThenInclude(d => d.DeliveryPerson)
+                                        .ThenInclude(dp => dp.User)
+                    );
 
                 // --- Notifications ---
                 // 1. Notify Admins
@@ -148,7 +157,7 @@ namespace Service
 
                 // 2. Notify Customer
                 await _notificationService.SendNotificationAsync(
-                    dto.CustomerId,
+                    createdOrder.Customer.UserId,
                     NotificationType.OrderCreated,
                     order.Id,
                     "Order",
@@ -276,7 +285,7 @@ namespace Service
                 // Optimized includes for order listing with all necessary related data
                 var allOrders = await _orderRepo.FindWithStringIncludesAsync(
                     o => true, // This will match all orders
-                    includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Delivery,ServiceUsage"
+                    includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,ServiceUsage,Deliveries"
                 );
 
                 var orderDtos = allOrders

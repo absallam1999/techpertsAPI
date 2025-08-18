@@ -1,5 +1,7 @@
 using Core.DTOs.DeliveryDTOs;
 using Core.DTOs.DeliveryPersonDTOs;
+using Core.DTOs.OrderDTOs;
+using Core.Entities;
 using Core.Enums;
 using TechpertsSolutions.Core.Entities;
 
@@ -14,7 +16,7 @@ namespace Service.Utilities
 
             return new Delivery
             {
-                Id = Guid.NewGuid().ToString(),
+
                 OrderId = dto.OrderId,
                 CustomerId = dto.customerId,
                 Status = DeliveryStatus.Pending,

@@ -445,253 +445,256 @@ namespace Service
         //    }
         //}
 
-        public async Task<GeneralResponse<DeliveryReadDTO>> CreateAsync(DeliveryCreateDTO dto)
-        {
-            if (
-                dto == null
-                || string.IsNullOrWhiteSpace(dto.OrderId)
-                || dto.CustomerLatitude < -90
-                || dto.CustomerLatitude > 90
-                || dto.CustomerLongitude < -180
-                || dto.CustomerLongitude > 180
-            )
-            {
-                _logger.LogWarning(
-                    "CreateAsync: Invalid input - DTO is null, OrderId is empty, or customer location missing."
-                );
-                return new GeneralResponse<DeliveryReadDTO>
-                {
-                    Success = false,
-                    Message = "Delivery data, OrderId, and customer location are required.",
-                    Data = null,
-                };
-            }
+        //public async Task<GeneralResponse<DeliveryReadDTO>> CreateAsync(DeliveryCreateDTO dto)
+        //{
+        //    if (
+        //        dto == null
+        //        || string.IsNullOrWhiteSpace(dto.OrderId)
+        //        || dto.CustomerLatitude < -90
+        //        || dto.CustomerLatitude > 90
+        //        || dto.CustomerLongitude < -180
+        //        || dto.CustomerLongitude > 180
+        //    )
+        //    {
+        //        _logger.LogWarning(
+        //            "CreateAsync: Invalid input - DTO is null, OrderId is empty, or customer location missing."
+        //        );
+        //        return new GeneralResponse<DeliveryReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = "Delivery data, OrderId, and customer location are required.",
+        //            Data = null,
+        //        };
+        //    }
 
-            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+        //    using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
-            try
-            {
-                var order = await _orderRepo.GetFirstOrDefaultAsync(
-                    o => o.Id == dto.OrderId,
-                    query =>
-                        query
-                            .Include(o => o.OrderItems)
-                            .ThenInclude(oi => oi.Product)
-                            .ThenInclude(p => p.TechCompany)
-                );
+        //    try
+        //    {
+        //        var order = await _orderRepo.GetFirstOrDefaultAsync(
+        //            o => o.Id == dto.OrderId,
+        //            query =>
+        //                query
+        //                    .Include(o => o.OrderItems)
+        //                    .ThenInclude(oi => oi.Product)
+        //                    .ThenInclude(p => p.TechCompany)
+        //        );
 
-                if (order == null)
-                {
-                    _logger.LogWarning("CreateAsync: Order {OrderId} not found.", dto.OrderId);
-                    return new GeneralResponse<DeliveryReadDTO>
-                    {
-                        Success = false,
-                        Message = "Order not found.",
-                        Data = null,
-                    };
-                }
+        //        if (order == null)
+        //        {
+        //            _logger.LogWarning("CreateAsync: Order {OrderId} not found.", dto.OrderId);
+        //            return new GeneralResponse<DeliveryReadDTO>
+        //            {
+        //                Success = false,
+        //                Message = "Order not found.",
+        //                Data = null,
+        //            };
+        //        }
 
-                var distinctCompanies = order
-                    .OrderItems.Select(i => i.Product?.TechCompany)
-                    .Where(c => c != null)
-                    .Distinct()
-                    .ToList();
+        //        var distinctCompanies = order
+        //            .OrderItems.Select(i => i.Product?.TechCompany)
+        //            .Where(c => c != null)
+        //            .Distinct()
+        //            .ToList();
 
-                bool isComplex = distinctCompanies.Count > 1;
-                _logger.LogInformation(
-                    "CreateAsync: Order {OrderId} is {OrderType} ({CompanyCount} companies).",
-                    order.Id,
-                    isComplex ? "Complex" : "Easy",
-                    distinctCompanies.Count
-                );
+        //        bool isComplex = distinctCompanies.Count > 1;
+        //        _logger.LogInformation(
+        //            "CreateAsync: Order {OrderId} is {OrderType} ({CompanyCount} companies).",
+        //            order.Id,
+        //            isComplex ? "Complex" : "Easy",
+        //            distinctCompanies.Count
+        //        );
 
-                var delivery = DeliveryMapper.ToEntity(dto);
-                delivery.OrderId = order.Id;
-                delivery.CustomerId = order.CustomerId;
-                delivery.DropoffLatitude = dto.CustomerLatitude;
-                delivery.DropoffLongitude = dto.CustomerLongitude;
+        //        var delivery = DeliveryMapper.ToEntity(dto);
+        //        delivery.OrderId = order.Id;
+        //        delivery.CustomerId = order.CustomerId;
+        //        delivery.DropoffLatitude = dto.CustomerLatitude;
+        //        delivery.DropoffLongitude = dto.CustomerLongitude;
 
-                await _deliveryRepo.AddAsync(delivery);
-                await _deliveryRepo.SaveChangesAsync();
+        //        await _deliveryRepo.AddAsync(delivery);
+        //        await _deliveryRepo.SaveChangesAsync();
 
-                var createdClusters = new List<DeliveryClusterDTO>();
+        //        var createdClusters = new List<DeliveryClusterDTO>();
 
-                async Task AssignDriverWithDistanceCheckAsync(
-                    DeliveryClusterDTO cluster,
-                    double pickupLat,
-                    double pickupLng
-                )
-                {
-                    if (!_settings.AssignNearestDriverFirst)
-                        return;
+        //        async Task AssignDriverWithDistanceCheckAsync(
+        //            DeliveryClusterDTO cluster,
+        //            double pickupLat,
+        //            double pickupLng
+        //        )
+        //        {
+        //            if (!_settings.AssignNearestDriverFirst)
+        //                return;
 
-                    var availableDrivers =
-                        await _deliveryPersonService.GetAvailableDeliveryPersonsAsync();
-                    var nearestDriver = availableDrivers
-                        .Data?.Where(d => d.Latitude.HasValue && d.Longitude.HasValue)
-                        .OrderBy(d =>
-                            _locationService.CalculateDistance(
-                                d.Latitude.Value,
-                                d.Longitude.Value,
-                                pickupLat,
-                                pickupLng
-                            )
-                        )
-                        .FirstOrDefault();
+        //            var availableDrivers =
+        //                await _deliveryPersonService.GetAvailableDeliveryPersonsAsync();
+        //            var nearestDriver = availableDrivers
+        //                .Data?.Where(d => d.Latitude.HasValue && d.Longitude.HasValue)
+        //                .OrderBy(d =>
+        //                    _locationService.CalculateDistance(
+        //                        d.Latitude.Value,
+        //                        d.Longitude.Value,
+        //                        pickupLat,
+        //                        pickupLng
+        //                    )
+        //                )
+        //                .FirstOrDefault();
 
-                    if (nearestDriver != null)
-                    {
-                        double distanceToPickup = _locationService.CalculateDistance(
-                            nearestDriver.Latitude.Value,
-                            nearestDriver.Longitude.Value,
-                            pickupLat,
-                            pickupLng
-                        );
+        //            if (nearestDriver != null)
+        //            {
+        //                double distanceToPickup = _locationService.CalculateDistance(
+        //                    nearestDriver.Latitude.Value,
+        //                    nearestDriver.Longitude.Value,
+        //                    pickupLat,
+        //                    pickupLng
+        //                );
 
-                        if (
-                            _settings.EnableReassignment
-                            && distanceToPickup > _settings.MaxDriverDistanceKm
-                        )
-                        {
-                            _logger.LogWarning(
-                                "Driver {DriverId} too far ({Distance} km) from cluster {ClusterId}, reassigning...",
-                                nearestDriver.Id,
-                                distanceToPickup,
-                                cluster.Id
-                            );
+        //                if (
+        //                    _settings.EnableReassignment
+        //                    && distanceToPickup > _settings.MaxDriverDistanceKm
+        //                )
+        //                {
+        //                    _logger.LogWarning(
+        //                        "Driver {DriverId} too far ({Distance} km) from cluster {ClusterId}, reassigning...",
+        //                        nearestDriver.Id,
+        //                        distanceToPickup,
+        //                        cluster.Id
+        //                    );
 
-                            await CancelDeliveryAsync(cluster.Id);
-                            await AutoAssignDriverAsync(delivery, cluster.Id, pickupLat, pickupLng);
-                        }
-                        else
-                        {
-                            await AutoAssignDriverAsync(delivery, cluster.Id, pickupLat, pickupLng);
-                        }
-                    }
-                    else
-                    {
-                        _logger.LogWarning(
-                            "No available drivers found for cluster {ClusterId}",
-                            cluster.Id
-                        );
-                    }
-                }
+        //                    await CancelDeliveryAsync(cluster.Id);
+        //                    await AutoAssignDriverAsync(delivery, cluster.Id, pickupLat, pickupLng);
+        //                }
+        //                else
+        //                {
+        //                    await AutoAssignDriverAsync(delivery, cluster.Id, pickupLat, pickupLng);
+        //                }
+        //            }
+        //            else
+        //            {
+        //                _logger.LogWarning(
+        //                    "No available drivers found for cluster {ClusterId}",
+        //                    cluster.Id
+        //                );
+        //            }
+        //        }
 
-                if (!isComplex)
-                {
-                    var company = distinctCompanies.First();
-                    var availableDriversResp =
-                        await _deliveryPersonService.GetAvailableDeliveryPersonsAsync();
-                    var nearestDriver = availableDriversResp
-                        .Data?.Where(d => d.CurrentLatitude.HasValue && d.CurrentLongitude.HasValue)
-                        .OrderBy(d =>
-                            _locationService.CalculateDistance(
-                                d.CurrentLatitude.Value,
-                                d.CurrentLongitude.Value,
-                                company.User.Latitude ?? dto.CustomerLatitude,
-                                company.User.Longitude ?? dto.CustomerLongitude
-                            )
-                        )
-                        .FirstOrDefault();
+        //        if (!isComplex)
+        //        {
+        //            var company = distinctCompanies.First();
+        //            var availableDriversResp =
+        //                await _deliveryPersonService.GetAvailableDeliveryPersonsAsync();
+        //            var nearestDriver = availableDriversResp
+        //                .Data?.Where(d => d.Latitude.HasValue && d.Longitude.HasValue)
+        //                .OrderBy(d =>
+        //                    _locationService.CalculateDistance(
+        //                        d.Latitude.Value,
+        //                        d.Longitude.Value,
+        //                        company.User.Latitude ?? dto.CustomerLatitude,
+        //                        company.User.Longitude ?? dto.CustomerLongitude
+        //                    )
+        //                )
+        //                .FirstOrDefault();
 
-                    double distance =
-                        nearestDriver != null
-                            ? _locationService.CalculateDistance(
-                                nearestDriver.Latitude.Value,
-                                nearestDriver.Longitude.Value,
-                                company.User.Latitude ?? dto.CustomerLatitude,
-                                company.User.Longitude ?? dto.CustomerLongitude
-                            )
-                            : double.MaxValue;
+        //            double distance =
+        //                nearestDriver != null
+        //                    ? _locationService.CalculateDistance(
+        //                        nearestDriver.Latitude.Value,
+        //                        nearestDriver.Longitude.Value,
+        //                        company.User.Latitude ?? dto.CustomerLatitude,
+        //                        company.User.Longitude ?? dto.CustomerLongitude
+        //                    )
+        //                    : double.MaxValue;
 
-                    if (distance <= _settings.MaxDriverDistanceKm)
-                    {
-                        _logger.LogInformation(
-                            "Single company and driver within max distance, skipping cluster creation."
-                        );
-                        await AutoAssignDriverAsync(
-                            delivery,
-                            "default-cluster-id",
-                            company.User.Latitude,
-                            company.User.Longitude
-                        );
-                        var readDto = DeliveryMapper.ToReadDTO(delivery, createdClusters);
-                        scope.Complete();
-                        return new GeneralResponse<DeliveryReadDTO>
-                        {
-                            Success = true,
-                            Message = "Delivery created and driver auto-assigned.",
-                            Data = readDto,
-                        };
-                    }
-                }
+        //            if (distance <= _settings.MaxDriverDistanceKm)
+        //            {
+        //                _logger.LogInformation(
+        //                    "Single company and driver within max distance, skipping cluster creation."
+        //                );
+        //                await AutoAssignDriverAsync(
+        //                    delivery,
+        //                    "default-cluster-id",
+        //                    company.User.Latitude,
+        //                    company.User.Longitude
+        //                );
+        //                var readDto = DeliveryMapper.ToReadDTO(delivery, createdClusters);
+        //                scope.Complete();
+        //                return new GeneralResponse<DeliveryReadDTO>
+        //                {
+        //                    Success = true,
+        //                    Message = "Delivery created and driver auto-assigned.",
+        //                    Data = readDto,
+        //                };
+        //            }
+        //        }
 
-                var clusterTasks = distinctCompanies.Select(async company =>
-                {
-                    var clusterDto = new DeliveryClusterCreateDTO
-                    {
-                        TechCompanyId = company.Id,
-                        TechCompanyName = company.User.FullName,
-                        DropoffLatitude = dto.CustomerLatitude,
-                        DropoffLongitude = dto.CustomerLongitude,
-                    };
+        //        var clusterTasks = distinctCompanies.Select(async company =>
+        //        {
+        //            var clusterDto = new DeliveryClusterCreateDTO
+        //            {
+        //                TechCompanyId = company.Id,
+        //                TechCompanyName = company.User.FullName,
+        //                DropoffLatitude = dto.CustomerLatitude,
+        //                DropoffLongitude = dto.CustomerLongitude,
+        //            };
 
-                    var clusterResult = await _clusterService.CreateClusterAsync(
-                        delivery.Id,
-                        clusterDto
-                    );
-                    if (!clusterResult.Success)
-                        throw new InvalidOperationException(
-                            $"Cluster creation failed: {clusterResult.Message}"
-                        );
+        //            var clusterResult = await _clusterService.CreateClusterAsync(
+        //                delivery.Id,
+        //                clusterDto
+        //            );
+        //            if (!clusterResult.Success)
+        //                throw new InvalidOperationException(
+        //                    $"Cluster creation failed: {clusterResult.Message}"
+        //                );
 
-                    return clusterResult.Data;
-                });
+        //            return clusterResult.Data;
+        //        });
 
-                var clusters = (await Task.WhenAll(clusterTasks)).ToList();
+        //        var clusters = (await Task.WhenAll(clusterTasks)).ToList();
 
-                var assignTasks = clusters.Select(cluster =>
-                {
-                    var company = distinctCompanies.First(c => c.Id == cluster.TechCompanyId);
-                    double pickupLat = company.User.Latitude ?? dto.CustomerLatitude;
-                    double pickupLng = company.User.Longitude ?? dto.CustomerLongitude;
-                    return AssignDriverWithDistanceCheckAsync(cluster, pickupLat, pickupLng);
-                });
+        //        var assignTasks = clusters.Select(cluster =>
+        //        {
+        //            var company = distinctCompanies.First(c => c.Id == cluster.TechCompanyId);
+        //            double pickupLat = company.User.Latitude ?? dto.CustomerLatitude;
+        //            double pickupLng = company.User.Longitude ?? dto.CustomerLongitude;
+        //            return AssignDriverWithDistanceCheckAsync(cluster, pickupLat, pickupLng);
+        //        });
 
-                await Task.WhenAll(assignTasks);
-                createdClusters = clusters;
+        //        await Task.WhenAll(assignTasks);
+        //        createdClusters = clusters;
 
-                var finalDto = DeliveryMapper.ToReadDTO(delivery, createdClusters);
-                scope.Complete();
+        //        var finalDto = DeliveryMapper.ToReadDTO(delivery, createdClusters);
+        //        scope.Complete();
 
-                _logger.LogInformation(
-                    "CreateAsync: Delivery {DeliveryId} created successfully with {ClusterCount} clusters.",
-                    delivery.Id,
-                    createdClusters.Count
-                );
+        //        _logger.LogInformation(
+        //            "CreateAsync: Delivery {DeliveryId} created successfully with {ClusterCount} clusters.",
+        //            delivery.Id,
+        //            createdClusters.Count
+        //        );
 
-                return new GeneralResponse<DeliveryReadDTO>
-                {
-                    Success = true,
-                    Message = "Delivery created successfully.",
-                    Data = finalDto,
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "CreateAsync: Failed to create delivery for OrderId {OrderId}.",
-                    dto.OrderId
-                );
-                return new GeneralResponse<DeliveryReadDTO>
-                {
-                    Success = false,
-                    Message = $"Failed to create delivery: {ex.Message}",
-                    Data = null,
-                };
-            }
-        }
+        //        return new GeneralResponse<DeliveryReadDTO>
+        //        {
+        //            Success = true,
+        //            Message = "Delivery created successfully.",
+        //            Data = finalDto,
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(
+        //            ex,
+        //            "CreateAsync: Failed to create delivery for OrderId {OrderId}.",
+        //            dto.OrderId
+        //        );
+        //        return new GeneralResponse<DeliveryReadDTO>
+        //        {
+        //            Success = false,
+        //            Message = $"Failed to create delivery: {ex.Message}",
+        //            Data = null,
+        //        };
+        //    }
+        //}
+
+
+
 
         //public async Task<GeneralResponse<bool>> AssignDriverToClusterAsync(string clusterId, string driverId)
         //{
@@ -761,151 +764,352 @@ namespace Service
         //        return new GeneralResponse<bool> { Success = false, Message = $"Failed to assign driver: {ex.Message}", Data = false };
         //    }
         //}
-        public async Task AutoAssignDriverAsync(
-            Delivery delivery,
-            string clusterId,
-            double? overrideLat = null,
-            double? overrideLon = null
-        )
+
+
+        public async Task<GeneralResponse<DeliveryReadDTO>> CreateAsync(DeliveryCreateDTO dto)
         {
-            //if (delivery == null || string.IsNullOrWhiteSpace(clusterId))
-            //{
-            //    _logger.LogWarning("AutoAssignDriverAsync: Invalid input - delivery or clusterId is null/empty.");
-            //    throw new ArgumentNullException("Delivery and cluster ID are required.");
-            //}
+            _logger.LogInformation("CreateAsync: Starting delivery creation for OrderId {OrderId}", dto?.OrderId);
 
-            //try
-            //{
-            //    var clusterResult = await _clusterService.GetByIdAsync(clusterId);
-            //    if (!clusterResult.Success || clusterResult.Data == null)
-            //    {
-            //        _logger.LogWarning("AutoAssignDriverAsync: Cluster {ClusterId} not found.", clusterId);
-            //        throw new InvalidOperationException("Cluster not found.");
-            //    }
+            if (dto == null
+                || string.IsNullOrWhiteSpace(dto.OrderId)
+                || dto.CustomerLatitude < -90 || dto.CustomerLatitude > 90
+                || dto.CustomerLongitude < -180 || dto.CustomerLongitude > 180)
+            {
+                return new GeneralResponse<DeliveryReadDTO>
+                {
+                    Success = false,
+                    Message = "Delivery data, OrderId, and customer location are required."
+                };
+            }
 
-            //    var clusterDto = clusterResult.Data;
+            try
+            {
+                var order = await _orderRepo.GetFirstOrDefaultAsync(
+                   o => o.Id == dto.OrderId,
+                   query => query.Include(o => o.OrderItems)
+                                 .ThenInclude(oi => oi.Product)
+                                 .ThenInclude(p => p.TechCompany)
+                                     .ThenInclude(tc => tc.User)
+               );
 
-            //    double locationLat, locationLon;
-            //    if (overrideLat.HasValue && overrideLon.HasValue)
-            //    {
-            //        locationLat = overrideLat.Value;
-            //        locationLon = overrideLon.Value;
-            //    }
-            //    else
-            //    {
-            //        if (!string.IsNullOrWhiteSpace(clusterDto.TechCompanyId))
-            //        {
-            //            var techCompany = await _techCompanyRepo.GetByIdAsync(clusterDto.TechCompanyId);
-            //            if (techCompany == null || !techCompany.User.Latitude.HasValue || !techCompany.User.Longitude.HasValue)
-            //            {
-            //                _logger.LogWarning("AutoAssignDriverAsync: Tech company {TechCompanyId} coordinates missing for cluster {ClusterId}.", clusterDto.TechCompanyId, clusterId);
-            //                throw new InvalidOperationException("Tech company coordinates are missing.");
-            //            }
-            //            locationLat = techCompany.User.Latitude.Value;
-            //            locationLon = techCompany.User.Longitude.Value;
-            //        }
-            //        else if (clusterDto.DropoffLatitude.HasValue && clusterDto.DropoffLongitude.HasValue)
-            //        {
-            //            locationLat = clusterDto.DropoffLatitude.Value;
-            //            locationLon = clusterDto.DropoffLongitude.Value;
-            //        }
-            //        else
-            //        {
-            //            _logger.LogWarning("AutoAssignDriverAsync: Unable to determine location for cluster {ClusterId}.", clusterId);
-            //            throw new InvalidOperationException("Unable to determine location for cluster.");
-            //        }
-            //    }
+                if (order == null)
+                    return new GeneralResponse<DeliveryReadDTO>
+                    {
+                        Success = false,
+                        Message = "Order not found."
+                    };
 
-            //    var response = await _deliveryPersonService.GetAvailableDeliveryPersonsAsync();
-            //    var availableDrivers = response.Success ? response.Data?.ToList() ?? new List<DeliveryPersonReadDTO>() : new List<DeliveryPersonReadDTO>();
+                var distinctCompanies = order.OrderItems
+                    .Select(i => i.Product?.TechCompany)
+                    .Where(c => c != null)
+                    .Distinct()
+                    .ToList();
 
-            //    if (!availableDrivers.Any())
-            //    {
-            //        _logger.LogWarning("AutoAssignDriverAsync: No available drivers for cluster {ClusterId}.", clusterId);
-            //        throw new InvalidOperationException("No available drivers found.");
-            //    }
+                bool isComplex = distinctCompanies.Count > 1;
 
-            //    var candidates = availableDrivers
-            //        .Where(d => d.CurrentLatitude.HasValue && d.CurrentLongitude.HasValue)
-            //        .Select(d => new
-            //        {
-            //            Driver = d,
-            //            DistanceKm = _locationService.CalculateDistance(locationLat, locationLon, d.CurrentLatitude.Value, d.CurrentLongitude.Value)
-            //        })
-            //        .OrderBy(x => x.DistanceKm)
-            //        .ToList();
+                var delivery = DeliveryMapper.ToEntity(dto);
+                delivery.OrderId = order.Id;
+                delivery.CustomerId = order.CustomerId;
+                delivery.DropoffLatitude = dto.CustomerLatitude;
+                delivery.DropoffLongitude = dto.CustomerLongitude;
 
-            //    if (!candidates.Any())
-            //    {
-            //        _logger.LogWarning("AutoAssignDriverAsync: No drivers with location data for cluster {ClusterId}.", clusterId);
-            //        throw new InvalidOperationException("No available drivers with location data found.");
-            //    }
+                await _deliveryRepo.AddAsync(delivery);
+                await _deliveryRepo.SaveChangesAsync();
 
-            //    var best = candidates.First();
-            //    if (_settings.MaxDriverDistanceKm > 0 && best.DistanceKm > _settings.MaxDriverDistanceKm)
-            //    {
-            //        _logger.LogWarning("AutoAssignDriverAsync: Nearest driver {DistanceKm:F1} km exceeds max {MaxDistanceKm} km for cluster {ClusterId}.", best.DistanceKm, _settings.MaxDriverDistanceKm, clusterId);
-            //        throw new InvalidOperationException($"Nearest driver {best.DistanceKm:F1} km is beyond allowed max distance ({_settings.MaxDriverDistanceKm} km).");
-            //    }
+                var createdClusters = new List<DeliveryClusterDTO>();
 
-            //    var nearestDriver = best.Driver;
-            //    var assignResult = await _clusterService.AssignDriverAsync(clusterId, nearestDriver.Id);
-            //    if (!assignResult.Success)
-            //    {
-            //        _logger.LogError("AutoAssignDriverAsync: Failed to assign driver {DriverId} to cluster {ClusterId}: {Message}", nearestDriver.Id, clusterId, assignResult.Message);
-            //        throw new InvalidOperationException($"Failed to assign driver to cluster: {assignResult.Message}");
-            //    }
+                foreach (var company in distinctCompanies)
+                {
+                    var clusterDto = new DeliveryClusterCreateDTO
+                    {
+                        DeliveryId = delivery.Id,
+                        TechCompanyId = company.Id,
+                        TechCompanyName = company.User?.FullName ?? "Unknown",
+                        DropoffLatitude = dto.CustomerLatitude,
+                        DropoffLongitude = dto.CustomerLongitude,
+                    };
 
-            //    delivery.DeliveryPersonId = nearestDriver.Id;
-            //    delivery.Status = DeliveryStatus.Assigned;
-            //    _deliveryRepo.Update(delivery);
+                    var clusterResult = await _clusterService.CreateClusterAsync(delivery.Id ,clusterDto);
+                    if (!clusterResult.Success || clusterResult.Data == null)
+                        throw new InvalidOperationException($"Cluster creation failed: {clusterResult.Message}");
 
-            //    var offer = new DeliveryOffer
-            //    {
-            //        Id = Guid.NewGuid().ToString(),
-            //        DeliveryId = delivery.Id,
-            //        ClusterId = clusterId,
-            //        DeliveryPersonId = nearestDriver.Id,
-            //        Status = DeliveryOfferStatus.Pending,
-            //        CreatedAt = DateTime.UtcNow,
-            //        ExpiryTime = DateTime.UtcNow.Add(_settings.OfferExpiryTime),
-            //        IsActive = true
-            //    };
+                    createdClusters.Add(clusterResult.Data);
+                }
 
-            //    await _deliveryOfferRepo.AddAsync(offer);
-            //    await _deliveryOfferRepo.SaveChangesAsync();
-            //    await _deliveryRepo.SaveChangesAsync();
 
-            //    var notifyUserId = nearestDriver.UserId ?? nearestDriver.Id;
-            //    await _notificationService.SendNotificationAsync(
-            //        notifyUserId,
-            //        $"New delivery offer: #{delivery.TrackingNumber ?? delivery.Id} — {best.DistanceKm:F2} km from you",
-            //        NotificationType.DeliveryOfferCreated,
-            //        delivery.Id,
-            //        "Delivery");
+                foreach (var cluster in createdClusters)
+                {
+                    var company = distinctCompanies.First(c => c.Id == cluster.TechCompanyId);
+                    double pickupLat = company.User.Latitude ?? dto.CustomerLatitude;
+                    double pickupLng = company.User.Longitude ?? dto.CustomerLongitude;
+                    await AutoAssignDriverAsync(delivery, cluster.Id, pickupLat, pickupLng);
+                }
 
-            //    _logger.LogInformation("AutoAssignDriverAsync: Driver {DriverId} assigned to cluster {ClusterId} for delivery {DeliveryId}.", nearestDriver.Id, clusterId, delivery.Id);
-            //}
-            //catch (Exception ex)
-            //{
-            //    _logger.LogError(ex, "AutoAssignDriverAsync: Failed for cluster {ClusterId} in delivery {DeliveryId}.", clusterId, delivery?.Id);
-            //    throw;
-            //}
+                var finalDto = DeliveryMapper.ToReadDTO(delivery, createdClusters);
+
+                return new GeneralResponse<DeliveryReadDTO>
+                {
+                    Success = true,
+                    Message = "Delivery created successfully.",
+                    Data = finalDto
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<DeliveryReadDTO>
+                {
+                    Success = false,
+                    Message = $"Failed to create delivery: {ex.Message}"
+                };
+            }
+        }
+
+
+        //public async Task AutoAssignDriverAsync(
+        //    Delivery delivery,
+        //    string clusterId,
+        //    double? overrideLat = null,
+        //    double? overrideLon = null
+        //)
+        //{
+        //    if (delivery == null || string.IsNullOrWhiteSpace(clusterId))
+        //        throw new ArgumentNullException("Delivery and cluster ID are required.");
+
+        //    try
+        //    {
+        //        // Get the cluster
+        //        //var clusterResult = await _clusterService.GetByIdAsync(clusterId);
+        //        //if (!clusterResult.Success || clusterResult.Data == null)
+        //        //    throw new InvalidOperationException("Cluster not found.");
+        //        //var clusterDto = clusterResult.Data;
+
+        //        // New: allow clusterId to be null or a special marker (means "no persisted cluster")
+        //        DeliveryClusterDTO clusterDto = null;
+        //        if (!string.IsNullOrWhiteSpace(clusterId) && clusterId != "default-cluster-id")
+        //        {
+        //            var clusterResult = await _clusterService.GetByIdAsync(clusterId);
+        //            if (!clusterResult.Success || clusterResult.Data == null)
+        //                throw new InvalidOperationException("Cluster not found.");
+        //            clusterDto = clusterResult.Data;
+        //        }
+        //        else
+        //        {
+        //            // Build a temporary cluster-like DTO from delivery / override values
+        //            clusterDto = new DeliveryClusterDTO
+        //            {
+        //                Id = clusterId, // may be null or special
+        //                DropoffLatitude = overrideLat ?? delivery.DropoffLatitude,
+        //                DropoffLongitude = overrideLon ?? delivery.DropoffLongitude,
+        //                TechCompanyId = null // optional - only required if you need company coords
+        //            };
+        //        }
+
+        //        // Determine pickup location
+        //        double locationLat,
+        //            locationLon;
+        //        if (overrideLat.HasValue && overrideLon.HasValue)
+        //        {
+        //            locationLat = overrideLat.Value;
+        //            locationLon = overrideLon.Value;
+        //        }
+        //        else if (!string.IsNullOrWhiteSpace(clusterDto.TechCompanyId))
+        //        {
+        //            var techCompany = await _techCompanyRepo.GetByIdAsync(clusterDto.TechCompanyId);
+        //            if (
+        //                techCompany == null
+        //                || !techCompany.User.Latitude.HasValue
+        //                || !techCompany.User.Longitude.HasValue
+        //            )
+        //                throw new InvalidOperationException(
+        //                    "Tech company coordinates are missing."
+        //                );
+        //            locationLat = techCompany.User.Latitude.Value;
+        //            locationLon = techCompany.User.Longitude.Value;
+        //        }
+        //        else if (
+        //            clusterDto.DropoffLatitude.HasValue && clusterDto.DropoffLongitude.HasValue
+        //        )
+        //        {
+        //            locationLat = clusterDto.DropoffLatitude.Value;
+        //            locationLon = clusterDto.DropoffLongitude.Value;
+        //        }
+        //        else
+        //        {
+        //            throw new InvalidOperationException(
+        //                "Unable to determine location for cluster."
+        //            );
+        //        }
+
+        //        // Get available drivers
+        //        var response = await _deliveryPersonService.GetAvailableDeliveryPersonsAsync();
+        //        var availableDrivers = response.Success
+        //            ? response.Data?.ToList() ?? new List<DeliveryPersonReadDTO>()
+        //            : new List<DeliveryPersonReadDTO>();
+        //        if (!availableDrivers.Any())
+        //            throw new InvalidOperationException("No available drivers found.");
+
+        //        //// Filter and sort by distance
+        //        //var candidates = availableDrivers
+        //        //   .Where(d => d.Latitude.HasValue && d.Longitude.HasValue)
+        //        //   .Select(d => new
+        //        //   {
+        //        //       Driver = d,
+        //        //       DistanceKm = _locationService.CalculateDistance(
+        //        //           locationLat,
+        //        //           locationLon,
+        //        //           d.Latitude!.Value,
+        //        //           d.Longitude!.Value
+        //        //       ),
+        //        //   })
+        //        //   .OrderBy(x => x.DistanceKm)
+        //        //   .ToList();
+
+        //        //if (!candidates.Any())
+        //        //    throw new InvalidOperationException("No drivers with location data found.");
+
+        //        //// Take top 10 drivers
+        //        //var topDrivers = candidates.Take(10).ToList();
+
+        //        //foreach (var candidate in topDrivers)
+        //        //{
+        //        //    // Create DeliveryOffer
+        //        //    var offer = new DeliveryOffer
+        //        //    {
+        //        //        Id = Guid.NewGuid().ToString(),
+        //        //        DeliveryId = delivery.Id,
+        //        //        ClusterId = clusterId,
+        //        //        DeliveryPersonId = candidate.Driver.Id,
+        //        //        Status = DeliveryOfferStatus.Pending,
+        //        //        CreatedAt = DateTime.Now,
+        //        //        ExpiryTime = DateTime.Now.Add(_settings.OfferExpiryTime),
+        //        //        IsActive = true,
+        //        //    };
+
+        //        //    await _deliveryOfferRepo.AddAsync(offer);
+
+        //        //    // Send notification
+        //        //    var notifyUserId = candidate.Driver.UserId ?? candidate.Driver.Id;
+        //        //    await _notificationService.SendNotificationAsync(
+        //        //        notifyUserId,
+        //        //        NotificationType.DeliveryOfferCreated,
+        //        //        delivery.Id,
+        //        //        "Delivery",
+        //        //        delivery.TrackingNumber ?? delivery.Id,
+        //        //        $"{candidate.DistanceKm:F2} km from you"
+        //        //    );
+        //        //}
+
+        //        //await _deliveryOfferRepo.SaveChangesAsync();
+
+        //        //_logger.LogInformation(
+        //        //    "AutoAssignDriverAsync: Created {OfferCount} delivery offers for cluster {ClusterId} in delivery {DeliveryId}.",
+        //        //    topDrivers.Count,
+        //        //    clusterId,
+        //        //    delivery.Id
+        //        //);
+
+
+
+
+        //        // Keep filtering to ensure drivers have location
+        //        var candidates = availableDrivers
+        //            .Where(d => d.Latitude.HasValue && d.Longitude.HasValue)
+        //            .Select(d => new
+        //            {
+        //                Driver = d,
+        //                DistanceKm = _locationService.CalculateDistance(
+        //                    locationLat,
+        //                    locationLon,
+        //                    d.Latitude!.Value,
+        //                    d.Longitude!.Value
+        //                ),
+        //            })
+        //            .ToList();
+
+        //        if (!candidates.Any())
+        //            throw new InvalidOperationException("No drivers found (with location data).");
+
+        //        foreach (var candidate in candidates)
+        //        {
+        //            var offer = new DeliveryOffer
+        //            {
+        //                Id = Guid.NewGuid().ToString(),
+        //                DeliveryId = delivery.Id,
+        //                ClusterId = clusterId,
+        //                DeliveryPersonId = candidate.Driver.Id,
+        //                Status = DeliveryOfferStatus.Pending,
+        //                CreatedAt = DateTime.Now,
+        //                ExpiryTime = DateTime.Now.Add(_settings.OfferExpiryTime),
+        //                IsActive = true,
+        //            };
+
+        //            await _deliveryOfferRepo.AddAsync(offer);
+
+        //            // Send notification
+        //            var notifyUserId = candidate.Driver.UserId ?? candidate.Driver.Id;
+        //            await _notificationService.SendNotificationAsync(
+        //                notifyUserId,
+        //                NotificationType.DeliveryOfferCreated,
+        //                delivery.Id,
+        //                "Delivery",
+        //                delivery.TrackingNumber ?? delivery.Id,
+        //                $"{candidate.DistanceKm:F2} km from you"
+        //            );
+        //        }
+
+        //        await _deliveryOfferRepo.SaveChangesAsync();
+
+        //        _logger.LogInformation(
+        //            "AutoAssignDriverAsync: Created {OfferCount} delivery offers for cluster {ClusterId} in delivery {DeliveryId}.",
+        //            candidates.Count,
+        //            clusterId,
+        //            delivery.Id
+        //        );
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(
+        //            ex,
+        //            "AutoAssignDriverAsync: Failed for cluster {ClusterId} in delivery {DeliveryId}.",
+        //            clusterId,
+        //            delivery?.Id
+        //        );
+        //    }
+        //}
+
+
+        public async Task AutoAssignDriverAsync(Delivery delivery, string clusterId, double? overrideLat = null, double? overrideLon = null)
+        {
+            _logger.LogInformation("AutoAssignDriverAsync: Starting for Delivery {DeliveryId}, Cluster {ClusterId}", delivery?.Id, clusterId);
 
             if (delivery == null || string.IsNullOrWhiteSpace(clusterId))
                 throw new ArgumentNullException("Delivery and cluster ID are required.");
 
             try
             {
-                // Get the cluster
-                var clusterResult = await _clusterService.GetByIdAsync(clusterId);
-                if (!clusterResult.Success || clusterResult.Data == null)
-                    throw new InvalidOperationException("Cluster not found.");
-                var clusterDto = clusterResult.Data;
+                DeliveryClusterDTO clusterDto = null;
+                if (!string.IsNullOrWhiteSpace(clusterId) && clusterId != "default-cluster-id")
+                {
+                    var clusterResult = await _clusterService.GetByIdAsync(clusterId);
+                    if (!clusterResult.Success || clusterResult.Data == null)
+                        throw new InvalidOperationException("Cluster not found.");
+                    clusterDto = clusterResult.Data;
 
-                // Determine pickup location
-                double locationLat,
-                    locationLon;
+                    _logger.LogInformation("AutoAssignDriverAsync: Using real cluster {ClusterId}", clusterId);
+                }
+                else
+                {
+                    clusterDto = new DeliveryClusterDTO
+                    {
+                        Id = clusterId,
+                        DropoffLatitude = overrideLat ?? delivery.DropoffLatitude,
+                        DropoffLongitude = overrideLon ?? delivery.DropoffLongitude,
+                        TechCompanyId = null
+                    };
+                    _logger.LogInformation("AutoAssignDriverAsync: Using temporary cluster for Delivery {DeliveryId}", delivery.Id);
+                }
+
+                double locationLat, locationLon;
                 if (overrideLat.HasValue && overrideLon.HasValue)
                 {
                     locationLat = overrideLat.Value;
@@ -913,65 +1117,54 @@ namespace Service
                 }
                 else if (!string.IsNullOrWhiteSpace(clusterDto.TechCompanyId))
                 {
-                    var techCompany = await _techCompanyRepo.GetByIdAsync(clusterDto.TechCompanyId);
-                    if (
-                        techCompany == null
-                        || !techCompany.User.Latitude.HasValue
-                        || !techCompany.User.Longitude.HasValue
-                    )
-                        throw new InvalidOperationException(
-                            "Tech company coordinates are missing."
-                        );
+                    var techCompany = await _techCompanyRepo.GetByIdWithIncludesAsync(clusterDto.TechCompanyId);
+                    if (techCompany == null || !techCompany.User.Latitude.HasValue || !techCompany.User.Longitude.HasValue)
+                        throw new InvalidOperationException("Tech company coordinates are missing.");
+
                     locationLat = techCompany.User.Latitude.Value;
                     locationLon = techCompany.User.Longitude.Value;
                 }
-                else if (
-                    clusterDto.DropoffLatitude.HasValue && clusterDto.DropoffLongitude.HasValue
-                )
+                else if (clusterDto.DropoffLatitude.HasValue && clusterDto.DropoffLongitude.HasValue)
                 {
                     locationLat = clusterDto.DropoffLatitude.Value;
                     locationLon = clusterDto.DropoffLongitude.Value;
                 }
                 else
                 {
-                    throw new InvalidOperationException(
-                        "Unable to determine location for cluster."
-                    );
+                    throw new InvalidOperationException("Unable to determine location for cluster.");
                 }
 
-                // Get available drivers
-                var response = await _deliveryPersonService.GetAvailableDeliveryPersonsAsync();
-                var availableDrivers = response.Success
-                    ? response.Data?.ToList() ?? new List<DeliveryPersonReadDTO>()
-                    : new List<DeliveryPersonReadDTO>();
-                if (!availableDrivers.Any())
-                    throw new InvalidOperationException("No available drivers found.");
+                _logger.LogInformation("AutoAssignDriverAsync: Using location ({Lat}, {Lon}) for driver search.", locationLat, locationLon);
 
-                // Filter and sort by distance
+                var response = await _deliveryPersonService.GetAvailableDeliveryPersonsAsync();
+                var availableDrivers = response.Success ? response.Data?.ToList() ?? new List<DeliveryPersonReadDTO>() : new List<DeliveryPersonReadDTO>();
+
+                _logger.LogInformation("AutoAssignDriverAsync: Found {DriverCount} available drivers.", availableDrivers.Count);
+
                 var candidates = availableDrivers
-                    .Where(d => d.Latitude.HasValue && d.Longitude.HasValue)
-                    .Select(d => new
-                    {
-                        Driver = d,
-                        DistanceKm = _locationService.CalculateDistance(
-                            locationLat,
-                            locationLon,
-                            d.Latitude.Value,
-                            d.Longitude.Value
-                        ),
-                    })
-                    .OrderBy(x => x.DistanceKm)
-                    .ToList();
+                          .Where(d => d.Latitude.HasValue && d.Longitude.HasValue)
+                          .Select(d => new
+                          {
+                              Driver = d,
+                              DistanceKm = _locationService.CalculateDistance(
+                                  locationLat,
+                                  locationLon,
+                                  d.Latitude.Value,
+                                  d.Longitude.Value
+                              ),
+                          })
+                          .OrderBy(x => x.DistanceKm)
+                          .ToList();
 
                 if (!candidates.Any())
-                    throw new InvalidOperationException("No drivers with location data found.");
+                    throw new InvalidOperationException("No drivers found (with location data).");
 
-                // Take top 10 drivers
-                var topDrivers = candidates.Take(10).ToList();
+                _logger.LogInformation("AutoAssignDriverAsync: {CandidateCount} candidates with location found.", candidates.Count);
 
-                foreach (var candidate in topDrivers)
+                foreach (var candidate in candidates)
                 {
-                    // Create DeliveryOffer
+                    _logger.LogInformation("AutoAssignDriverAsync: Creating offer for Driver {DriverId}, Distance {Distance} km", candidate.Driver.Id, candidate.DistanceKm);
+
                     var offer = new DeliveryOffer
                     {
                         Id = Guid.NewGuid().ToString(),
@@ -986,8 +1179,7 @@ namespace Service
 
                     await _deliveryOfferRepo.AddAsync(offer);
 
-                    // Send notification
-                    var notifyUserId = candidate.Driver.UserId ?? candidate.Driver.Id;
+                    var notifyUserId = candidate.Driver.UserId;
                     await _notificationService.SendNotificationAsync(
                         notifyUserId,
                         NotificationType.DeliveryOfferCreated,
@@ -1000,21 +1192,11 @@ namespace Service
 
                 await _deliveryOfferRepo.SaveChangesAsync();
 
-                _logger.LogInformation(
-                    "AutoAssignDriverAsync: Created {OfferCount} delivery offers for cluster {ClusterId} in delivery {DeliveryId}.",
-                    topDrivers.Count,
-                    clusterId,
-                    delivery.Id
-                );
+                _logger.LogInformation("AutoAssignDriverAsync: Created {OfferCount} offers for Delivery {DeliveryId}, Cluster {ClusterId}.", candidates.Count, delivery.Id, clusterId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(
-                    ex,
-                    "AutoAssignDriverAsync: Failed for cluster {ClusterId} in delivery {DeliveryId}.",
-                    clusterId,
-                    delivery?.Id
-                );
+                _logger.LogError(ex, "AutoAssignDriverAsync: Failed for Delivery {DeliveryId}, Cluster {ClusterId}", delivery?.Id, clusterId);
             }
         }
 
@@ -2176,9 +2358,11 @@ namespace Service
             try
             {
                 var deliveries = await _deliveryRepo.GetAllAsync();
+                var assignedDeliveries = deliveries.Where(d => d.Status == DeliveryStatus.Assigned).ToList();
+
                 var result = new List<DeliveryReadDTO>();
 
-                foreach (var delivery in deliveries)
+                foreach (var delivery in assignedDeliveries)
                 {
                     var clustersResult = await _clusterService.GetByDeliveryIdAsync(delivery.Id);
                     var clusters = clustersResult.Success
