@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using System.Text.Json.Serialization;
 using Core.Entities;
 using Hubs;
@@ -150,6 +151,8 @@ namespace TechpertsSolutions
                         IssuerSigningKey = new SymmetricSecurityKey(
                             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
                         ),
+                        NameClaimType = JwtRegisteredClaimNames.Sub, // so Context.UserIdentifier = user.Id
+                        RoleClaimType = "role"
                     };
                 });
 
