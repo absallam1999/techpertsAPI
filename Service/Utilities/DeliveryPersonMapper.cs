@@ -133,7 +133,7 @@ namespace Service.Utilities
                 DeliveryTrackingNumber = offer.Delivery?.TrackingNumber,
                 DeliveryLatitude = offer.Delivery?.DropoffLatitude,
                 DeliveryLongitude = offer.Delivery?.DropoffLongitude,
-                CustomerName = offer.Delivery?.CustomerName,
+                CustomerName = offer.Delivery?.CustomerName
             };
         }
 

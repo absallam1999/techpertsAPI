@@ -16,6 +16,7 @@ namespace Service
         private readonly IRepository<Warranty> _warrantyRepo;
         private readonly IRepository<ServiceUsage> _serviceUsageRepo;
         private readonly INotificationService _notificationService;
+        private readonly TechCompanyService _techCompanyService;
         private readonly ILocationService _LocationService;
 
         public MaintenanceService(
@@ -25,6 +26,7 @@ namespace Service
             IRepository<Warranty> warrantyRepo,
             IRepository<ServiceUsage> serviceUsageRepo,
             INotificationService notificationService,
+            TechCompanyService techCompanyService,
             ILocationService locationService
         )
         {
@@ -33,6 +35,7 @@ namespace Service
             _techCompanyRepo = techCompanyRepo;
             _warrantyRepo = warrantyRepo;
             _serviceUsageRepo = serviceUsageRepo;
+            _techCompanyService = techCompanyService;
             _LocationService = locationService;
             _notificationService = notificationService;
         }
@@ -46,7 +49,8 @@ namespace Service
                     m => m.Customer.User,
                     m => m.TechCompany,
                     m => m.TechCompany.User,
-                    m => m.Warranty
+                    m => m.Warranty,
+                    m => m.Warranty.Product
                 );
 
                 var maintenanceDtos = maintenances
@@ -65,7 +69,7 @@ namespace Service
                 return new GeneralResponse<IEnumerable<MaintenanceDTO>>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while retrieving maintenance requests.",
+                    Message = $"An unexpected error occurred while retrieving maintenance requests.{ex}",
                     Data = null,
                 };
             }
@@ -102,6 +106,7 @@ namespace Service
                     m => m.TechCompany,
                     m => m.TechCompany.User,
                     m => m.Warranty,
+                    m => m.Warranty.Product,
                     m => m.ServiceUsages
                 );
 
@@ -188,11 +193,21 @@ namespace Service
 
             try
             {
-                var entity = MaintenanceMapper.MapToMaintenance(dto);
+                var entity = await MaintenanceMapper.MapToMaintenance(dto, _techCompanyService);
+
+                if (entity == null)
+                {
+                    return new GeneralResponse<MaintenanceDTO>
+                    {
+                        Success = false,
+                        Message = "Failed to map Maintenance from DTO.",
+                        Data = null
+                    };
+                }
 
                 var serviceUsage = new ServiceUsage
                 {
-                    ServiceType = "Maintenance",
+                    ServiceType = ServiceType.Maintenance,
                     UsedOn = DateTime.Now,
                     CallCount = 1,
                     MaintenanceId = entity.Id,
@@ -200,10 +215,10 @@ namespace Service
 
                 entity.ServiceUsages = new List<ServiceUsage> { serviceUsage };
 
+                // Save Maintenance & ServiceUsage
                 await _maintenanceRepo.AddAsync(entity);
                 await _serviceUsageRepo.AddAsync(serviceUsage);
                 await _maintenanceRepo.SaveChangesAsync();
-
 
                 var createdMaintenance = await _maintenanceRepo.GetFirstOrDefaultAsync(
                     m => m.Id == entity.Id,
@@ -826,7 +841,7 @@ namespace Service
                 var serviceUsage = new ServiceUsage
                 {
                     Id = Guid.NewGuid().ToString(),
-                    ServiceType = "Maintenance",
+                    ServiceType = ServiceType.Maintenance,
                     UsedOn = DateTime.Now,
                     CallCount = 1,
                     MaintenanceId = maintenance.Id,

@@ -156,6 +156,66 @@ namespace Service
             }
         }
 
+        public async Task<GeneralResponse<TechCompanyReadDTO>> GetByUserId(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return new GeneralResponse<TechCompanyReadDTO>
+                {
+                    Success = false,
+                    Message = "TechCompany ID cannot be null or empty.",
+                    Data = null,
+                };
+            }
+
+            if (!Guid.TryParse(id, out _))
+            {
+                return new GeneralResponse<TechCompanyReadDTO>
+                {
+                    Success = false,
+                    Message = "Invalid TechCompany ID format. Expected GUID format.",
+                    Data = null,
+                };
+            }
+
+            try
+            {
+
+                var entity = await _techCompanyRepo.GetByIdWithIncludesAsync(
+                    id,
+                    t => t.User,
+                    t => t.Role
+                );
+
+
+                if (entity == null)
+                {
+                    return new GeneralResponse<TechCompanyReadDTO>
+                    {
+                        Success = false,
+                        Message = $"TechCompany with ID '{id}' not found.",
+                        Data = null,
+                    };
+                }
+
+                return new GeneralResponse<TechCompanyReadDTO>
+                {
+                    Success = true,
+                    Message = "TechCompany retrieved successfully.",
+                    Data = TechCompanyMapper.MapToTechCompanyReadDTO(entity),
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<TechCompanyReadDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving the tech company.",
+                    Data = null,
+                };
+            }
+        }
+
         public async Task<GeneralResponse<TechCompanyReadDTO>> UpdateRatingAsync(string id, decimal rating)
         {
             if (string.IsNullOrWhiteSpace(id))
