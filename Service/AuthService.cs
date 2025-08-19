@@ -1,3 +1,7 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using System.Web;
 using Core.DTOs;
 using Core.DTOs.WishListDTOs;
 using Core.Enums;
@@ -7,10 +11,6 @@ using Core.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using System.Web;
 using TechpertsSolutions.Core.DTOs.LoginDTOs;
 using TechpertsSolutions.Core.DTOs.RegisterDTOs;
 using TechpertsSolutions.Core.Entities;
@@ -689,32 +689,23 @@ namespace Service
             }
         }
 
+        // PRIVATE - Generate JWT from AppUser + roles
         private string GenerateJwtToken(AppUser user, IList<string> roles)
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
             };
 
+            // Add roles as "role" claims (so ASP.NET Core picks them up correctly)
             foreach (var role in roles)
             {
-                claims.Add(new Claim(ClaimTypes.Role, role));
+                claims.Add(new Claim("role", role));
             }
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: configuration["Jwt:Issuer"],
-                audience: configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddDays(7),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return GenerateJwtToken(claims, TimeSpan.FromDays(7));
         }
 
         // PRIVATE - Generate JWT from claims
@@ -727,7 +718,7 @@ namespace Service
                 issuer: configuration["Jwt:Issuer"],
                 audience: configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.Add(expiry),
+                expires: DateTime.UtcNow.Add(expiry),
                 signingCredentials: creds
             );
 
@@ -753,6 +744,7 @@ namespace Service
                         IssuerSigningKey = new SymmetricSecurityKey(
                             Encoding.UTF8.GetBytes(configuration["Jwt:Key"])
                         ),
+                        RoleClaimType = "role",
                     },
                     out _
                 );
