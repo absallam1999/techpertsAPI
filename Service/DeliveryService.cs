@@ -268,6 +268,7 @@ namespace Service
                         CreatedAt = DateTime.Now,
                         ExpiryTime = DateTime.Now.Add(_settings.OfferExpiryTime),
                         IsActive = true,
+                        OfferedPrice = 50
                     };
 
                     await _deliveryOfferRepo.AddAsync(offer);

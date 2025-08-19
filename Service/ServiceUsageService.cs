@@ -1,7 +1,9 @@
 using Core.DTOs;
 using Core.DTOs.ServiceUsageDTOs;
+using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
+using Core.Utilities;
 using Service.Utilities;
 using TechpertsSolutions.Core.Entities;
 
@@ -108,7 +110,7 @@ namespace Service
 
         public async Task<GeneralResponse<ServiceUsageReadDTO>> TrackServiceUsageAsync(
             string customerId,
-            string serviceType,
+            ServiceType serviceType,
             string? techCompanyId = null
         )
         {
@@ -122,7 +124,7 @@ namespace Service
                 };
             }
 
-            if (string.IsNullOrWhiteSpace(serviceType))
+            if (string.IsNullOrWhiteSpace(serviceType.ToString()))
             {
                 return new GeneralResponse<ServiceUsageReadDTO>
                 {
@@ -135,7 +137,7 @@ namespace Service
             try
             {
                 var existingUsage = await _ServiceRepo.GetFirstOrDefaultAsync(
-                    su => su.ServiceType == serviceType,
+                    su => su.ServiceType.GetStringValue() == serviceType.ToString(),
                     includeProperties: "Maintenance,PCAssemblies,Orders"
                 );
 
@@ -282,7 +284,7 @@ namespace Service
 
         public async Task<GeneralResponse<ServiceUsageReadDTO>> GetOrCreateServiceUsageAsync(
             string customerId,
-            string serviceType
+            ServiceType serviceType
         )
         {
             if (string.IsNullOrWhiteSpace(customerId))
@@ -295,7 +297,7 @@ namespace Service
                 };
             }
 
-            if (string.IsNullOrWhiteSpace(serviceType))
+            if (string.IsNullOrWhiteSpace(serviceType.ToString()))
             {
                 return new GeneralResponse<ServiceUsageReadDTO>
                 {

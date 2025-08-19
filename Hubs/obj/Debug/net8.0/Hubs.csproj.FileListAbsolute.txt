@@ -11,24 +11,6 @@ D:\ITI PROJECT\abdelsalam Backup\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.dll
 D:\ITI PROJECT\abdelsalam Backup\techpertsAPI\Hubs\obj\Debug\net8.0\refint\Hubs.dll
 D:\ITI PROJECT\abdelsalam Backup\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.pdb
 D:\ITI PROJECT\abdelsalam Backup\techpertsAPI\Hubs\obj\Debug\net8.0\ref\Hubs.dll
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\bin\Debug\net8.0\Hubs.deps.json
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\bin\Debug\net8.0\Hubs.dll
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\bin\Debug\net8.0\Hubs.pdb
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.csproj.AssemblyReference.cache
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.GeneratedMSBuildEditorConfig.editorconfig
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.AssemblyInfoInputs.cache
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.AssemblyInfo.cs
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.csproj.CoreCompileInputs.cache
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.sourcelink.json
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.dll
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\refint\Hubs.dll
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.pdb
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\ref\Hubs.dll
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\bin\Debug\net8.0\Core.dll
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\bin\Debug\net8.0\Repository.dll
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\bin\Debug\net8.0\Core.pdb
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\bin\Debug\net8.0\Repository.pdb
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.csproj.Up2Date
 C:\Users\METRO\Desktop\Final\API\Hubs\bin\Debug\net8.0\Hubs.deps.json
 C:\Users\METRO\Desktop\Final\API\Hubs\bin\Debug\net8.0\Hubs.dll
 C:\Users\METRO\Desktop\Final\API\Hubs\bin\Debug\net8.0\Hubs.pdb
@@ -47,3 +29,39 @@ C:\Users\METRO\Desktop\Final\API\Hubs\obj\Debug\net8.0\Hubs.dll
 C:\Users\METRO\Desktop\Final\API\Hubs\obj\Debug\net8.0\refint\Hubs.dll
 C:\Users\METRO\Desktop\Final\API\Hubs\obj\Debug\net8.0\Hubs.pdb
 C:\Users\METRO\Desktop\Final\API\Hubs\obj\Debug\net8.0\ref\Hubs.dll
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\bin\Debug\net8.0\Hubs.deps.json
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\bin\Debug\net8.0\Hubs.dll
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\bin\Debug\net8.0\Hubs.pdb
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\bin\Debug\net8.0\Core.dll
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\bin\Debug\net8.0\Repository.dll
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\bin\Debug\net8.0\Core.pdb
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\bin\Debug\net8.0\Repository.pdb
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.csproj.AssemblyReference.cache
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.AssemblyInfoInputs.cache
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.AssemblyInfo.cs
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.csproj.CoreCompileInputs.cache
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.sourcelink.json
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.csproj.Up2Date
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.dll
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\obj\Debug\net8.0\refint\Hubs.dll
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.pdb
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Hubs\obj\Debug\net8.0\ref\Hubs.dll
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\bin\Debug\net8.0\Hubs.deps.json
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\bin\Debug\net8.0\Hubs.dll
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\bin\Debug\net8.0\Hubs.pdb
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\bin\Debug\net8.0\Core.dll
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\bin\Debug\net8.0\Repository.dll
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\bin\Debug\net8.0\Core.pdb
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\bin\Debug\net8.0\Repository.pdb
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.csproj.AssemblyReference.cache
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.GeneratedMSBuildEditorConfig.editorconfig
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.AssemblyInfoInputs.cache
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.AssemblyInfo.cs
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.csproj.CoreCompileInputs.cache
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.sourcelink.json
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.csproj.Up2Date
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.dll
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\refint\Hubs.dll
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\Hubs.pdb
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Hubs\obj\Debug\net8.0\ref\Hubs.dll

@@ -1,4 +1,5 @@
 using Core.DTOs.ServiceUsageDTOs;
+using Core.Enums;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities
@@ -25,8 +26,8 @@ namespace Service.Utilities
 
         public static void UpdateEntity(ServiceUsage entity, ServiceUsageUpdateDTO dto)
         {
-            if (!string.IsNullOrWhiteSpace(dto.ServiceType))
-                entity.ServiceType = dto.ServiceType;
+            if (!string.IsNullOrWhiteSpace(dto.ServiceType.ToString()))
+                entity.ServiceType = (ServiceType)dto.ServiceType;
             if (dto.UsedOn.HasValue)
                 entity.UsedOn = dto.UsedOn.Value;
             if (dto.CallCount.HasValue)

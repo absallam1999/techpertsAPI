@@ -2237,11 +2237,6 @@
         "Name": "dto",
         "Type": "Core.DTOs.MaintenanceDTOs.MaintenanceUpdateDTO",
         "IsRequired": true
-      },
-      {
-        "Name": "status",
-        "Type": "System.String",
-        "IsRequired": false
       }
     ],
     "ReturnTypes": [
@@ -2397,11 +2392,6 @@
       },
       {
         "Name": "status",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "notes",
         "Type": "System.String",
         "IsRequired": false
       }

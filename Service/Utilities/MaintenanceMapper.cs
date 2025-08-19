@@ -1,4 +1,9 @@
 using Core.DTOs.MaintenanceDTOs;
+using Core.DTOs.MaintenanceDTOss;
+using Core.Enums;
+using Core.Interfaces.Services;
+using Microsoft.AspNetCore.Identity;
+using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities
@@ -10,15 +15,14 @@ namespace Service.Utilities
             if (maintenance == null)
                 return null;
 
-            // For maintenance records, the service type should be "Maintenance"
-            // If there are service usages, use the first one's service type, otherwise default to "Maintenance"
-            string serviceType = "Maintenance";
+            ServiceType serviceType = ServiceType.Maintenance;
+
             if (maintenance.ServiceUsages != null && maintenance.ServiceUsages.Any())
             {
                 var firstServiceUsage = maintenance.ServiceUsages.FirstOrDefault();
                 if (
                     firstServiceUsage != null
-                    && !string.IsNullOrEmpty(firstServiceUsage.ServiceType)
+                    && !string.IsNullOrEmpty(firstServiceUsage.ServiceType.ToString())
                 )
                 {
                     serviceType = firstServiceUsage.ServiceType;
@@ -31,48 +35,35 @@ namespace Service.Utilities
                 CustomerName = maintenance.Customer?.User?.FullName ?? "Unknown Customer",
                 TechCompanyName = maintenance.TechCompany?.User?.FullName ?? "Unknown Tech Company",
                 ProductName = maintenance.Warranty?.Product?.Name ?? "Unknown Product",
+                DeviceType = maintenance.DeviceType,
                 ServiceType = serviceType,
+                Notes = maintenance.Notes,
+                Issue = maintenance.Issue,
+                DeviceImages = maintenance.DeviceImages,
                 WarrantyStart = maintenance.Warranty?.StartDate ?? DateTime.MinValue,
                 WarrantyEnd = maintenance.Warranty?.EndDate ?? DateTime.MinValue,
+                CompletedDate = maintenance.CompletedDate,
+                Priority = maintenance.Priority
             };
         }
 
-        public static MaintenanceDTO MapToMaintenanceDTO(
-            Maintenance maintenance,
-            string customerName,
-            string techCompanyName,
-            string productName,
-            string serviceType,
-            DateTime warrantyStart,
-            DateTime warrantyEnd
-        )
-        {
-            if (maintenance == null)
-                return null;
-
-            return new MaintenanceDTO
-            {
-                Id = maintenance.Id,
-                CustomerName = customerName,
-                TechCompanyName = techCompanyName,
-                ProductName = productName,
-                ServiceType = serviceType,
-                WarrantyStart = warrantyStart,
-                WarrantyEnd = warrantyEnd,
-            };
-        }
-
-        public static Maintenance MapToMaintenance(MaintenanceCreateDTO dto)
+        public static async Task<Maintenance> MapToMaintenance(MaintenanceCreateDTO dto, ITechCompanyService techCompanyService)
         {
             if (dto == null)
                 return null;
 
+            var techCompany = await techCompanyService.GetByUserId(dto.TechCompanyId);
+
             return new Maintenance
             {
-                Id = Guid.NewGuid().ToString(),
                 CustomerId = dto.CustomerId,
-                TechCompanyId = dto.TechCompanyId,
+                TechCompanyId = techCompany.Data.Id,
                 WarrantyId = dto.WarrantyId,
+                Notes = dto.Notes,
+                Priority = dto.Priority,
+                DeviceImages = dto.DeviceImages,
+                DeviceType = dto.DeviceType,
+                Issue = dto.Issue
             };
         }
 
@@ -87,6 +78,14 @@ namespace Service.Utilities
             existingMaintenance.CustomerId = dto.CustomerId;
             existingMaintenance.TechCompanyId = dto.TechCompanyId;
             existingMaintenance.WarrantyId = dto.WarrantyId;
+            existingMaintenance.Notes = dto.Notes;
+            existingMaintenance.Status = dto.Status.Value;
+            existingMaintenance.Issue = dto.Issue;
+            existingMaintenance.ServiceFee = dto.ServiceFee;
+            existingMaintenance.CompletedDate = dto.CompletedDate;
+            existingMaintenance.DeviceType = dto.DeviceType;
+            existingMaintenance.DeviceImages = dto.DeviceImages;
+            existingMaintenance.Priority = dto.Priority;
             return existingMaintenance;
         }
 
@@ -145,21 +144,18 @@ namespace Service.Utilities
                         : new MaintenanceServiceUsageDTO
                         {
                             Id = maintenance.ServiceUsages.FirstOrDefault().Id,
-                            ServiceType = maintenance.ServiceUsages.FirstOrDefault().ServiceType,
+                            ServiceType = maintenance.ServiceUsages.FirstOrDefault().ServiceType.ToString(),
                             UsedOn = maintenance.ServiceUsages.FirstOrDefault().UsedOn,
                             CallCount = maintenance.ServiceUsages.FirstOrDefault().CallCount,
                         },
+                ServiceFee = maintenance.ServiceFee,
+                Issue = maintenance.Issue,
+                DeviceImages = maintenance.DeviceImages,
+                DeviceType = maintenance.DeviceType,
+                CompletedDate = maintenance.CompletedDate,
+                Priority = maintenance.Priority,
+                Notes = maintenance.Notes,
             };
-        }
-
-        public static IEnumerable<MaintenanceDTO> MapToMaintenanceDTOList(
-            IEnumerable<Maintenance> maintenances
-        )
-        {
-            if (maintenances == null)
-                return Enumerable.Empty<MaintenanceDTO>();
-
-            return maintenances.Select(MapToMaintenanceDTO).Where(dto => dto != null);
         }
     }
 }

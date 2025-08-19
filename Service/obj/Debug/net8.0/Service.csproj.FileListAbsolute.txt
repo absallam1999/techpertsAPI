@@ -18,26 +18,6 @@ D:\ITI PROJECT\abdelsalam Backup\techpertsAPI\Service\obj\Debug\net8.0\Service.d
 D:\ITI PROJECT\abdelsalam Backup\techpertsAPI\Service\obj\Debug\net8.0\refint\Service.dll
 D:\ITI PROJECT\abdelsalam Backup\techpertsAPI\Service\obj\Debug\net8.0\Service.pdb
 D:\ITI PROJECT\abdelsalam Backup\techpertsAPI\Service\obj\Debug\net8.0\ref\Service.dll
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Service.deps.json
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Service.dll
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Service.pdb
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Core.dll
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Hubs.dll
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Repository.dll
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Core.pdb
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Hubs.pdb
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Repository.pdb
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.csproj.AssemblyReference.cache
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.GeneratedMSBuildEditorConfig.editorconfig
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.AssemblyInfoInputs.cache
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.AssemblyInfo.cs
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.csproj.CoreCompileInputs.cache
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.sourcelink.json
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.csproj.Up2Date
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.dll
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\refint\Service.dll
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.pdb
-D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\ref\Service.dll
 C:\Users\METRO\Desktop\Final\API\Service\bin\Debug\net8.0\Service.deps.json
 C:\Users\METRO\Desktop\Final\API\Service\bin\Debug\net8.0\Service.dll
 C:\Users\METRO\Desktop\Final\API\Service\bin\Debug\net8.0\Service.pdb
@@ -58,3 +38,43 @@ C:\Users\METRO\Desktop\Final\API\Service\obj\Debug\net8.0\Service.dll
 C:\Users\METRO\Desktop\Final\API\Service\obj\Debug\net8.0\refint\Service.dll
 C:\Users\METRO\Desktop\Final\API\Service\obj\Debug\net8.0\Service.pdb
 C:\Users\METRO\Desktop\Final\API\Service\obj\Debug\net8.0\ref\Service.dll
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\bin\Debug\net8.0\Service.deps.json
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\bin\Debug\net8.0\Service.dll
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\bin\Debug\net8.0\Service.pdb
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\bin\Debug\net8.0\Core.dll
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\bin\Debug\net8.0\Hubs.dll
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\bin\Debug\net8.0\Repository.dll
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\bin\Debug\net8.0\Core.pdb
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\bin\Debug\net8.0\Hubs.pdb
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\bin\Debug\net8.0\Repository.pdb
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\obj\Debug\net8.0\Service.csproj.AssemblyReference.cache
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\obj\Debug\net8.0\Service.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\obj\Debug\net8.0\Service.AssemblyInfoInputs.cache
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\obj\Debug\net8.0\Service.AssemblyInfo.cs
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\obj\Debug\net8.0\Service.csproj.CoreCompileInputs.cache
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\obj\Debug\net8.0\Service.sourcelink.json
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\obj\Debug\net8.0\Service.csproj.Up2Date
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\obj\Debug\net8.0\Service.dll
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\obj\Debug\net8.0\refint\Service.dll
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\obj\Debug\net8.0\Service.pdb
+C:\Users\METRO\Desktop\Final\V3\techpertsAPI\Service\obj\Debug\net8.0\ref\Service.dll
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Service.deps.json
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Service.dll
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Service.pdb
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Core.dll
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Hubs.dll
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Repository.dll
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Core.pdb
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Hubs.pdb
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\bin\Debug\net8.0\Repository.pdb
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.csproj.AssemblyReference.cache
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.GeneratedMSBuildEditorConfig.editorconfig
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.AssemblyInfoInputs.cache
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.AssemblyInfo.cs
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.csproj.CoreCompileInputs.cache
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.sourcelink.json
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.csproj.Up2Date
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.dll
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\refint\Service.dll
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\Service.pdb
+D:\ITI PROJECT\abdelsalam\techpertsAPI\Service\obj\Debug\net8.0\ref\Service.dll
