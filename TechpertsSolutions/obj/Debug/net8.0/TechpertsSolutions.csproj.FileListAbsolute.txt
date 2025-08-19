@@ -300,7 +300,6 @@ D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\obj\Debug\net8.0\Techp
 D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\obj\Debug\net8.0\ref\TechpertsSolutions.dll
 D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\bin\Debug\net8.0\Microsoft.AspNetCore.SignalR.Client.Core.dll
 D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\bin\Debug\net8.0\Stripe.net.dll
-D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\METRO\Desktop\Final\API\TechpertsSolutions\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\METRO\Desktop\Final\API\TechpertsSolutions\bin\Debug\net8.0\appsettings.json
 C:\Users\METRO\Desktop\Final\API\TechpertsSolutions\bin\Debug\net8.0\TechpertsSolutions.staticwebassets.runtime.json
@@ -449,3 +448,4 @@ C:\Users\METRO\Desktop\Final\API\TechpertsSolutions\obj\Debug\net8.0\TechpertsSo
 C:\Users\METRO\Desktop\Final\API\TechpertsSolutions\obj\Debug\net8.0\TechpertsSolutions.pdb
 C:\Users\METRO\Desktop\Final\API\TechpertsSolutions\obj\Debug\net8.0\TechpertsSolutions.genruntimeconfig.cache
 C:\Users\METRO\Desktop\Final\API\TechpertsSolutions\obj\Debug\net8.0\ref\TechpertsSolutions.dll
+D:\ITI PROJECT\abdelsalam\techpertsAPI\TechpertsSolutions\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
