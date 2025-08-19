@@ -3179,23 +3179,6 @@
         "tags": [
           "Maintenance"
         ],
-        "parameters": [
-          {
-            "name": "status",
-            "in": "query",
-            "schema": {
-              "enum": [
-                "Requested",
-                "Accepted",
-                "InProgress",
-                "Completed",
-                "Cancelled",
-                "Rejected"
-              ],
-              "type": "string"
-            }
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -3314,13 +3297,6 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/Core.Enums.MaintenanceStatus"
             }
           }
         ],
@@ -3659,30 +3635,27 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "schema": {
-              "enum": [
-                "Requested",
-                "Accepted",
-                "InProgress",
-                "Completed",
-                "Cancelled",
-                "Rejected"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "notes",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
           }
         ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "$ref": "#/components/schemas/Core.Enums.MaintenanceStatus"
+                  }
+                }
+              },
+              "encoding": {
+                "status": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -6028,21 +6001,6 @@
         "tags": [
           "ServiceUsage"
         ],
-        "parameters": [
-          {
-            "name": "serviceType",
-            "in": "query",
-            "schema": {
-              "enum": [
-                "ProductSale",
-                "Maintenance",
-                "PCAssembly",
-                "Delivery"
-              ],
-              "type": "string"
-            }
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -6111,13 +6069,6 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
-          },
-          {
-            "name": "serviceType",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/Core.Enums.ServiceType"
             }
           }
         ],
@@ -9171,6 +9122,25 @@
           "notes": {
             "type": "string",
             "nullable": true
+          },
+          "deviceType": {
+            "type": "string",
+            "nullable": true
+          },
+          "issue": {
+            "type": "string",
+            "nullable": true
+          },
+          "priority": {
+            "type": "string",
+            "nullable": true
+          },
+          "deviceImages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -9197,9 +9167,33 @@
             "type": "string",
             "nullable": true
           },
+          "deviceType": {
+            "type": "string",
+            "nullable": true
+          },
+          "issue": {
+            "type": "string",
+            "nullable": true
+          },
+          "priority": {
+            "type": "string",
+            "nullable": true
+          },
+          "serviceFee": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "completedDate": {
             "type": "string",
             "format": "date-time",
+            "nullable": true
+          },
+          "deviceImages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
             "nullable": true
           }
         },
@@ -9933,8 +9927,7 @@
         "type": "object",
         "properties": {
           "serviceType": {
-            "type": "string",
-            "nullable": true
+            "$ref": "#/components/schemas/Core.Enums.ServiceType"
           },
           "usedOn": {
             "type": "string",
@@ -9951,8 +9944,7 @@
         "type": "object",
         "properties": {
           "serviceType": {
-            "type": "string",
-            "nullable": true
+            "$ref": "#/components/schemas/Core.Enums.ServiceType"
           },
           "usedOn": {
             "type": "string",
@@ -12096,8 +12088,7 @@
             "nullable": true
           },
           "serviceType": {
-            "type": "string",
-            "nullable": true
+            "$ref": "#/components/schemas/Core.Enums.ServiceType"
           },
           "usedOn": {
             "type": "string",

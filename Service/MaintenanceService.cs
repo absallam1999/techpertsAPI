@@ -16,7 +16,7 @@ namespace Service
         private readonly IRepository<Warranty> _warrantyRepo;
         private readonly IRepository<ServiceUsage> _serviceUsageRepo;
         private readonly INotificationService _notificationService;
-        private readonly TechCompanyService _techCompanyService;
+        private readonly ITechCompanyService _techCompanyService;
         private readonly ILocationService _LocationService;
 
         public MaintenanceService(
@@ -26,7 +26,7 @@ namespace Service
             IRepository<Warranty> warrantyRepo,
             IRepository<ServiceUsage> serviceUsageRepo,
             INotificationService notificationService,
-            TechCompanyService techCompanyService,
+            ITechCompanyService techCompanyService,
             ILocationService locationService
         )
         {

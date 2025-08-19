@@ -60,7 +60,7 @@ namespace TechpertsSolutions.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create([FromBody] MaintenanceCreateDTO dto, [FromQuery] MaintenanceStatus status = MaintenanceStatus.Requested)
+        public async Task<IActionResult> Create([FromBody] MaintenanceCreateDTO dto, [FromForm] MaintenanceStatus status = MaintenanceStatus.Requested)
         {
             if (!ModelState.IsValid)
             {
@@ -84,7 +84,7 @@ namespace TechpertsSolutions.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Update(string id, [FromBody] MaintenanceUpdateDTO dto, [FromQuery] MaintenanceStatus? status = null)
+        public async Task<IActionResult> Update(string id, [FromBody] MaintenanceUpdateDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -221,7 +221,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPut("{maintenanceId}/status")]
-        public async Task<IActionResult> UpdateMaintenanceStatus(string maintenanceId, [FromQuery] MaintenanceStatus status)
+        public async Task<IActionResult> UpdateMaintenanceStatus(string maintenanceId, [FromForm] MaintenanceStatus status)
         {
             if (string.IsNullOrWhiteSpace(maintenanceId))
             {

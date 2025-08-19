@@ -1,6 +1,7 @@
 using Core.DTOs.MaintenanceDTOs;
 using Core.DTOs.MaintenanceDTOss;
 using Core.Enums;
+using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
@@ -46,7 +47,7 @@ namespace Service.Utilities
             };
         }
 
-        public static async Task<Maintenance> MapToMaintenance(MaintenanceCreateDTO dto, TechCompanyService techCompanyService)
+        public static async Task<Maintenance> MapToMaintenance(MaintenanceCreateDTO dto, ITechCompanyService techCompanyService)
         {
             if (dto == null)
                 return null;
