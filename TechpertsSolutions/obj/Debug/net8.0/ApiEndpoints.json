@@ -672,9 +672,46 @@
   },
   {
     "ContainingType": "TechpertsSolutions.Controllers.CartController",
+    "Method": "Checkout",
+    "RelativePath": "api/Cart/{customerId}/checkout-payment",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "customerId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "Core.DTOs.ConfirmPaymentRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TechpertsSolutions.Controllers.CartController",
     "Method": "ClearCart",
     "RelativePath": "api/Cart/{customerId}/clear",
     "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "customerId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TechpertsSolutions.Controllers.CartController",
+    "Method": "InitiatePayment",
+    "RelativePath": "api/Cart/{customerId}/initiate-payment",
+    "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -744,27 +781,6 @@
       {
         "Name": "productId",
         "Type": "System.String",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "TechpertsSolutions.Controllers.CartController",
-    "Method": "PartialCheckout",
-    "RelativePath": "api/Cart/{customerId}/partial-checkout",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "customerId",
-        "Type": "System.String",
-        "IsRequired": true
-      },
-      {
-        "Name": "dto",
-        "Type": "Core.DTOs.CartDTOs.PartialCheckoutDTO",
         "IsRequired": true
       }
     ],

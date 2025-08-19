@@ -1219,6 +1219,9 @@ namespace Repository.Migrations
                     b.Property<string>("OrderHistoryId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("PaymentIntentId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ServiceUsageId")
                         .HasColumnType("nvarchar(450)");
 

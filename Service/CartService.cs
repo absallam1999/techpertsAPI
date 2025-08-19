@@ -5,37 +5,40 @@ using Core.Interfaces;
 using Core.Interfaces.Services;
 using Microsoft.EntityFrameworkCore;
 using Service.Utilities;
-using TechpertsSolutions.Core.Entities;
+//using Stripe;
 using TechpertsSolutions.Repository.Data;
+using AppEntities = TechpertsSolutions.Core.Entities;
 
 namespace Service
 {
     public class CartService : ICartService
     {
-        private readonly IRepository<Cart> cartRepo;
-        private readonly IRepository<CartItem> cartItemRepo;
-        private readonly IRepository<Product> productRepo;
-        private readonly IRepository<Customer> customerRepo;
-        private readonly IRepository<Order> orderRepo;
+        private readonly IRepository<AppEntities.Cart> cartRepo;
+        private readonly IRepository<AppEntities.CartItem> cartItemRepo;
+        private readonly IRepository<AppEntities.Product> productRepo;
+        private readonly IRepository<AppEntities.Customer> customerRepo;
+        private readonly IRepository<AppEntities.Order> orderRepo;
         private readonly IOrderService orderService;
-        private readonly IRepository<OrderItem> orderItemRepo;
-        private readonly IRepository<PCAssembly> pcAssemblyRepo;
+        private readonly IRepository<AppEntities.OrderItem> orderItemRepo;
+        private readonly IRepository<AppEntities.PCAssembly> pcAssemblyRepo;
         private readonly TechpertsContext dbContext;
         private readonly IDeliveryService deliveryService;
-        private readonly IRepository<PCAssemblyItem> pcAssemblyItemRepo;
+        private readonly IRepository<AppEntities.PCAssemblyItem> pcAssemblyItemRepo;
+        private readonly IPaymentService paymentService;
 
         public CartService(
-            IRepository<Cart> _cartRepo,
-            IRepository<CartItem> _cartItemRepo,
-            IRepository<Product> _productRepo,
-            IRepository<Customer> _customerRepo,
-            IRepository<Order> _orderRepo,
-            IRepository<OrderItem> _orderItemRepo,
-            IRepository<PCAssembly> _pcAssemblyRepo,
+            IRepository<AppEntities.Cart> _cartRepo,
+            IRepository<AppEntities.CartItem> _cartItemRepo,
+            IRepository<AppEntities.Product> _productRepo,
+            IRepository<AppEntities.Customer> _customerRepo,
+            IRepository<AppEntities.Order> _orderRepo,
+            IRepository<AppEntities.OrderItem> _orderItemRepo,
+            IRepository<AppEntities.PCAssembly> _pcAssemblyRepo,
             TechpertsContext _dbContext,
             IOrderService _orderService,
             IDeliveryService _deliveryService,
-            IRepository<PCAssemblyItem> _pcAssemblyItemRepo
+            IRepository<AppEntities.PCAssemblyItem> _pcAssemblyItemRepo,
+            IPaymentService _paymentService
         )
         {
             cartRepo = _cartRepo;
@@ -49,6 +52,7 @@ namespace Service
             orderService = _orderService;
             deliveryService = _deliveryService;
             pcAssemblyItemRepo = _pcAssemblyItemRepo;
+            paymentService = _paymentService;
         }
 
         public async Task<CartReadDTO?> GetCartByCustomerIdAsync(string customerId)
@@ -77,11 +81,11 @@ namespace Service
 
             if (cart == null)
             {
-                cart = new Cart
+                cart = new AppEntities.Cart
                 {
                     CustomerId = customerId,
                     CreatedAt = DateTime.Now,
-                    CartItems = new List<CartItem>(),
+                    CartItems = new List<AppEntities.CartItem>(),
                 };
 
                 await cartRepo.AddAsync(cart);
@@ -134,11 +138,11 @@ namespace Service
 
                 if (cart == null)
                 {
-                    cart = new Cart
+                    cart = new AppEntities.Cart
                     {
                         CustomerId = customerId,
                         CreatedAt = DateTime.Now,
-                        CartItems = new List<CartItem>(),
+                        CartItems = new List<AppEntities.CartItem>(),
                     };
 
                     await cartRepo.AddAsync(cart);
@@ -211,11 +215,11 @@ namespace Service
 
             if (cart == null)
             {
-                cart = new Cart
+                cart = new AppEntities.Cart
                 {
                     CustomerId = customerId,
                     CreatedAt = DateTime.Now,
-                    CartItems = new List<CartItem>(),
+                    CartItems = new List<AppEntities.CartItem>(),
                 };
                 await cartRepo.AddAsync(cart);
                 await cartRepo.SaveChangesAsync();
@@ -238,7 +242,7 @@ namespace Service
             }
             else
             {
-                var newItem = new CartItem
+                var newItem = new AppEntities.CartItem
                 {
                     ProductId = itemDto.ProductId,
                     CartId = cart.Id,
@@ -285,11 +289,11 @@ namespace Service
 
             if (cart == null)
             {
-                cart = new Cart
+                cart = new AppEntities.Cart
                 {
                     CustomerId = customerId,
                     CreatedAt = DateTime.Now,
-                    CartItems = new List<CartItem>(),
+                    CartItems = new List<AppEntities.CartItem>(),
                 };
                 await cartRepo.AddAsync(cart);
                 await cartRepo.SaveChangesAsync();
@@ -306,7 +310,7 @@ namespace Service
             }
             else
             {
-                var newProductItem = new CartItem
+                var newProductItem = new AppEntities.CartItem
                 {
                     ProductId = itemDto.ProductId,
                     CartId = cart.Id,
@@ -331,7 +335,7 @@ namespace Service
 
                 if (existingFeeItem == null)
                 {
-                    var newFeeItem = new CartItem
+                    var newFeeItem = new AppEntities.CartItem
                     {
                         ProductId = AssemblyFeeProductId,
                         CartId = cart.Id,
@@ -505,7 +509,7 @@ namespace Service
                         CustomerId = string.Empty, // Would be set in actual implementation
                         CreatedAt = DateTime.Now,
                         SubTotal = total,
-                        CartItems = new List<CartItemReadDTO>(),    
+                        CartItems = new List<CartItemReadDTO>(),
                     },
                 };
             }
@@ -520,11 +524,21 @@ namespace Service
             }
         }
 
+        //private async Task<bool> VerifyPaymentAsync(string paymentIntentId)
+        //{
+        //    var service = new PaymentIntentService();
+        //    var paymentIntent = await service.GetAsync(paymentIntentId);
+
+        //    // ✅ You could also check for "requires_capture" if using manual capture
+        //    return paymentIntent.Status == "succeeded";
+        //}
+
         private async Task<GeneralResponse<OrderReadDTO>> CheckoutCartAsync(
             string customerId,
             List<string>? selectedProductIds = null,
             string? serviceUsageId = null,
-            string? promoCode = null
+            string? promoCode = null,
+            string? paymentIntentId = null
         )
         {
             if (string.IsNullOrWhiteSpace(customerId))
@@ -548,6 +562,14 @@ namespace Service
                 {
                     Success = false,
                     Message = "? Invalid Service Usage ID format. Expected GUID format.",
+                    Data = null,
+                };
+
+            if (string.IsNullOrWhiteSpace(paymentIntentId))
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = false,
+                    Message = "? Payment Intent ID is required before placing order.",
                     Data = null,
                 };
 
@@ -604,7 +626,16 @@ namespace Service
                         Message = $"? Stock validation failed:\n{string.Join("\n", stockErrors)}",
                         Data = null,
                     };
-
+                var paymentVerified = await paymentService.VerifyPaymentAsync(paymentIntentId);
+                if (!paymentVerified)
+                {
+                    return new GeneralResponse<OrderReadDTO>
+                    {
+                        Success = false,
+                        Message = "❌ Payment not completed or failed. Cannot place order.",
+                        Data = null,
+                    };
+                }
                 var orderDto = new OrderCreateDTO
                 {
                     CustomerId = customerId,
@@ -617,8 +648,12 @@ namespace Service
                             UnitPrice = ci.Product!.Price,
                         })
                         .ToList(),
+
+                    // ✅ New: keep track of payment intent
+                    PaymentIntentId = paymentIntentId,
                 };
 
+                // Deduct stock
                 foreach (var ci in itemsToCheckout)
                 {
                     ci.Product!.Stock -= ci.Quantity;
@@ -626,6 +661,7 @@ namespace Service
                 }
                 await productRepo.SaveChangesAsync();
 
+                // Create the order
                 var orderResponse = await orderService.CreateOrderAsync(orderDto);
 
                 if (!orderResponse.Success)
@@ -634,6 +670,7 @@ namespace Service
                     return orderResponse;
                 }
 
+                // Remove items from cart
                 foreach (var ci in itemsToCheckout)
                 {
                     cart.CartItems?.Remove(ci);
@@ -807,6 +844,43 @@ namespace Service
             {
                 Success = true,
                 Message = "? Item quantity decreased successfully.",
+            };
+        }
+
+        public async Task<GeneralResponse<object>> InitiatePaymentAsync(
+            string customerId,
+            string currency = "usd"
+        )
+        {
+            var cart = await cartRepo.GetFirstOrDefaultAsync(
+                c => c.CustomerId == customerId,
+                includeProperties: "CartItems.Product"
+            );
+
+            if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
+            {
+                return new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Cart is empty or not found.",
+                    Data = null,
+                };
+            }
+
+            // Calculate total
+            var totalAmount = cart.CartItems.Sum(i => i.Quantity * i.Product.Price);
+
+            // Call payment service
+            var (paymentIntentId, clientSecret) = await paymentService.CreatePaymentIntentAsync(
+                (long)totalAmount,
+                currency
+            );
+
+            return new GeneralResponse<object>
+            {
+                Success = true,
+                Message = "Payment initiated successfully.",
+                Data = new { paymentIntentId, clientSecret },
             };
         }
     }

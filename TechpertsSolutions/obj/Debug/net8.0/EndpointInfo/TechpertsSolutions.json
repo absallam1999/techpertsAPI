@@ -1042,6 +1042,47 @@
         }
       }
     },
+    "/api/Cart/{customerId}/checkout-payment": {
+      "post": {
+        "tags": [
+          "Cart"
+        ],
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Core.DTOs.ConfirmPaymentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Core.DTOs.ConfirmPaymentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Core.DTOs.ConfirmPaymentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Cart/checkout": {
       "post": {
         "tags": [
@@ -1073,7 +1114,7 @@
         }
       }
     },
-    "/api/Cart/{customerId}/partial-checkout": {
+    "/api/Cart/{customerId}/initiate-payment": {
       "post": {
         "tags": [
           "Cart"
@@ -1088,25 +1129,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Core.DTOs.CartDTOs.PartialCheckoutDTO"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Core.DTOs.CartDTOs.PartialCheckoutDTO"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Core.DTOs.CartDTOs.PartialCheckoutDTO"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "OK"
@@ -8423,27 +8445,6 @@
         },
         "additionalProperties": false
       },
-      "Core.DTOs.CartDTOs.PartialCheckoutDTO": {
-        "type": "object",
-        "properties": {
-          "customerId": {
-            "type": "string",
-            "nullable": true
-          },
-          "productIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "promoCode": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "Core.DTOs.CategoryDTOs.AssignSubCategoriesDTO": {
         "type": "object",
         "properties": {
@@ -8503,6 +8504,16 @@
         "type": "object",
         "properties": {
           "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Core.DTOs.ConfirmPaymentRequest": {
+        "type": "object",
+        "properties": {
+          "paymentIntentId": {
             "type": "string",
             "nullable": true
           }
@@ -9252,6 +9263,10 @@
             "nullable": true
           },
           "serviceUsageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentIntentId": {
             "type": "string",
             "nullable": true
           },
@@ -11700,6 +11715,10 @@
           },
           "serviceUsage": {
             "$ref": "#/components/schemas/TechpertsSolutions.Core.Entities.ServiceUsage"
+          },
+          "paymentIntentId": {
+            "type": "string",
+            "nullable": true
           },
           "orderItems": {
             "type": "array",

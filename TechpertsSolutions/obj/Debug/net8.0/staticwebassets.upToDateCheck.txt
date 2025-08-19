@@ -1,7 +1,17 @@
 wwwroot\assets\categories\default-category.png
 wwwroot\assets\products\1722028258316_20250817132442_966f4507.jpg
 wwwroot\assets\products\1722028258316_20250817132442_ccbf00ba.jpg
+wwwroot\assets\products\1722028258316_20250819135131_af33fc8b.jpg
+wwwroot\assets\products\1722028258316_20250819135131_b94814d8.jpg
+wwwroot\assets\products\1722028258316_20250819135140_694ca3b4.jpg
+wwwroot\assets\products\1722028258316_20250819135140_95c83d6f.jpg
 wwwroot\assets\products\211_20250817132442_f424bbd6.jpg
+wwwroot\assets\products\211_20250819135131_1c4187fd.jpg
+wwwroot\assets\products\211_20250819135140_cd7c6aa4.jpg
+wwwroot\assets\products\71HESRbyxDLACUF10001000QL80_20250819135131_c48c73ea.jpg
+wwwroot\assets\products\71HESRbyxDLACUF10001000QL80_20250819135140_fe8c31b2.jpg
+wwwroot\assets\products\androidphone2048px0967_20250819135131_4175b43d.jpg
+wwwroot\assets\products\androidphone2048px0967_20250819135140_38b8128c.jpg
 wwwroot\assets\products\apitestingservices_20250817132442_7928c283.jpg
 wwwroot\assets\products\default-product.png
 wwwroot\assets\profiles\5fcf04107a834a98a12a007d6f5869f2_20250818060223_015a7635.jpg
