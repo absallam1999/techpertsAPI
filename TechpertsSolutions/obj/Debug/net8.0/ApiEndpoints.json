@@ -162,8 +162,8 @@
   },
   {
     "ContainingType": "TechpertsSolutions.Controllers.AdminsController",
-    "Method": "updateDeliveryPerson",
-    "RelativePath": "api/Admins/deliveryPerson/{deliveryPersonid}",
+    "Method": "UpdateDeliveryPerson",
+    "RelativePath": "api/Admins/deliveryPerson/{id}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -171,21 +171,11 @@
       {
         "Name": "id",
         "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "AccountStatus",
-        "Type": "System.String",
-        "IsRequired": false
+        "IsRequired": true
       },
       {
         "Name": "dto",
         "Type": "Core.DTOs.DeliveryPersonDTOs.DeliveryPersonUpdateDTO",
-        "IsRequired": true
-      },
-      {
-        "Name": "deliveryPersonid",
-        "Type": "",
         "IsRequired": true
       }
     ],

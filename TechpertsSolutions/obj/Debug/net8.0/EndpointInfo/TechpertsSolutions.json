@@ -158,7 +158,7 @@
         }
       }
     },
-    "/api/Admins/deliveryPerson/{deliveryPersonid}": {
+    "/api/Admins/deliveryPerson/{id}": {
       "put": {
         "tags": [
           "Admins"
@@ -166,25 +166,6 @@
         "parameters": [
           {
             "name": "id",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "AccountStatus",
-            "in": "query",
-            "schema": {
-              "enum": [
-                "Pending",
-                "Accepted",
-                "Rejected"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "deliveryPersonid",
             "in": "path",
             "required": true,
             "schema": {
@@ -8855,6 +8836,9 @@
           "isAvailable": {
             "type": "boolean",
             "nullable": true
+          },
+          "accountStatus": {
+            "$ref": "#/components/schemas/Core.Enums.DeliveryPersonStatus"
           }
         },
         "additionalProperties": false

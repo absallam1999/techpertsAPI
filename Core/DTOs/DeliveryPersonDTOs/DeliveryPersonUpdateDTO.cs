@@ -16,5 +16,7 @@ namespace Core.DTOs.DeliveryPersonDTOs
         public string? City { get; set; }
         public string? Country { get; set; }
         public bool? IsAvailable { get; set; }
+        public DeliveryPersonStatus AccountStatus { get; set; }
+
     }
 } 

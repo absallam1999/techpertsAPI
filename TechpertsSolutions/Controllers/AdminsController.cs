@@ -159,14 +159,13 @@ namespace TechpertsSolutions.Controllers
             return Ok(response);
         }
 
-        [HttpPut("deliveryPerson/{deliveryPersonid}")]
-        public async Task<IActionResult> updateDeliveryPerson(
-            string id,
-            DeliveryPersonStatus AccountStatus,
-            DeliveryPersonUpdateDTO dto
-        )
+        [HttpPut("deliveryPerson/{id}")]
+        public async Task<IActionResult> UpdateDeliveryPerson(
+        string id,
+        [FromBody] DeliveryPersonUpdateDTO dto
+)
         {
-            var response = await _deliveryPersonService.UpdateAsync(id, AccountStatus, dto);
+            var response = await _deliveryPersonService.UpdateAsync(id, dto.AccountStatus, dto);
             return Ok(response);
         }
 
