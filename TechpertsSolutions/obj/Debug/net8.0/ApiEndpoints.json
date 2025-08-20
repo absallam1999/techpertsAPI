@@ -175,7 +175,7 @@
       },
       {
         "Name": "dto",
-        "Type": "Core.DTOs.DeliveryPersonDTOs.DeliveryPersonUpdateDTO",
+        "Type": "Core.DTOs.DeliveryPersonDTOs.DeliveryPersonAdminUpdateDTO",
         "IsRequired": true
       }
     ],
@@ -1702,14 +1702,39 @@
         "IsRequired": true
       },
       {
-        "Name": "AccountStatus",
+        "Name": "VehicleImage",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      },
+      {
+        "Name": "VehicleNumber",
         "Type": "System.String",
         "IsRequired": false
       },
       {
-        "Name": "dto",
-        "Type": "Core.DTOs.DeliveryPersonDTOs.DeliveryPersonUpdateDTO",
-        "IsRequired": true
+        "Name": "VehicleType",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "PhoneNumber",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "City",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Country",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "IsAvailable",
+        "Type": "System.Nullable\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []

@@ -69,3 +69,4 @@ wwwroot\assets\profiles\mohamed_20250819053006_e8e33610.jpg
 wwwroot\assets\profiles\mohamed_20250819053359_d6a7311b.jpg
 wwwroot\assets\profiles\pin_20250806233540_4881ca5e.png
 wwwroot\assets\subcategories\default-subcategory.png
+wwwroot\assets\vehicle-images\71HESRbyxDLACUF10001000QL80_20250820053925_f1040ea4.jpg

@@ -6302,11 +6302,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\TechpertsSolutions\\TechpertsSolutions.csproj",
+      "projectUniqueName": "D:\\ITI PROJECT\\projectgit\\TechpertsSolutions\\TechpertsSolutions\\TechpertsSolutions.csproj",
       "projectName": "TechpertsSolutions",
-      "projectPath": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\TechpertsSolutions\\TechpertsSolutions.csproj",
+      "projectPath": "D:\\ITI PROJECT\\projectgit\\TechpertsSolutions\\TechpertsSolutions\\TechpertsSolutions.csproj",
       "packagesPath": "C:\\Users\\Ramy Mahana\\.nuget\\packages\\",
-      "outputPath": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\TechpertsSolutions\\obj\\",
+      "outputPath": "D:\\ITI PROJECT\\projectgit\\TechpertsSolutions\\TechpertsSolutions\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -6328,17 +6328,17 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Core\\Core.csproj": {
-              "projectPath": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Core\\Core.csproj"
+            "D:\\ITI PROJECT\\projectgit\\TechpertsSolutions\\Core\\Core.csproj": {
+              "projectPath": "D:\\ITI PROJECT\\projectgit\\TechpertsSolutions\\Core\\Core.csproj"
             },
-            "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Hubs\\Hubs.csproj": {
-              "projectPath": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Hubs\\Hubs.csproj"
+            "D:\\ITI PROJECT\\projectgit\\TechpertsSolutions\\Hubs\\Hubs.csproj": {
+              "projectPath": "D:\\ITI PROJECT\\projectgit\\TechpertsSolutions\\Hubs\\Hubs.csproj"
             },
-            "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Repository\\Repository.csproj": {
-              "projectPath": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Repository\\Repository.csproj"
+            "D:\\ITI PROJECT\\projectgit\\TechpertsSolutions\\Repository\\Repository.csproj": {
+              "projectPath": "D:\\ITI PROJECT\\projectgit\\TechpertsSolutions\\Repository\\Repository.csproj"
             },
-            "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Service\\Service.csproj": {
-              "projectPath": "D:\\ITI PROJECT\\abdelsalam\\techpertsAPI\\Service\\Service.csproj"
+            "D:\\ITI PROJECT\\projectgit\\TechpertsSolutions\\Service\\Service.csproj": {
+              "projectPath": "D:\\ITI PROJECT\\projectgit\\TechpertsSolutions\\Service\\Service.csproj"
             }
           }
         }

@@ -177,17 +177,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Core.DTOs.DeliveryPersonDTOs.DeliveryPersonUpdateDTO"
+                "$ref": "#/components/schemas/Core.DTOs.DeliveryPersonDTOs.DeliveryPersonAdminUpdateDTO"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Core.DTOs.DeliveryPersonDTOs.DeliveryPersonUpdateDTO"
+                "$ref": "#/components/schemas/Core.DTOs.DeliveryPersonDTOs.DeliveryPersonAdminUpdateDTO"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Core.DTOs.DeliveryPersonDTOs.DeliveryPersonUpdateDTO"
+                "$ref": "#/components/schemas/Core.DTOs.DeliveryPersonDTOs.DeliveryPersonAdminUpdateDTO"
               }
             }
           }
@@ -2355,35 +2355,60 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "AccountStatus",
-            "in": "query",
-            "schema": {
-              "enum": [
-                "Pending",
-                "Accepted",
-                "Rejected"
-              ],
-              "type": "string"
-            }
           }
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/Core.DTOs.DeliveryPersonDTOs.DeliveryPersonUpdateDTO"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Core.DTOs.DeliveryPersonDTOs.DeliveryPersonUpdateDTO"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Core.DTOs.DeliveryPersonDTOs.DeliveryPersonUpdateDTO"
+                "type": "object",
+                "properties": {
+                  "VehicleImage": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "VehicleNumber": {
+                    "type": "string"
+                  },
+                  "VehicleType": {
+                    "type": "string"
+                  },
+                  "PhoneNumber": {
+                    "type": "string"
+                  },
+                  "City": {
+                    "type": "string"
+                  },
+                  "Country": {
+                    "type": "string"
+                  },
+                  "IsAvailable": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "encoding": {
+                "VehicleImage": {
+                  "style": "form"
+                },
+                "VehicleNumber": {
+                  "style": "form"
+                },
+                "VehicleType": {
+                  "style": "form"
+                },
+                "PhoneNumber": {
+                  "style": "form"
+                },
+                "City": {
+                  "style": "form"
+                },
+                "Country": {
+                  "style": "form"
+                },
+                "IsAvailable": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -8806,7 +8831,7 @@
         },
         "additionalProperties": false
       },
-      "Core.DTOs.DeliveryPersonDTOs.DeliveryPersonUpdateDTO": {
+      "Core.DTOs.DeliveryPersonDTOs.DeliveryPersonAdminUpdateDTO": {
         "type": "object",
         "properties": {
           "vehicleNumber": {
@@ -8814,10 +8839,6 @@
             "nullable": true
           },
           "vehicleType": {
-            "type": "string",
-            "nullable": true
-          },
-          "vehicleImage": {
             "type": "string",
             "nullable": true
           },
